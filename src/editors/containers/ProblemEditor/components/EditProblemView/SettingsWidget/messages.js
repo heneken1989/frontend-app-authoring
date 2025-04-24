@@ -69,7 +69,7 @@ const messages = defineMessages({
   },
   scoringSettingsTitle: {
     id: 'authoring.problemeditor.settings.scoring.title',
-    defaultMessage: 'Scoring',
+    defaultMessage: 'Scoring Edit',
     description: 'Scoring settings card title',
   },
   scoringAttemptsInputLabel: {
@@ -186,6 +186,36 @@ const messages = defineMessages({
     id: 'authoring.problemeditor.settings.showAnswer.explanation.text',
     defaultMessage: 'Provide an explanation for the correct answer.',
     description: 'Solution Explanation text',
+  },
+  timeLimitSettingsTitle: {
+    id: 'authoring.problemeditor.settings.timeLimit.title',
+    defaultMessage: 'Time Limit',
+    description: 'Time limit settings card title',
+  },
+  timeLimitSettingsLabel: {
+    id: 'authoring.problemeditor.settings.timeLimit.label',
+    defaultMessage: 'Set a time limit for this problem in seconds',
+    description: 'Descriptive text for time limit settings',
+  },
+  timeLimitInputLabel: {
+    id: 'authoring.problemeditor.settings.timeLimit.inputLabel',
+    defaultMessage: 'Seconds',
+    description: 'Time limit input label',
+  },
+  timeLimitHint: {
+    id: 'authoring.problemeditor.settings.timeLimit.hint',
+    defaultMessage: 'If set to 0 or left empty, there will be no time limit',
+    description: 'Hint text for time limit input',
+  },
+  noTimeLimitSummary: {
+    id: 'authoring.problemeditor.settings.timeLimit.noLimit',
+    defaultMessage: 'No time limit',
+    description: 'Summary text when no time limit is set',
+  },
+  timeLimitSummary: {
+    id: 'authoring.problemeditor.settings.timeLimit.summary',
+    defaultMessage: '{seconds} seconds',
+    description: 'Summary text showing the time limit in seconds',
   },
 });
 

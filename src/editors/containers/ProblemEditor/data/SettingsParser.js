@@ -84,5 +84,6 @@ export const parseSettings = (metadata, defaultSettings) => {
 
   settings = popuplateItem(settings, 'show_reset_button', 'showResetButton', metadata);
   settings = popuplateItem(settings, 'submission_wait_seconds', 'timeBetween', metadata);
+  settings = popuplateItem(settings, 'time_limit', 'time_limit', metadata);
   return settings;
 };

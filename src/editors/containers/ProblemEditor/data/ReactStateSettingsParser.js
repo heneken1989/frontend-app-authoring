@@ -12,6 +12,7 @@ const SETTING_KEYS = [
   'showanswer',
   'show_reset_button',
   'rerandomize',
+  'time_limit',
 ];
 
 class ReactStateSettingsParser {
@@ -40,6 +41,7 @@ class ReactStateSettingsParser {
     settings = popuplateItem(settings, 'showResetButton', 'show_reset_button', stateSettings, defaultSettings?.showResetButton, true);
     settings = popuplateItem(settings, 'timeBetween', 'submission_wait_seconds', stateSettings);
     settings = popuplateItem(settings, 'randomization', 'rerandomize', stateSettings, defaultSettings?.rerandomize, true);
+    settings = popuplateItem(settings, 'time_limit', 'time_limit', stateSettings);
 
     return settings;
   }

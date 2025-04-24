@@ -34,8 +34,17 @@ export function fetchWaffleFlags(courseId) {
   return async (dispatch) => {
     dispatch(updateStatus({ courseId, status: RequestStatus.IN_PROGRESS }));
 
-    const waffleFlags = await getWaffleFlags(courseId);
-    dispatch(updateStatus({ courseId, status: RequestStatus.SUCCESSFUL }));
-    dispatch(fetchWaffleFlagsSuccess({ waffleFlags }));
+    try {
+      const waffleFlags = await getWaffleFlags(courseId);
+      dispatch(updateStatus({ courseId, status: RequestStatus.SUCCESSFUL }));
+      dispatch(fetchWaffleFlagsSuccess({ waffleFlags }));
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        dispatch(updateStatus({ courseId, status: RequestStatus.SUCCESSFUL }));
+        dispatch(fetchWaffleFlagsSuccess({ waffleFlags: {} }));
+      } else {
+        dispatch(updateStatus({ courseId, status: RequestStatus.FAILED }));
+      }
+    }
   };
 }

@@ -15,6 +15,7 @@ import TypeCard from './settingsComponents/TypeCard';
 import ToleranceCard from './settingsComponents/Tolerance';
 import GroupFeedbackCard from './settingsComponents/GroupFeedback/index';
 import SwitchToAdvancedEditorCard from './settingsComponents/SwitchToAdvancedEditorCard';
+import TimeLimitCard from './settingsComponents/TimeLimitCard';
 import messages from './messages';
 import { showAdvancedSettingsCards } from './hooks';
 
@@ -85,6 +86,14 @@ const SettingsWidget = ({
           <ScoringCard
             scoring={settings.scoring}
             defaultValue={defaultSettings.maxAttempts}
+            updateSettings={updateSettings}
+          />
+        </div>
+      )}
+      {!isLibrary && (
+        <div className="my-3">
+          <TimeLimitCard
+            timeLimit={settings.time_limit}
             updateSettings={updateSettings}
           />
         </div>

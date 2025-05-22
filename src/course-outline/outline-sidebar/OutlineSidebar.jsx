@@ -31,6 +31,8 @@ const OutlineSideBar = ({ courseId }) => {
       className="outline-sidebar mt-4"
       data-testid="outline-sidebar"
     >
+
+
       {sidebarMessages.map(({ title, descriptions, link }, index) => {
         const isLastSection = index === sidebarMessages.length - 1;
 

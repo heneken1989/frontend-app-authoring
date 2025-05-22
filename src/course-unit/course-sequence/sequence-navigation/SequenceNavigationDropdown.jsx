@@ -10,6 +10,7 @@ const SequenceNavigationDropdown = ({
   unitId,
   unitIds,
   handleAddNewSequenceUnit,
+  handleAddNewJavaScriptUnit,
   handlePasteNewSequenceUnit,
   showPasteUnit,
 }) => {
@@ -42,6 +43,14 @@ const SequenceNavigationDropdown = ({
         >
           {intl.formatMessage(messages.newUnitBtnText)}
         </Button>
+        <Button
+          as={Dropdown.Item}
+          variant="outline-primary"
+          iconBefore={PlusIcon}
+          onClick={handleAddNewJavaScriptUnit}
+        >
+          {intl.formatMessage(messages.newJavaScriptUnitBtnText)}
+        </Button>
         {showPasteUnit && (
           <Button
             as={Dropdown.Item}
@@ -61,6 +70,7 @@ SequenceNavigationDropdown.propTypes = {
   unitId: PropTypes.string.isRequired,
   unitIds: PropTypes.arrayOf(PropTypes.string).isRequired,
   handleAddNewSequenceUnit: PropTypes.func.isRequired,
+  handleAddNewJavaScriptUnit: PropTypes.func.isRequired,
   handlePasteNewSequenceUnit: PropTypes.func.isRequired,
   showPasteUnit: PropTypes.bool.isRequired,
 };

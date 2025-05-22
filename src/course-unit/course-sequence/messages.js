@@ -11,7 +11,11 @@ const messages = defineMessages({
   },
   newUnitBtnText: {
     id: 'course-authoring.course-unit.new-unit-btn-text',
-    defaultMessage: 'New unit',
+    defaultMessage: 'New Unit New',
+  },
+  newJavaScriptUnitBtnText: {
+    id: 'course-authoring.course-unit.new-javascript-unit-btn-text',
+    defaultMessage: 'New JavaScript Unit',
   },
   sequenceNavLabelText: {
     id: 'course-authoring.course-unit.sequence-nav-label-text',

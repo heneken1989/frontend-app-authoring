@@ -359,10 +359,10 @@ const CourseOutline = ({ courseId }) => {
                                   >
                                     <SortableContext
                                       id={section.id}
-                                      items={section.childInfo.children}
+                                      items={section.childInfo?.children || []}
                                       strategy={verticalListSortingStrategy}
                                     >
-                                      {section.childInfo.children.map((subsection, subsectionIndex) => (
+                                      {(section.childInfo?.children || []).map((subsection, subsectionIndex) => (
                                         <SubsectionCard
                                           key={subsection.id}
                                           section={section}
@@ -372,7 +372,7 @@ const CourseOutline = ({ courseId }) => {
                                             [...sections],
                                             sectionIndex,
                                             section,
-                                            section.childInfo.children,
+                                            section.childInfo?.children || [],
                                           )}
                                           isSelfPaced={statusBarData.isSelfPaced}
                                           isCustomRelativeDatesActive={isCustomRelativeDatesActive}
@@ -388,10 +388,10 @@ const CourseOutline = ({ courseId }) => {
                                         >
                                           <SortableContext
                                             id={subsection.id}
-                                            items={subsection.childInfo.children}
+                                            items={subsection.childInfo?.children || []}
                                             strategy={verticalListSortingStrategy}
                                           >
-                                            {subsection.childInfo.children.map((unit, unitIndex) => (
+                                            {(subsection.childInfo?.children || []).map((unit, unitIndex) => (
                                               <UnitCard
                                                 key={unit.id}
                                                 unit={unit}
@@ -406,7 +406,7 @@ const CourseOutline = ({ courseId }) => {
                                                   subsectionIndex,
                                                   section,
                                                   subsection,
-                                                  subsection.childInfo.children,
+                                                  subsection.childInfo?.children || [],
                                                 )}
                                                 savingStatus={savingStatus}
                                                 onOpenPublishModal={openPublishModal}

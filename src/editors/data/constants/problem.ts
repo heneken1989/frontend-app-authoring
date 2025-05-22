@@ -26,7 +26,7 @@ export const ProblemTypes = StrictDict({
     helpLink: 'https://docs.openedx.org/en/latest/educators/concepts/exercise_tools/about_multi_select.html',
     prev: ProblemTypeKeys.TEXTINPUT,
     next: ProblemTypeKeys.MULTISELECT,
-    template: basicOlxTemplates.singleSelect,
+    template: basicOlxTemplates.singleSelect, 
 
   },
   [ProblemTypeKeys.MULTISELECT]: {
@@ -85,7 +85,9 @@ export const AdvanceProblemKeys = StrictDict({
   IMAGE: 'imageresponse',
   FORMULA: 'formularesponse',
   PROBLEMWITHHINT: 'problemwithhint',
+  QUIZ: 'quizresponse',
 } as const);
+
 export type AdvancedProblemType = typeof AdvanceProblemKeys[keyof typeof AdvanceProblemKeys];
 
 export function isAdvancedProblemType(pt: ProblemType | AdvancedProblemType): pt is AdvancedProblemType {
@@ -127,6 +129,11 @@ export const AdvanceProblems = StrictDict({
     title: 'Problem with adaptive hint',
     status: 'Not supported',
     template: advancedOlxTemplates.problemWithHint,
+  },
+  [AdvanceProblemKeys.QUIZ]: {
+    title: 'Fill-in-the-blank Quiz',
+    status: '',
+    template: advancedOlxTemplates.jsInputResponse,
   },
 } as const);
 

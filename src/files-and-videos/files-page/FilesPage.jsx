@@ -32,6 +32,7 @@ import { getFileSizeToClosestByte } from '../../utils';
 import FileThumbnail from './FileThumbnail';
 import FileInfoModalSidebar from './FileInfoModalSidebar';
 import FileValidationModal from './FileValidationModal';
+import CreateQuizButton from './components/CreateQuizButton';
 
 const FilesPage = ({
   courseId,
@@ -188,8 +189,15 @@ const FilesPage = ({
           updateFileStatus={updateAssetStatus}
           loadingStatus={loadingStatus}
         />
-        <div className="h2">
-          <FormattedMessage {...messages.heading} />
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div className="h2">
+            <FormattedMessage {...messages.heading} />
+          </div>
+          <CreateQuizButton
+            onFileCreated={handleAddFile}
+            className="ml-3"
+            courseId={courseId}
+          />
         </div>
         {loadingStatus !== RequestStatus.FAILED && (
           <>

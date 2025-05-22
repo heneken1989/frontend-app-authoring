@@ -36,6 +36,25 @@ const SequenceNavigationTabs = ({
     });
   };
 
+  const handleAddNewJavaScriptUnit = () => {
+    dispatch(updateQueryPendingStatus(true));
+    handleCreateNewCourseXBlock(
+      { 
+        parentLocator: sequenceId, 
+        category: 'vertical', 
+        displayName: 'JavaScript Unit',
+        data: {
+          // This will be replaced with your default XML template
+          data: '<problem>\n  <script type="loncapa/python">\ndef check(expect, ans):\n    return expect == ans\n</script>\n  <p>This is a JavaScript problem template.</p>\n  <customresponse cfn="check">\n    <textline/>\n  </customresponse>\n</problem>'
+        }
+      }, 
+      ({ courseKey, locator }) => {
+        navigate(`/course/${courseKey}/container/${locator}/${sequenceId}`, courseId);
+        dispatch(changeEditTitleFormOpen(true));
+      }
+    );
+  };
+
   const handlePasteNewSequenceUnit = () => {
     dispatch(updateQueryPendingStatus(true));
     handleCreateNewCourseXBlock({ parentLocator: sequenceId, stagedContent: 'clipboard' }, ({ courseKey, locator }) => {
@@ -66,6 +85,14 @@ const SequenceNavigationTabs = ({
           >
             {intl.formatMessage(messages.newUnitBtnText)}
           </Button>
+          <Button
+            className="sequence-navigation-tabs-action-btn"
+            variant="outline-primary"
+            iconBefore={PlusIcon}
+            onClick={handleAddNewJavaScriptUnit}
+          >
+            {intl.formatMessage(messages.newJavaScriptUnitBtnText)}
+          </Button>
           {showPasteUnit && (
             <Button
               className="sequence-navigation-tabs-action-btn"
@@ -83,6 +110,7 @@ const SequenceNavigationTabs = ({
           unitId={unitId}
           unitIds={unitIds}
           handleAddNewSequenceUnit={handleAddNewSequenceUnit}
+          handleAddNewJavaScriptUnit={handleAddNewJavaScriptUnit}
           handlePasteNewSequenceUnit={handlePasteNewSequenceUnit}
           showPasteUnit={showPasteUnit}
         />

@@ -6,10 +6,15 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { useIntl } from '@edx/frontend-platform/i18n';
-import { Button, useToggle } from '@openedx/paragon';
+import { Button, useToggle, Alert } from '@openedx/paragon';
 import { Add as IconAdd } from '@openedx/paragon/icons';
 import classNames from 'classnames';
 import { isEmpty } from 'lodash';
+import { getConfig } from '@edx/frontend-platform';
+import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
+import { validateAssetFiles, addAssetFile } from '../../files-and-videos/files-page/data/thunks';
+import { getQuizTemplate } from '../../files-and-videos/files-page/quiz-template';
+import { createQuiz } from '../../files-and-videos/files-page/components/CreateQuizButton';
 
 import CourseOutlineSubsectionCardExtraActionsSlot from '../../plugin-slots/CourseOutlineSubsectionCardExtraActionsSlot';
 import { setCurrentItem, setCurrentSection, setCurrentSubsection } from '../data/slice';
@@ -22,6 +27,8 @@ import TitleButton from '../card-header/TitleButton';
 import XBlockStatus from '../xblock-status/XBlockStatus';
 import { getItemStatus, getItemStatusBorder, scrollToElement } from '../utils';
 import messages from './messages';
+import CreateQuizButton from '../../files-and-videos/files-page/components/CreateQuizButton';
+
 
 const SubsectionCard = ({
   section,
@@ -51,6 +58,7 @@ const SubsectionCard = ({
   const [isFormOpen, openForm, closeForm] = useToggle(false);
   const namePrefix = 'subsection';
   const { sharedClipboardData, showPasteUnit } = useClipboard();
+  const [uploadStatus, setUploadStatus] = useState({ type: '', message: '' });
 
   const {
     id,
@@ -118,6 +126,66 @@ const SubsectionCard = ({
 
   const handleNewButtonClick = () => onNewUnitSubmit(id);
   const handlePasteButtonClick = () => onPasteClick(id, section.id);
+
+  const handleAddFile = async (files) => {
+    try {
+      // Get the course ID from the section ID
+      const courseIdMatch = section.id.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
+      if (!courseIdMatch) {
+        throw new Error('Invalid course ID format');
+      }
+      const courseId = `course-v1:${courseIdMatch[1]}`;  // Add course-v1: prefix
+
+      // Handle regular file uploads
+      if (files && files.length > 0) {
+        const result = await dispatch(addAssetFile(courseId, files[0], false));
+        return result; // Return the upload result
+      }
+
+      return false; // Return false if no files to upload
+    } catch (error) {
+      console.error('Error handling file upload:', error);
+      throw error; // Re-throw the error to be handled by the caller
+    }
+  };
+
+  const handleCreateUnit = async (title) => {
+    try {
+      const client = getAuthenticatedHttpClient();
+      
+      // Create unit under the subsection
+      const unitResponse = await client.post(
+        `${getConfig().STUDIO_BASE_URL}/xblock/`,
+        {
+          parent_locator: subsection.id, // Use subsection ID as parent
+          category: 'vertical',
+          display_name: title,
+          metadata: {
+            display_name: title,
+            format: 'Quiz'
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      if (unitResponse.status !== 200) {
+        console.error('Failed to create unit:', unitResponse.data);
+        throw new Error('Failed to create unit');
+      }
+
+      const unitId = unitResponse.data.locator;
+      console.log('Created unit with ID:', unitId);
+      return unitId;
+    } catch (error) {
+      console.error('Error creating unit:', error);
+      throw error;
+    }
+  };
 
   const titleComponent = (
     <TitleButton
@@ -242,6 +310,12 @@ const SubsectionCard = ({
                 >
                   {intl.formatMessage(messages.newUnitButton)}
                 </Button>
+                <CreateQuizButton
+                  onFileCreated={handleAddFile}
+                  className="mt-2"
+                  courseId={section.id}
+                  onCreateUnit={handleCreateUnit}
+                />
                 {enableCopyPasteUnits && showPasteUnit && sharedClipboardData && (
                   <PasteComponent
                     className="mt-4"

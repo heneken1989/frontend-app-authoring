@@ -6,6 +6,16 @@ export default defineMessages({
     defaultMessage: 'Generate Quiz',
     description: 'Title for the quiz generation modal',
   },
+  updateQuizTitle: {
+    id: 'authoring.filespage.quiz.update.title',
+    defaultMessage: 'Update Quiz',
+    description: 'Title for the quiz update modal',
+  },
+  updateButton: {
+    id: 'authoring.filespage.quiz.button.update',
+    defaultMessage: 'Update',
+    description: 'Label for the update button',
+  },
   quizParagraphLabel: {
     id: 'authoring.filespage.quiz.paragraph.label',
     defaultMessage: 'Paragraph Text',

@@ -15,6 +15,7 @@ import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { validateAssetFiles, addAssetFile } from '../../files-and-videos/files-page/data/thunks';
 import { getQuizTemplate } from '../../files-and-videos/files-page/quiz-template';
 import { createQuiz } from '../../files-and-videos/files-page/components/CreateQuizButton';
+import UpdateQuizButton from '../../files-and-videos/files-page/components/UpdateQuizButton';
 
 import CourseOutlineSubsectionCardExtraActionsSlot from '../../plugin-slots/CourseOutlineSubsectionCardExtraActionsSlot';
 import { setCurrentItem, setCurrentSection, setCurrentSubsection } from '../data/slice';
@@ -33,20 +34,21 @@ import CreateQuizButton from '../../files-and-videos/files-page/components/Creat
 const SubsectionCard = ({
   section,
   subsection,
-  isSelfPaced,
-  isCustomRelativeDatesActive,
-  children,
-  index,
-  getPossibleMoves,
-  onOpenPublishModal,
-  onEditSubmit,
-  savingStatus,
-  onOpenDeleteModal,
-  onDuplicateSubmit,
-  onNewUnitSubmit,
-  onOrderChange,
-  onOpenConfigureModal,
-  onPasteClick,
+  isSelfPaced = false,
+  isCustomRelativeDatesActive = false,
+  children = null,
+  index = 0,
+  getPossibleMoves = (...args) => ({}),
+  onOpenPublishModal = (...args) => {},
+  onEditSubmit = (...args) => {},
+  savingStatus = RequestStatus.INACTIVE,
+  onOpenDeleteModal = (...args) => {},
+  onDuplicateSubmit = (...args) => {},
+  onNewUnitSubmit = (...args) => {},
+  onOrderChange = (...args) => {},
+  onOpenConfigureModal = (...args) => {},
+  onPasteClick = (...args) => {},
+  onUpdate = (...args) => {},
 }) => {
   const currentRef = useRef(null);
   const intl = useIntl();
@@ -240,6 +242,41 @@ const SubsectionCard = ({
       && !(isHeaderVisible === false)
   );
 
+  const renderProblemActions = (problem) => {
+    if (!problem || !problem.category) return null;
+    
+    if (problem.category === 'problem') {
+      return (
+        <div className="problem-actions">
+          <UpdateQuizButton
+            problemId={problem.id}
+            courseId={section.id}
+            onUpdate={() => onUpdate(problem.id)}
+          />
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const renderChildren = () => {
+    if (!children) return null;
+
+    return React.Children.map(children, (child) => {
+      if (!React.isValidElement(child) || !child.props?.blockData) {
+        return child;
+      }
+
+      const problem = child.props.blockData;
+      return (
+        <div key={problem.id} className="problem-container">
+          {child}
+          {renderProblemActions(problem)}
+        </div>
+      );
+    });
+  };
+
   return (
     <SortableItem
       id={id}
@@ -297,7 +334,7 @@ const SubsectionCard = ({
             data-testid="subsection-card__units"
             className={classNames('subsection-card__units', { 'item-children': isDraggable })}
           >
-            {children}
+            {renderChildren()}
             {actions.childAddable && (
               <>
                 <Button
@@ -333,58 +370,45 @@ const SubsectionCard = ({
   );
 };
 
-SubsectionCard.defaultProps = {
-  children: null,
-};
-
 SubsectionCard.propTypes = {
   section: PropTypes.shape({
     id: PropTypes.string.isRequired,
     displayName: PropTypes.string.isRequired,
-    published: PropTypes.bool.isRequired,
-    hasChanges: PropTypes.bool.isRequired,
-    visibilityState: PropTypes.string.isRequired,
-    shouldScroll: PropTypes.bool,
   }).isRequired,
   subsection: PropTypes.shape({
     id: PropTypes.string.isRequired,
-    displayName: PropTypes.string.isRequired,
     category: PropTypes.string.isRequired,
-    published: PropTypes.bool.isRequired,
-    hasChanges: PropTypes.bool.isRequired,
-    visibilityState: PropTypes.string.isRequired,
-    shouldScroll: PropTypes.bool,
+    displayName: PropTypes.string.isRequired,
+    hasChanges: PropTypes.bool,
+    published: PropTypes.bool,
+    visibilityState: PropTypes.string,
+    actions: PropTypes.object,
+    isHeaderVisible: PropTypes.bool,
     enableCopyPasteUnits: PropTypes.bool,
     proctoringExamConfigurationLink: PropTypes.string,
-    actions: PropTypes.shape({
-      deletable: PropTypes.bool.isRequired,
-      draggable: PropTypes.bool.isRequired,
-      childAddable: PropTypes.bool.isRequired,
-      duplicable: PropTypes.bool.isRequired,
-    }).isRequired,
-    isHeaderVisible: PropTypes.bool,
     childInfo: PropTypes.shape({
-      children: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string.isRequired,
-        }),
-      ).isRequired,
-    }).isRequired,
+      children: PropTypes.array,
+    }),
   }).isRequired,
+  isSelfPaced: PropTypes.bool,
+  isCustomRelativeDatesActive: PropTypes.bool,
   children: PropTypes.node,
-  isSelfPaced: PropTypes.bool.isRequired,
-  isCustomRelativeDatesActive: PropTypes.bool.isRequired,
-  onOpenPublishModal: PropTypes.func.isRequired,
-  onEditSubmit: PropTypes.func.isRequired,
-  savingStatus: PropTypes.string.isRequired,
-  onOpenDeleteModal: PropTypes.func.isRequired,
-  onDuplicateSubmit: PropTypes.func.isRequired,
-  onNewUnitSubmit: PropTypes.func.isRequired,
-  index: PropTypes.number.isRequired,
-  getPossibleMoves: PropTypes.func.isRequired,
-  onOrderChange: PropTypes.func.isRequired,
-  onOpenConfigureModal: PropTypes.func.isRequired,
-  onPasteClick: PropTypes.func.isRequired,
+  index: PropTypes.number,
+  getPossibleMoves: PropTypes.func,
+  onOpenPublishModal: PropTypes.func,
+  onEditSubmit: PropTypes.func,
+  savingStatus: PropTypes.string,
+  onOpenDeleteModal: PropTypes.func,
+  onDuplicateSubmit: PropTypes.func,
+  onNewUnitSubmit: PropTypes.func,
+  onOrderChange: PropTypes.func,
+  onOpenConfigureModal: PropTypes.func,
+  onPasteClick: PropTypes.func,
+  onUpdate: PropTypes.func,
+};
+
+SubsectionCard.defaultProps = {
+  onUpdate: () => {},
 };
 
 export default SubsectionCard;

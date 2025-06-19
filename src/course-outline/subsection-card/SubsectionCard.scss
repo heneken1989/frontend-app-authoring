@@ -17,3 +17,24 @@
     margin-left: 1.7rem;
   }
 }
+
+.problem-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background-color: #fff;
+  margin-bottom: 0.5rem;
+
+  &:hover {
+    background-color: #f8f7f6;
+  }
+
+  .problem-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+}

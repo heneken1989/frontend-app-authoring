@@ -21,7 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Loop, Warning } from '@openedx/paragon/icons';
 import messages from './messages';
 import previewChangesMessages from '../course-unit/preview-changes/messages';
-import { courseLibrariesQueryKeys, useEntityLinks } from './data/apiHooks';
+import { courseLibrariesQueryKeys } from './data/apiHooks';
 import {
   SearchContextProvider, SearchKeywordsField, useSearchContext, BlockTypeLabel, Highlight, SearchSortWidget,
 } from '../search-manager';
@@ -389,5 +389,27 @@ const ReviewTabContent = ({ courseId }: Props) => {
     </SearchContextProvider>
   );
 };
+
+// Mock implementation since we disabled the library sync feature
+const useEntityLinks = () => ({
+  data: {
+    pages: [{
+      results: [],
+      pagination: {
+        count: 0,
+        numPages: 0,
+        currentPage: 1,
+        next: null,
+        previous: null,
+      },
+    }],
+  },
+  isLoading: false,
+  hasNextPage: false,
+  isFetchingNextPage: false,
+  fetchNextPage: () => {},
+  isError: false,
+  error: null,
+});
 
 export default ReviewTabContent;

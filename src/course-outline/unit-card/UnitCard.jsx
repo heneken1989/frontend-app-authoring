@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useToggle } from '@openedx/paragon';
 import { isEmpty } from 'lodash';
 import { useSearchParams } from 'react-router-dom';
+import UpdateQuizButton from '../../files-and-videos/files-page/components/UpdateQuizButton';
 
 import CourseOutlineUnitCardExtraActionsSlot from '../../plugin-slots/CourseOutlineUnitCardExtraActionsSlot';
 import { setCurrentItem, setCurrentSection, setCurrentSubsection } from '../data/slice';
@@ -33,6 +34,7 @@ const UnitCard = ({
   getTitleLink,
   onOrderChange,
   discussionsSettings,
+  onUpdate,
 }) => {
   const currentRef = useRef(null);
   const dispatch = useDispatch();
@@ -112,12 +114,28 @@ const UnitCard = ({
     />
   );
 
+  const renderUpdateButton = () => {
+    if (unit.category === 'vertical') {
+      return (
+        <UpdateQuizButton
+          problemId={unit.id}
+          courseId={section.id}
+          onUpdate={() => onUpdate(unit.id)}
+        />
+      );
+    }
+    return null;
+  };
+
   const extraActionsComponent = (
-    <CourseOutlineUnitCardExtraActionsSlot
-      unit={unit}
-      subsection={subsection}
-      section={section}
-    />
+    <>
+      <CourseOutlineUnitCardExtraActionsSlot
+        unit={unit}
+        subsection={subsection}
+        section={section}
+      />
+      {renderUpdateButton()}
+    </>
   );
 
   useEffect(() => {
@@ -202,6 +220,7 @@ const UnitCard = ({
 
 UnitCard.defaultProps = {
   discussionsSettings: {},
+  onUpdate: () => {},
 };
 
 UnitCard.propTypes = {
@@ -257,6 +276,7 @@ UnitCard.propTypes = {
     providerType: PropTypes.string,
     enableGradedUnits: PropTypes.bool,
   }),
+  onUpdate: PropTypes.func,
 };
 
 export default UnitCard;

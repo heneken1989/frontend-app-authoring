@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Button } from '@openedx/paragon';
 import { Loop } from '@openedx/paragon/icons';
 import AlertMessage from '../generic/alert-message';
-import { useEntityLinksSummaryByDownstreamContext } from './data/apiHooks';
+// import { useEntityLinksSummaryByDownstreamContext } from './data/apiHooks';
 import messages from './messages';
 
 interface OutOfSyncAlertProps {
@@ -33,34 +33,21 @@ export const OutOfSyncAlert: React.FC<OutOfSyncAlertProps> = ({
   onReview,
 }) => {
   const intl = useIntl();
-  const { data, isLoading } = useEntityLinksSummaryByDownstreamContext(courseId);
-  const outOfSyncCount = data?.reduce((count, lib) => count + lib.readyToSyncCount, 0);
-  const alertKey = `outOfSyncCountAlert-${courseId}`;
-
-  useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-    if (outOfSyncCount === 0) {
-      localStorage.removeItem(alertKey);
-      setShowAlert(false);
-      return;
-    }
-    const dismissedAlert = localStorage.getItem(alertKey);
-    setShowAlert(parseInt(dismissedAlert || '', 10) !== outOfSyncCount);
-  }, [outOfSyncCount, isLoading, data]);
+  // Since we disabled the library sync feature, we'll always return false for the alert
+  React.useEffect(() => {
+    setShowAlert(false);
+  }, [setShowAlert]);
 
   const dismissAlert = () => {
     setShowAlert(false);
-    localStorage.setItem(alertKey, String(outOfSyncCount));
     onDismiss?.();
   };
 
   return (
     <AlertMessage
-      title={intl.formatMessage(messages.outOfSyncCountAlertTitle, { outOfSyncCount })}
+      title={intl.formatMessage(messages.outOfSyncCountAlertTitle, { outOfSyncCount: 0 })}
       dismissible
-      show={showAlert}
+      show={false}
       icon={Loop}
       variant="info"
       onClose={dismissAlert}

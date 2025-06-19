@@ -26,7 +26,7 @@ import getPageHeadTitle from '../generic/utils';
 import { useModel } from '../generic/model-store';
 import messages from './messages';
 import SubHeader from '../generic/sub-header/SubHeader';
-import { useEntityLinksSummaryByDownstreamContext } from './data/apiHooks';
+// import { useEntityLinksSummaryByDownstreamContext } from './data/apiHooks';
 import type { PublishableEntityLinkSummary } from './data/api';
 import Loading from '../generic/Loading';
 import { useStudioHome } from '../studio-home/hooks';
@@ -100,6 +100,18 @@ const LibraryCard = ({ linkSummary }: LibraryCardProps) => {
   );
 };
 
+// Mock implementation since we disabled the library sync feature
+const useEntityLinksSummaryByDownstreamContext = () => ({
+  data: [{
+    readyToSyncCount: 0,
+    upstreamContextKey: '',
+    upstreamContextTitle: '',
+    upstreamContextType: '',
+    totalCount: 0,
+  }],
+  isLoading: false,
+});
+
 export const CourseLibraries: React.FC<Props> = ({ courseId }) => {
   const intl = useIntl();
   const courseDetails = useModel('courseDetails', courseId);
@@ -108,7 +120,7 @@ export const CourseLibraries: React.FC<Props> = ({ courseId }) => {
     () => searchParams.get('tab') as CourseLibraryTabs,
   );
   const [showReviewAlert, setShowReviewAlert] = useState(false);
-  const { data: libraries, isLoading } = useEntityLinksSummaryByDownstreamContext(courseId);
+  const { data: libraries, isLoading } = useEntityLinksSummaryByDownstreamContext();
   const outOfSyncCount = useMemo(() => sumBy(libraries, (lib) => lib.readyToSyncCount), [libraries]);
   const {
     isLoadingPage: isLoadingStudioHome,

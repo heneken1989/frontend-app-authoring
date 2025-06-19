@@ -2,7 +2,7 @@ import { getConfig } from '@edx/frontend-platform';
 import { FormattedMessage } from '@edx/frontend-platform/i18n';
 import { Collapsible, Hyperlink, Stack } from '@openedx/paragon';
 import { useMemo } from 'react';
-import { useUnpaginatedEntityLinks } from '../../course-libraries/data/apiHooks';
+// import { useUnpaginatedEntityLinks } from '../../course-libraries/data/apiHooks';
 
 import AlertError from '../../generic/alert-error';
 import Loading from '../../generic/Loading';
@@ -28,13 +28,26 @@ const getContainerUrl = (usageKey: string) => (
   `${getConfig().STUDIO_BASE_URL}/container/${usageKey}`
 );
 
+// Mock implementation since we disabled the library sync feature
+const useUnpaginatedEntityLinks = () => ({
+  data: [{
+    downstreamUsageKey: '',
+    downstreamContextKey: '',
+    downstreamContextTitle: '',
+    downstreamContextType: '',
+  }],
+  isLoading: false,
+  isError: false,
+  error: null,
+});
+
 export const ComponentUsage = ({ usageKey }: ComponentUsageProps) => {
   const {
     data: dataDownstreamLinks,
     isError: isErrorDownstreamLinks,
     error: errorDownstreamLinks,
     isLoading: isLoadingDownstreamLinks,
-  } = useUnpaginatedEntityLinks({ upstreamUsageKey: usageKey });
+  } = useUnpaginatedEntityLinks();
 
   const downstreamKeys = useMemo(
     () => dataDownstreamLinks?.map(link => link.downstreamUsageKey) || [],

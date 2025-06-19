@@ -4,11 +4,12 @@ import { injectIntl, intlShape } from '@edx/frontend-platform/i18n';
 import { Button, ModalDialog, Form, ActionRow } from '@openedx/paragon';
 import { Quiz } from '@openedx/paragon/icons';
 import quizMessages from '../quiz-messages';
-import { getQuizTemplate } from './templates/templateUtils';
+import { getQuizTemplate, getDragDropQuizTemplate } from './templates/templateUtils';
 import { getConfig } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { useDispatch } from 'react-redux';
 import { addAssetFile } from '../data/thunks';
+import { highlightFillStyleTemplate } from './templates/highlightFillStyleTemplate';
 
 // QuizModal Component
 const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl }) => {
@@ -51,7 +52,8 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl }) =
               Available types:
               <ul>
                 <li>10 - Fill in the Blank Quiz</li>
-                {/* Add more problem types here */}
+                <li>20 - Drag and Drop Quiz</li>
+                <li>45 - Highlight Word Quiz</li>
               </ul>
             </Form.Text>
           </Form.Group>
@@ -70,45 +72,162 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl }) =
             />
           </Form.Group>
           <Form.Group>
-            <Form.Label>
-              {intl.formatMessage(quizMessages.quizParagraphLabel)}
-            </Form.Label>
+            <Form.Label>Time Limit (minutes)</Form.Label>
             <Form.Control
-              as="textarea"
-              rows={5}
-              value={quizData.paragraphText}
+              type="number"
+              value={quizData.timeLimit}
               onChange={(e) => {
                 setQuizData(prev => ({
                   ...prev,
-                  paragraphText: e.target.value
+                  timeLimit: parseInt(e.target.value, 10)
                 }));
               }}
-              placeholder={intl.formatMessage(quizMessages.quizParagraphPlaceholder)}
+              placeholder="Enter time limit in minutes"
+              min="0"
             />
             <Form.Text>
-              {intl.formatMessage(quizMessages.quizParagraphHelp, { blank: '{{blank}}' })}
+              Set the time limit for completing this quiz. Default is 3 minutes.
             </Form.Text>
           </Form.Group>
           <Form.Group>
-            <Form.Label>
-              {intl.formatMessage(quizMessages.quizAnswersLabel)}
-            </Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              value={quizData.correctAnswers}
+            <Form.Label>Publish</Form.Label>
+            <Form.Check
+              type="checkbox"
+              label="Make this problem visible to learners"
+              checked={quizData.published}
               onChange={(e) => {
                 setQuizData(prev => ({
                   ...prev,
-                  correctAnswers: e.target.value
+                  published: e.target.checked
                 }));
               }}
-              placeholder={'{\n  "blank": "answer"\n}'}
             />
             <Form.Text>
-              {intl.formatMessage(quizMessages.quizAnswersHelp)}
+              If checked, learners will be able to see and attempt this problem. If unchecked, the problem will be hidden from learners.
             </Form.Text>
           </Form.Group>
+          {quizData.problemTypeId === 20 ? (
+            <>
+              <Form.Group>
+                <Form.Label>Paragraph Text with Blanks</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={5}
+                  value={quizData.paragraphText}
+                  onChange={(e) => {
+                    setQuizData(prev => ({
+                      ...prev,
+                      paragraphText: e.target.value
+                    }));
+                  }}
+                  placeholder="Enter paragraph text with blanks marked as （ー）. For example: ①あしたは （ー）晴れるでしょう。"
+                />
+                <Form.Text>
+                  Mark blanks in your text using （ー）. Each blank will be replaced with a draggable word.
+                </Form.Text>
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Word Bank (Correct Answers)</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={quizData.wordBank}
+                  onChange={(e) => {
+                    setQuizData(prev => ({
+                      ...prev,
+                      wordBank: e.target.value
+                    }));
+                  }}
+                  placeholder="Enter words in the correct order, separated by commas. For example: たぶん,もし,きっと,たしか"
+                />
+                <Form.Text>
+                  Enter the words in the order they should appear in the blanks. The first word will be the correct answer for the first blank, second word for the second blank, and so on. The words will appear in random order in the quiz.
+                </Form.Text>
+              </Form.Group>
+            </>
+          ) : quizData.problemTypeId === 45 ? (
+            <>
+              <Form.Group>
+                <Form.Label>Paragraph Text</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={5}
+                  value={quizData.paragraphText}
+                  onChange={(e) => {
+                    setQuizData(prev => ({
+                      ...prev,
+                      paragraphText: e.target.value
+                    }));
+                  }}
+                  placeholder="Enter the paragraph. For example: Now this you're letting your imagination stray, think about that scenario. A mysterious fungus..."
+                />
+                <Form.Text>
+                  Enter the paragraph. Users will click words to highlight them as answers.
+                </Form.Text>
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Correct Words</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={quizData.wordBank}
+                  onChange={(e) => {
+                    setQuizData(prev => ({
+                      ...prev,
+                      wordBank: e.target.value
+                    }));
+                  }}
+                  placeholder="Enter correct words separated by commas. For example: imagination,scenario,mysterious,settles,starts,becomes"
+                />
+                <Form.Text>
+                  Enter the correct words (case-insensitive, punctuation ignored), separated by commas.
+                </Form.Text>
+              </Form.Group>
+            </>
+          ) : (
+            <>
+              <Form.Group>
+                <Form.Label>
+                  {intl.formatMessage(quizMessages.quizParagraphLabel)}
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={5}
+                  value={quizData.paragraphText}
+                  onChange={(e) => {
+                    setQuizData(prev => ({
+                      ...prev,
+                      paragraphText: e.target.value
+                    }));
+                  }}
+                  placeholder={intl.formatMessage(quizMessages.quizParagraphPlaceholder)}
+                />
+                <Form.Text>
+                  {intl.formatMessage(quizMessages.quizParagraphHelp, { blank: '{{blank}}' })}
+                </Form.Text>
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>
+                  {intl.formatMessage(quizMessages.quizAnswersLabel)}
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={quizData.correctAnswers}
+                  onChange={(e) => {
+                    setQuizData(prev => ({
+                      ...prev,
+                      correctAnswers: e.target.value
+                    }));
+                  }}
+                  placeholder={'{\n  "blank": "answer"\n}'}
+                />
+                <Form.Text>
+                  {intl.formatMessage(quizMessages.quizAnswersHelp)}
+                </Form.Text>
+              </Form.Group>
+            </>
+          )}
         </Form>
       </ModalDialog.Body>
       <ModalDialog.Footer>
@@ -141,6 +260,8 @@ QuizModal.propTypes = {
     unitTitle: PropTypes.string.isRequired,
     paragraphText: PropTypes.string.isRequired,
     correctAnswers: PropTypes.string.isRequired,
+    timeLimit: PropTypes.number.isRequired,
+    published: PropTypes.bool.isRequired,
   }).isRequired,
   setQuizData: PropTypes.func.isRequired,
   intl: intlShape.isRequired,
@@ -168,7 +289,16 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
       case 10: // Fill in the Blank
         htmlContent = getQuizTemplate(quizData.paragraphText);
         break;
-      // Add more cases for other problem types
+      case 20: // Drag and Drop
+        const words = quizData.wordBank.split(',').map(word => word.trim());
+        htmlContent = getDragDropQuizTemplate(quizData.paragraphText, words);
+        break;
+      case 45: // Highlight Word Quiz
+        const correctWords = quizData.wordBank.split(',').map(word => word.trim());
+        htmlContent = highlightFillStyleTemplate
+          .replace('{{PARAGRAPH}}', quizData.paragraphText.replace(/'/g, "\\'").replace(/\n/g, ' '))
+          .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords));
+        break;
       default:
         console.error('Invalid problemTypeId:', problemTypeId);
         throw new Error(`Unsupported problem type ID: ${problemTypeId}`);
@@ -203,7 +333,7 @@ def check_fun(e, ans):
     except Exception as err:
         return {'input_list': [{'ok': False, 'msg': f"Error: {str(err)}", 'grade_decimal': 0}]}
   </script>
-  <p>${quizData.unitTitle}</p>
+  <!-- paragraph_text: ${quizData.paragraphText} -->
   <customresponse cfn="check_fun" rerandomize="never" show_answer_after_attempts="1" max_attempts="unlimited">
     <jsinput 
       gradefn="getGrade" 
@@ -230,15 +360,6 @@ def check_fun(e, ans):
 
     console.log('Generated problem content:', problemContent);
 
-    // Create problem file
-    const problemBlob = new Blob([problemContent], { type: 'text/xml' });
-    const problemFile = new File([problemBlob], htmlFileName.replace('.html', '.xml'), { type: 'text/xml' });
-    console.log('Created problem file object:', {
-      name: problemFile.name,
-      size: problemFile.size,
-      type: problemFile.type
-    });
-
     // Create metadata
     const metadata = {
       display_name: quizData.unitTitle,
@@ -250,25 +371,24 @@ def check_fun(e, ans):
     };
     console.log('Created metadata:', metadata);
 
-    // Upload files using the provided onFileCreated function
+    // Upload HTML file using the provided onFileCreated function
     if (onFileCreated) {
       try {
-        console.log('Starting file upload with files:', {
-          htmlFile: { name: htmlFile.name, size: htmlFile.size, type: htmlFile.type },
-          problemFile: { name: problemFile.name, size: problemFile.size, type: problemFile.type }
+        console.log('Starting file upload with HTML file:', {
+          htmlFile: { name: htmlFile.name, size: htmlFile.size, type: htmlFile.type }
         });
         
-        const uploadResult = await onFileCreated([htmlFile, problemFile]);
+        const uploadResult = await onFileCreated([htmlFile]);
         console.log('File upload result:', uploadResult);
         
         if (!uploadResult) {
           console.error('Upload result was false or undefined');
-          throw new Error('Failed to upload quiz files');
+          throw new Error('Failed to upload quiz file');
         }
-        console.log('Files uploaded successfully');
+        console.log('File uploaded successfully');
       } catch (error) {
-        console.error('Error uploading files:', error);
-        throw new Error(`Failed to upload quiz files: ${error.message}`);
+        console.error('Error uploading file:', error);
+        throw new Error(`Failed to upload quiz file: ${error.message}`);
       }
     } else {
       console.warn('No onFileCreated function provided');
@@ -281,7 +401,7 @@ def check_fun(e, ans):
           title: quizData.unitTitle,
           type: 'problem',
           metadata,
-          files: [htmlFileName, htmlFileName.replace('.html', '.xml')]
+          files: [htmlFileName]
         });
 
         // First create the unit using the parent component's function
@@ -295,7 +415,8 @@ def check_fun(e, ans):
           `${getConfig().STUDIO_BASE_URL}/xblock/`,
           {
             metadata: {
-              display_name: quizData.unitTitle
+              display_name: quizData.unitTitle,
+              visible_to_staff_only: !quizData.published
             },
             data: problemContent,
             category: 'problem',
@@ -322,6 +443,8 @@ def check_fun(e, ans):
           {
             metadata: {
               display_name: quizData.unitTitle,
+              visible_to_staff_only: !quizData.published,
+              time_limit: quizData.timeLimit
             },
             data: problemContent
           },
@@ -337,6 +460,45 @@ def check_fun(e, ans):
           console.warn('Failed to update problem metadata:', updateResponse.data);
         } else {
           console.log('Successfully updated problem metadata');
+        }
+
+        // Publish the problem if requested
+        if (quizData.published) {
+          try {
+            // Extract course ID from the problem ID
+            let formattedCourseId;
+            if (problemId.startsWith('block-v1:')) {
+              const courseIdMatch = problemId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
+              if (!courseIdMatch) {
+                throw new Error('Invalid problem ID format');
+              }
+              formattedCourseId = `course-v1:${courseIdMatch[1]}`;
+            } else if (problemId.startsWith('course-v1:')) {
+              formattedCourseId = problemId;
+            } else {
+              throw new Error('Invalid problem ID format');
+            }
+
+            // Publish the course to make the problem visible
+            const publishResponse = await client.post(
+              `${getConfig().STUDIO_BASE_URL}/course/${formattedCourseId}/publish`,
+              {},
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                }
+              }
+            );
+
+            if (publishResponse.status !== 200) {
+              console.warn('Failed to publish course:', publishResponse.data);
+            } else {
+              console.log('Successfully published course');
+            }
+          } catch (error) {
+            console.error('Error publishing course:', error);
+          }
         }
 
         return { blockId: problemId };
@@ -362,7 +524,10 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
     problemTypeId: 10, // Default to Fill in the Blank
     unitTitle: '',
     paragraphText: '',
-    correctAnswers: '{}'
+    correctAnswers: '{}',
+    wordBank: '', // Add wordBank field for drag and drop quiz
+    timeLimit: 3, // Default time limit of 3 minutes
+    published: false // Default to unpublished
   });
 
   const dispatch = useDispatch();
@@ -373,7 +538,15 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
 
   const handleCloseModal = () => {
     setShowQuizModal(false);
-    setQuizData({ problemTypeId: 10, unitTitle: '', paragraphText: '', correctAnswers: '{}' });
+    setQuizData({ 
+      problemTypeId: 10, 
+      unitTitle: '', 
+      paragraphText: '', 
+      correctAnswers: '{}',
+      wordBank: '', // Reset wordBank
+      timeLimit: 3,
+      published: false 
+    });
   };
 
   const handleQuizSubmit = async () => {
@@ -393,7 +566,10 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
           unitTitle: quizData.unitTitle,
           paragraphText: quizData.paragraphText,
           problemTypeId: quizData.problemTypeId,
-          correctAnswers: quizData.correctAnswers
+          correctAnswers: quizData.correctAnswers,
+          timeLimit: quizData.timeLimit,
+          published: quizData.published,
+          wordBank: quizData.wordBank
         },
         onFileCreated: async (files) => {
           try {

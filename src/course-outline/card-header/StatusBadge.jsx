@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { Icon } from '@openedx/paragon';
 
 const StatusBadge = ({
-  text,
-  icon,
-  iconClassName,
+  text = '',
+  icon = '',
+  iconClassName = '',
 }) => {
   if (text) {
     return (
@@ -25,12 +25,6 @@ const StatusBadge = ({
     );
   }
   return null;
-};
-
-StatusBadge.defaultProps = {
-  text: '',
-  icon: '',
-  iconClassName: '',
 };
 
 StatusBadge.propTypes = {

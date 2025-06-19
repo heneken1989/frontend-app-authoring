@@ -1,3 +1,4 @@
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import {
@@ -20,6 +21,7 @@ const TitleButton = ({
 }) => {
   const intl = useIntl();
   const titleTooltipMessage = intl.formatMessage(messages.expandTooltip);
+  const buttonRef = useRef(null);
 
   return (
     <OverlayTrigger
@@ -31,8 +33,10 @@ const TitleButton = ({
           {titleTooltipMessage}
         </Tooltip>
       )}
+      target={buttonRef}
     >
       <Button
+        ref={buttonRef}
         iconBefore={isExpanded ? ArrowDownIcon : ArrowRightIcon}
         variant="tertiary"
         data-testid={`${namePrefix}-card-header__expanded-btn`}

@@ -1,3 +1,5 @@
+import { dragDropQuizTemplate } from './dragDropQuizTemplate';
+
 const fillBlankQuizTemplate = `<!DOCTYPE html>
 <html>
 <head>
@@ -391,5 +393,47 @@ export const getQuizTemplate = (paragraphText) => {
   // Replace placeholders in the template
   return fillBlankQuizTemplate
     .replace('{{PARAGRAPH_TEXT}}', processedParagraph)
+    .replace('{{CORRECT_ANSWERS}}', JSON.stringify(blanks));
+};
+
+export const processDragDropQuiz = (paragraphText, words) => {
+  const blanks = {};
+  let currentId = 1;
+  
+  // Process the paragraph to replace blanks marked with （ー）
+  const processedParagraph = paragraphText.replace(/（ー）/g, (match) => {
+    const blankId = `blank${currentId}`;
+    const correctAnswer = words[currentId - 1]; // Get the correct word from the array
+    blanks[blankId] = correctAnswer;
+    currentId += 1;
+    return `<div id="${blankId}" class="blank" draggable="false"></div>`;
+  });
+
+  // Create a copy of words array and shuffle it
+  const shuffledWords = [...words];
+  for (let i = shuffledWords.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
+  }
+
+  // Create word bank HTML with the shuffled words
+  const wordBankHTML = shuffledWords.map(word => 
+    `<div class="draggable-word" draggable="true">${word}</div>`
+  ).join('');
+
+  return {
+    processedParagraph,
+    wordBankHTML,
+    blanks
+  };
+};
+
+export const getDragDropQuizTemplate = (paragraphText, words) => {
+  const { processedParagraph, wordBankHTML, blanks } = processDragDropQuiz(paragraphText, words);
+  
+  // Replace placeholders in the template
+  return dragDropQuizTemplate
+    .replace('{{PARAGRAPH_TEXT}}', processedParagraph)
+    .replace('{{WORD_BANK}}', wordBankHTML)
     .replace('{{CORRECT_ANSWERS}}', JSON.stringify(blanks));
 }; 

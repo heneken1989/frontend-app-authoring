@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from '@edx/frontend-platform/i18n';
 import { Button, OverlayTrigger, Tooltip } from '@openedx/paragon';
@@ -24,6 +24,10 @@ const HeaderNavigations = ({
     handleNewSection, handleReIndex, handleExpandAll, lmsLink,
   } = headerNavigationsActions;
 
+  const newSectionRef = useRef(null);
+  const reindexRef = useRef(null);
+  const viewLiveRef = useRef(null);
+
   return (
     <>
       {courseActions.childAddable && (
@@ -34,8 +38,10 @@ const HeaderNavigations = ({
               {intl.formatMessage(messages.newSectionButtonTooltip)}
             </Tooltip>
           )}
+          target={newSectionRef}
         >
           <Button
+            ref={newSectionRef}
             iconBefore={IconAdd}
             onClick={handleNewSection}
             disabled={errors?.outlineIndexApi}
@@ -52,8 +58,10 @@ const HeaderNavigations = ({
               {intl.formatMessage(messages.reindexButtonTooltip)}
             </Tooltip>
           ) : <React.Fragment key="reindex close" />}
+          target={reindexRef}
         >
           <Button
+            ref={reindexRef}
             onClick={handleReIndex}
             data-testid="course-reindex"
             variant="outline-primary"
@@ -81,8 +89,10 @@ const HeaderNavigations = ({
             {intl.formatMessage(messages.viewLiveButtonTooltip)}
           </Tooltip>
         )}
+        target={viewLiveRef}
       >
         <Button
+          ref={viewLiveRef}
           href={lmsLink}
           target="_blank"
           variant="outline-primary"

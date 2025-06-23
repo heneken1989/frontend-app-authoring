@@ -12,7 +12,7 @@ import { addAssetFile } from '../data/thunks';
 import { highlightFillStyleTemplate } from './templates/highlightFillStyleTemplate';
 
 // QuizModal Component
-const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl }) => {
+const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, courseId, dispatch }) => {
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
@@ -36,25 +36,34 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl }) =
       <ModalDialog.Body>
         <Form onSubmit={handleSubmit}>
           <Form.Group>
-            <Form.Label>Problem Type ID</Form.Label>
+            <Form.Label>Problem Type</Form.Label>
             <Form.Control
-              type="number"
+              as="select"
               value={quizData.problemTypeId}
               onChange={(e) => {
-                setQuizData(prev => ({
-                  ...prev,
-                  problemTypeId: parseInt(e.target.value, 10)
-                }));
+                const newTypeId = parseInt(e.target.value, 10);
+                setQuizData(prev => {
+                  // Get the appropriate instructions for this problem type
+                  const instructions = newTypeId === 41 
+                    ? '正(ただ)しくない言葉(ことば)をえらんでください' 
+                    : '聞いて間違った単語を選んでください。間違った単語を選ぶには、その単語をクリックしてください';
+                  
+                  return {
+                    ...prev,
+                    problemTypeId: newTypeId,
+                    // Update instructions when problem type changes
+                    instructions: instructions
+                  };
+                });
               }}
-              placeholder="Enter problem type ID (e.g., 10 for Fill in the Blank)"
-            />
+            >
+              <option value="10">10 - Fill in the Blank Quiz</option>
+              <option value="20">20 - Drag and Drop Quiz</option>
+              <option value="41">41 - Nghe và highlight Từ Sai N5</option>
+              <option value="45">45 - Highlight Word Quiz</option>
+            </Form.Control>
             <Form.Text>
-              Available types:
-              <ul>
-                <li>10 - Fill in the Blank Quiz</li>
-                <li>20 - Drag and Drop Quiz</li>
-                <li>45 - Highlight Word Quiz</li>
-              </ul>
+              Select the type of quiz you want to create.
             </Form.Text>
           </Form.Group>
           <Form.Group>
@@ -145,7 +154,7 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl }) =
                 </Form.Text>
               </Form.Group>
             </>
-          ) : quizData.problemTypeId === 45 ? (
+          ) : quizData.problemTypeId === 41 || quizData.problemTypeId === 45 ? (
             <>
               <Form.Group>
                 <Form.Label>Paragraph Text</Form.Label>
@@ -166,23 +175,165 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl }) =
                 </Form.Text>
               </Form.Group>
               <Form.Group>
-                <Form.Label>Correct Words</Form.Label>
+                <Form.Label>Fixed Words Explanation</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={3}
-                  value={quizData.wordBank}
+                  value={quizData.fixedWordsExplanation}
                   onChange={(e) => {
                     setQuizData(prev => ({
                       ...prev,
-                      wordBank: e.target.value
+                      fixedWordsExplanation: e.target.value
                     }));
                   }}
-                  placeholder="Enter correct words separated by commas. For example: imagination,scenario,mysterious,settles,starts,becomes"
+                  placeholder="Enter pairs of wrong=correct words. For example: learners=learner,checked=check,able=ableable"
                 />
                 <Form.Text>
-                  Enter the correct words (case-insensitive, punctuation ignored), separated by commas.
+                  <strong>Important:</strong> This field is required for the quiz to work correctly. 
+                  Provide pairs of wrong=correct words separated by commas. For each highlighted word, the correct version will be shown in parentheses.
+                  <br />
+                  <strong>Simple format:</strong> wrong=correct (e.g., "learners=learner,checked=check")
+                  <br />
+                  <strong>Indexed format:</strong> For repeated words, use word:index=correct (e.g., "the:0=a,the:1=an" for different occurrences of "the")
+                  <br />
+                  <strong>Note:</strong> Both standard (=) and full-width (＝) equals signs are supported.
                 </Form.Text>
               </Form.Group>
+              <Form.Group>
+                <Form.Label>Instructions</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={2}
+                  value={quizData.instructions}
+                  onChange={(e) => {
+                    setQuizData(prev => ({
+                      ...prev,
+                      instructions: e.target.value
+                    }));
+                  }}
+                  placeholder="Enter instructions for the quiz"
+                />
+                <Form.Text>
+                  Instructions that will appear above the quiz paragraph. 
+                  {quizData.problemTypeId === 41 
+                    ? 'Default is in Japanese: "正(ただ)しくない言葉(ことば)をえらんでください" (Please select the incorrect words).'
+                    : 'Default is in Japanese: "聞いて間違った単語を選んでください。間違った単語を選ぶには、その単語をクリックしてください" (Listen and select the incorrect words. To select an incorrect word, click on it).'}
+                </Form.Text>
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Audio File</Form.Label>
+                <div className="d-flex">
+                  <Form.Control
+                    type="text"
+                    value={quizData.audioFile}
+                    onChange={(e) => {
+                      setQuizData(prev => ({
+                        ...prev,
+                        audioFile: e.target.value
+                      }));
+                    }}
+                    placeholder="Enter the URL of the audio file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/audio.mp3)"
+                    className="mr-2"
+                  />
+                  <input
+                    type="file"
+                    id="audioFileUpload"
+                    accept="audio/*"
+                    style={{ display: 'none' }}
+                    onChange={async (e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        try {
+                          // Use the same file upload function that's used for the quiz HTML
+                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
+                          if (!courseIdMatch) {
+                            throw new Error('Invalid course ID format');
+                          }
+                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
+                          
+                          // Upload the file
+                          await dispatch(addAssetFile(formattedCourseId, file, false));
+                          
+                          // Generate proper asset URL in Open edX format
+                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
+                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${file.name}`;
+                          
+                          // Set the URL in the form
+                          setQuizData(prev => ({
+                            ...prev,
+                            audioFile: assetUrl
+                          }));
+                          
+                          // Show success message
+                          alert(`Audio file ${file.name} uploaded successfully!`);
+                        } catch (error) {
+                          console.error('Error uploading audio file:', error);
+                          alert(`Error uploading audio file: ${error.message}`);
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="outline-primary"
+                    onClick={() => document.getElementById('audioFileUpload').click()}
+                  >
+                    Upload
+                  </Button>
+                </div>
+                <Form.Text>
+                  URL to the audio file. You can enter the URL manually or upload a new audio file.
+                  <br />
+                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.mp3</code>
+                </Form.Text>
+                {quizData.audioFile && (
+                  <div className="mt-3">
+                    <audio controls style={{ width: '100%', maxWidth: '300px' }}>
+                      <source src={quizData.audioFile} type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                )}
+              </Form.Group>
+              <Form.Row>
+                <Form.Group className="col-md-6">
+                  <Form.Label>Start Time (seconds)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={quizData.startTime}
+                    onChange={(e) => {
+                      setQuizData(prev => ({
+                        ...prev,
+                        startTime: parseFloat(e.target.value) || 0
+                      }));
+                    }}
+                    placeholder="Enter start time in seconds"
+                    min="0"
+                    step="0.1"
+                  />
+                  <Form.Text>
+                    Time in seconds where the script starts in the audio.
+                  </Form.Text>
+                </Form.Group>
+                <Form.Group className="col-md-6">
+                  <Form.Label>End Time (seconds)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={quizData.endTime}
+                    onChange={(e) => {
+                      setQuizData(prev => ({
+                        ...prev,
+                        endTime: parseFloat(e.target.value) || 0
+                      }));
+                    }}
+                    placeholder="Enter end time in seconds"
+                    min="0"
+                    step="0.1"
+                  />
+                  <Form.Text>
+                    Time in seconds where the script ends in the audio. Set to 0 to play until the end.
+                  </Form.Text>
+                </Form.Group>
+              </Form.Row>
             </>
           ) : (
             <>
@@ -265,6 +416,8 @@ QuizModal.propTypes = {
   }).isRequired,
   setQuizData: PropTypes.func.isRequired,
   intl: intlShape.isRequired,
+  courseId: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired,
 };
 
 // Export the createQuiz function
@@ -293,11 +446,45 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
         const words = quizData.wordBank.split(',').map(word => word.trim());
         htmlContent = getDragDropQuizTemplate(quizData.paragraphText, words);
         break;
+      case 41: // Highlight Word Quiz (Japanese)
       case 45: // Highlight Word Quiz
-        const correctWords = quizData.wordBank.split(',').map(word => word.trim());
+        const correctWords = quizData.fixedWordsExplanation.split(',')
+          .map(pair => {
+            // Extract the wrong word from each pair
+            if (pair.includes('=')) {
+              // For both simple and indexed formats
+              if (pair.includes(':')) {
+                // Indexed format: "word:index=fixed"
+                return pair.split('=')[0].split(':')[0].trim();
+              } else {
+                // Simple format: "word=fixed"
+                return pair.split('=')[0].trim();
+              }
+            }
+            return '';
+          })
+          .filter(word => word !== ''); // Remove empty strings
+        
+        console.log('Extracted correctWords:', correctWords);
+        console.log('Original fixedWordsExplanation:', quizData.fixedWordsExplanation);
+        
+        // Set default instructions based on problem type
+        let defaultInstructions = quizData.problemTypeId === 41 
+          ? '正(ただ)しくない言葉(ことば)をえらんでください' 
+          : '聞いて間違った単語を選んでください。間違った単語を選ぶには、その単語をクリックしてください';
+        
+        // Make sure fixedWordsExplanation is not empty
+        const fixedWordsExplanation = quizData.fixedWordsExplanation || 'These are the words that should be selected.';
+        console.log('Final fixedWordsExplanation:', fixedWordsExplanation);
+        
         htmlContent = highlightFillStyleTemplate
           .replace('{{PARAGRAPH}}', quizData.paragraphText.replace(/'/g, "\\'").replace(/\n/g, ' '))
-          .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords));
+          .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords))
+          .replace('{{FIXED_WORDS_EXPLANATION}}', fixedWordsExplanation)
+          .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions)
+          .replace('{{AUDIO_FILE}}', quizData.audioFile || '')
+          .replace('{{START_TIME}}', quizData.startTime || 0)
+          .replace('{{END_TIME}}', quizData.endTime || 0);
         break;
       default:
         console.error('Invalid problemTypeId:', problemTypeId);
@@ -527,7 +714,12 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
     correctAnswers: '{}',
     wordBank: '', // Add wordBank field for drag and drop quiz
     timeLimit: 3, // Default time limit of 3 minutes
-    published: false // Default to unpublished
+    published: true, // Default to published
+    fixedWordsExplanation: '', // Default explanation
+    instructions: '聞いて間違った単語を選んでください。間違った単語を選ぶには、その単語をクリックしてください', // Default instructions
+    audioFile: '', // Audio file URL
+    startTime: 0, // Start time in seconds
+    endTime: 0 // End time in seconds
   });
 
   const dispatch = useDispatch();
@@ -545,12 +737,26 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
       correctAnswers: '{}',
       wordBank: '', // Reset wordBank
       timeLimit: 3,
-      published: false 
+      published: true,
+      fixedWordsExplanation: '', // Reset explanation
+      instructions: '聞いて間違った単語を選んでください。間違った単語を選ぶには、その単語をクリックしてください', // Reset instructions with hardcoded value
+      audioFile: '', // Reset audio file URL
+      startTime: 0, // Reset start time
+      endTime: 0 // Reset end time
     });
   };
 
   const handleQuizSubmit = async () => {
     try {
+      // Validate required fields based on problem type
+      if (quizData.problemTypeId === 41 || quizData.problemTypeId === 45) {
+        // For highlight quizzes, ensure fixedWordsExplanation is not empty
+        if (!quizData.fixedWordsExplanation || quizData.fixedWordsExplanation.trim() === '') {
+          alert('Fixed Words Explanation is required for highlight quizzes. Please enter at least one word pair.');
+          return;
+        }
+      }
+      
       // Extract course ID from section ID
       const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
       if (!courseIdMatch) {
@@ -569,7 +775,12 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
           correctAnswers: quizData.correctAnswers,
           timeLimit: quizData.timeLimit,
           published: quizData.published,
-          wordBank: quizData.wordBank
+          wordBank: quizData.wordBank,
+          fixedWordsExplanation: quizData.fixedWordsExplanation,
+          instructions: quizData.instructions,
+          audioFile: quizData.audioFile,
+          startTime: quizData.startTime,
+          endTime: quizData.endTime
         },
         onFileCreated: async (files) => {
           try {
@@ -652,6 +863,8 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
         quizData={quizData}
         setQuizData={setQuizData}
         intl={intl}
+        courseId={courseId}
+        dispatch={dispatch}
       />
     </>
   );

@@ -1,3 +1,6 @@
+import { TEMPLATE_IDS } from './templateUtils';
+
+// Template IDs: TEMPLATE_IDS.HIGHLIGHT_JAPANESE, TEMPLATE_IDS.HIGHLIGHT_WORD
 export const highlightFillStyleTemplate = `<!DOCTYPE html>
 <html>
 <head>

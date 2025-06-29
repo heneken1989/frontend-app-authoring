@@ -1,3 +1,6 @@
+import { TEMPLATE_IDS } from './templateUtils';
+
+// Template ID: TEMPLATE_IDS.DRAG_DROP
 export const dragDropQuizTemplate = `<!DOCTYPE html>
 <html>
 <head>

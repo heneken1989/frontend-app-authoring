@@ -1,4 +1,5 @@
-import { dragDropQuizTemplate } from './dragDropQuizTemplate';
+import { dragDropQuizTemplate } from './template_20_drag_drop';
+import { listenFillInBlankTemplate, getListenFillInBlankTemplate } from './template_42_listen_fill_blank';
 
 const fillBlankQuizTemplate = `<!DOCTYPE html>
 <html>
@@ -436,4 +437,18 @@ export const getDragDropQuizTemplate = (paragraphText, words) => {
     .replace('{{PARAGRAPH_TEXT}}', processedParagraph)
     .replace('{{WORD_BANK}}', wordBankHTML)
     .replace('{{CORRECT_ANSWERS}}', JSON.stringify(blanks));
+};
+
+// Export the listen fill in blank template functions
+export { listenFillInBlankTemplate, getListenFillInBlankTemplate };
+
+// Template IDs
+export const TEMPLATE_IDS = {
+  FILL_IN_BLANK: 10,
+  DRAG_DROP: 20,
+  LISTEN_SINGLE_CHOICE: 39,
+  HIGHLIGHT_JAPANESE: 41,
+  LISTEN_FILL_BLANK: 42,
+  HIGHLIGHT_WORD: 43,
+  LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER: 63
 }; 

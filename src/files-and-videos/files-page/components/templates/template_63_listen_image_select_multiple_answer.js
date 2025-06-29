@@ -1,36 +1,104 @@
-export const getListenImageSelectMultipleAnswerTemplate = (questionText, correctAnswers, audioFile, startTime = 0, endTime = 0, instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '') => {
-    const answers = correctAnswers.split(',').map(opt => opt.trim());
-    const sortedOptions = [...answers].sort((a, b) => a.localeCompare(b, 'ja'));
+export const getListenImageSelectMultipleAnswerTemplate = (questionText, correctAnswers, audioFile, startTime = 0, endTime = 0, instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
+    // Log the incoming parameters to help debug
+    console.log('getListenImageSelectMultipleAnswerTemplate called with:', {
+        questionText,
+        correctAnswers,
+        answerContent,
+        blankOptions
+    });
     
-    // Create dropdowns for each blank
-    const answersList = answers.map((correctAnswer, index) => {
-        const number = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'][index];
-        const optionsHtml = sortedOptions.map(option => 
-            `<option value="${option}">${option}</option>`
-        ).join('');
+    // Parse the blank options for dropdowns - these are the options for all dropdowns
+    let optionsArray = [];
+    if (blankOptions && blankOptions.trim()) {
+        // Remove duplicates by converting to Set and back to array
+        optionsArray = [...new Set(blankOptions.split(',').map(option => option.trim()).filter(option => option))];
+    } else {
+        // Default options if none provided
+        optionsArray = ['O', 'X'];
+    }
+    
+    // Parse the correct answers - each position corresponds to a day of the week
+    // If correctAnswers is a string like "O,O,X,O,X,X,X", parse it into an array
+    let correctAnswersArray = [];
+    if (correctAnswers && typeof correctAnswers === 'string') {
+        correctAnswersArray = correctAnswers.split(',').map(answer => answer.trim());
+    } else if (Array.isArray(correctAnswers)) {
+        correctAnswersArray = correctAnswers;
+    } else {
+        // Default to the first option for all answers if no correct answers provided
+        correctAnswersArray = new Array(7).fill(optionsArray[0]);
+    }
+    
+    // Process the question text (only for display, not for answers)
+    const processedLines = questionText.split('\n').map(line => line.trim()).filter(line => line);
+    
+    // Use answer content if provided, otherwise leave answers empty
+    let answersList = '';
+    if (answerContent && answerContent.trim()) {
+        // Process each line of the answer content
+        const answerLines = answerContent.split('\n').map(line => line.trim()).filter(line => line);
         
-        return `
-        <div class="answer-item">
-            <span class="answer-number">${number}</span>
-            <select class="answer-select" data-blank-number="${index + 1}" data-correct="${correctAnswer}">
-                <option value="">選択してください</option>
-                ${optionsHtml}
-            </select>
-        </div>`;
-    }).join('\n');
-    
+        // Process each line of answer content to replace placeholders with dropdowns
+        let answerDropdownIndex = 0;
+        const processedAnswerLines = answerLines.map((line, lineIndex) => {
+            // Process each placeholder in the line
+            let processedLine = line;
+            let placeholderMatch;
+            const placeholderRegex = /（ー）/g;
+            
+            // Replace each placeholder in the line with a dropdown
+            while ((placeholderMatch = placeholderRegex.exec(line)) !== null) {
+                // Get the correct answer for this dropdown (use the index if available, otherwise default to first option)
+                const correctAnswer = correctAnswersArray[answerDropdownIndex] || optionsArray[0];
+                
+                // Create dropdown options from the options array
+                const optionsHtml = optionsArray.map(option => {
+                    // Remove the selected attribute to make "Select" the default
+                    return `<option value="${option}">${option}</option>`;
+                }).join('');
+                
+                const dropdown = `
+                    <select class="answer-select" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}" style="width: auto; min-width: 80px;">
+                        <option value="" selected>Select</option>
+                        ${optionsHtml}
+                    </select>
+                `;
+                
+                // Replace the placeholder with the dropdown
+                const beforePlaceholder = processedLine.substring(0, placeholderMatch.index);
+                const afterPlaceholder = processedLine.substring(placeholderMatch.index + 4); // 4 is the length of （ー）
+                processedLine = beforePlaceholder + dropdown + afterPlaceholder;
+                
+                // Update the regex's lastIndex to account for the new dropdown
+                placeholderRegex.lastIndex = beforePlaceholder.length + dropdown.length;
+                
+                answerDropdownIndex++;
+            }
+            
+            return processedLine;
+        });
+        
+        // Wrap each line in a div
+        answersList = processedAnswerLines.map(line => 
+            `<div class="answer-item">${line}</div>`
+        ).join('\n');
+    }
+
     // Process script text to highlight quoted text in red
     const processedScriptText = scriptText.replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
     
+    // Extract the first line as the question text
+    const firstLine = processedLines[0] || questionText;
+    
     let template = listenImageSelectMultipleAnswerTemplate
-        .replace('{{QUESTION_TEXT}}', questionText)
-        .replace('{{ANSWERS_LIST}}', answersList)
+        .replace('{{QUESTION_TEXT}}', firstLine)
+        .replace(/{{ANSWERS_LIST}}/g, answersList) // Replace all occurrences
         .replace('{{AUDIO_FILE}}', audioFile || '')
         .replace('{{START_TIME}}', startTime || 0)
         .replace('{{END_TIME}}', endTime || 0)
         .replace('{{INSTRUCTIONS}}', instructions)
         .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
-        .replace('{{CORRECT_ANSWERS}}', JSON.stringify(answers));
+        .replace('{{CORRECT_ANSWERS}}', JSON.stringify(correctAnswersArray));
 
     // Handle image file
     if (imageFile) {
@@ -53,14 +121,19 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         body {
-            font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
             margin: 0;
             padding: 0;
-            line-height: 1.6;
             color: #414141;
             height: auto;
             position: relative;
-            overflow-y: hidden;
+            overflow-y: auto;
+            background-color: white;
+            max-height: 460px;
         }
         .container {
             position: relative;
@@ -68,23 +141,36 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             gap: 0;
+            background-color: white;
+            max-height: 460px;
+            overflow-y: auto;
+            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
         }
         .main-content {
             display: flex;
             gap: 0;
             height: auto;
+            background-color: white;
+            overflow-y: auto;
         }
         .left-section {
             flex: 6;
             background: white;
+            overflow-y: auto;
+            max-height: 460px;
         }
         .right-section {
             flex: 4;
             display: flex;
             flex-direction: column;
             background: white;
-            padding: 10px;
             padding-left: 0;
+            overflow-y: auto;
+            max-height: 460px;
         }
         .content-wrapper {
             background: white;
@@ -94,16 +180,16 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             gap: 0;
         }
         .instructions {
-            background-color: #f5f9fc;
-            padding: 10px;
-            font-size: 1.1rem;
+            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
             line-height: 1.5;
+            text-align: left;
+            background-color: white;
             color: #333;
-            font-weight: bold;
             font-style: italic;
             margin: 0;
             position: relative;
-            padding-left: 19px;
         }
         .instructions:before {
             content: '';
@@ -119,8 +205,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
-            background: #f8f8f8;
+            background: white;
         }
         .quiz-image {
             max-width: 100%;
@@ -128,14 +213,16 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             object-fit: contain;
         }
         .question-text {
+            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
             font-size: 1.2rem;
-            padding: 10px;
-            background: #f5f9fc;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
+            background: white;
             color: #333;
-            font-weight: bold;
             margin: 0;
             position: relative;
-            padding-left: 19px;
+            padding-left: 5px;
         }
         .question-text:before {
             content: '';
@@ -149,10 +236,11 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         .audio-container {
             margin-bottom: 10px;
             width: 90%;
+            background-color: white;
         }
         .custom-audio-player {
             width: 90%;
-            background-color: #f0f7ff;
+            background-color: white;
             border-radius: 4px;
             padding: 8px;
             display: flex;
@@ -166,25 +254,29 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             flex-direction: column;
             gap: 8px;
             padding: 0;
-            background: transparent;
+            background: white;
             max-width: 400px;
         }
         .select-answer-header {
             font-size: 1rem;
             color: #333;
             margin: 0;
-            padding: 5px 0;
             font-weight: bold;
         }
         .answer-select {
-            width: 100%;
-            padding: 8px;
-            font-size: 0.95rem;
+            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
+            width: auto;
+            min-width: 80px;
             border: 1px solid #666;
             border-radius: 4px;
             background-color: white;
             color: #333;
             cursor: pointer;
+            display: inline-block;
         }
         .answer-select:focus {
             outline: none;
@@ -202,6 +294,22 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             border-color: #b40000;
             background-color: #f9ecec;
         }
+        /* Styling for answer results */
+        .correct-answer {
+            color: #2e7d32;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 3px;
+            background-color: #ecf3ec;
+        }
+        .wrong-answer {
+            color: #b40000;
+            font-weight: bold;
+            text-decoration: line-through;
+            padding: 2px 8px;
+            border-radius: 3px;
+            background-color: #f9ecec;
+        }
         /* Keep rest of the existing styles */
         .player-status {
             font-weight: bold;
@@ -210,7 +318,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             text-align: left;
             font-size: 14px;
             border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 5px;
+            padding-bottom: 2px;
         }
         .controls-row {
             display: flex;
@@ -288,13 +396,14 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             left: 0;
             right: 0;
             margin: 0;
-            padding: 0.3rem 4rem;
             background-color: rgba(99, 97, 97, 0.95);
             border-top: 1px solid #e0e0e0;
             border-bottom: 1px solid #e0e0e0;
             display: none;
             z-index: 2;
             transition: transform 0.3s ease;
+            max-height: 460px;
+            overflow-y: auto;
         }
         .answer-paragraph-inner {
             max-width: 90%;
@@ -302,17 +411,18 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             background: #fff;
             border-radius: 4px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-            padding: 1.5rem 1.2rem 1.2rem 1.2rem;
             display: flex;
             flex-direction: column;
             align-items: stretch;
+            max-height: 400px;
+            overflow-y: auto;
         }
         .transcript-section {
             margin-bottom: 1.5rem;
-            padding: 1rem;
             background-color: #fff;
             border-radius: 4px;
             border: 1px solid #e0e0e0;
+            overflow-y: auto;
         }
         .transcript-title {
             font-weight: bold;
@@ -322,7 +432,11 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             text-align: center;
         }
         .transcript-text {
-            line-height: 1.8;
+            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
             margin-bottom: 1rem;
             white-space: pre-wrap;
         }
@@ -332,15 +446,19 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             color: #333;
         }
         .answer-paragraph {
+            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
             margin: 0;
-            background-color: #ffffff;
-            line-height: 1.6;
+            background-color: white;
             box-shadow: none;
             border-radius: 3px;
-            padding: 1rem;
-            font-size: 1.2rem;
             display: block;
             border: 1px solid #e0e0e0;
+            overflow-y: auto;
+            max-height: 200px;
         }
         .script-highlight {
             color: #b40000;
@@ -351,6 +469,21 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             border-bottom: 2px solid #666;
             padding: 0 4px;
             margin: 0 2px;
+        }
+        .answer-item {
+            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .answers-list {
+            padding: 5px;
+            background: white;
+            border-radius: 2px;
+            margin: 5px 0;
         }
         @media (max-width: 768px) {
             .main-content {
@@ -364,11 +497,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             }
             .content-wrapper {
                 gap: 15px;
-                padding: 15px;
+                padding: 0px;
             }
-            .image-container {
-                padding: 10px;
-            }
+
             .quiz-image {
                 max-height: 200px;
             }
@@ -421,7 +552,6 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         </div>
                     </div>
                     <div class="select-container">
-                        <div class="select-answer-header">Please Select Answer</div>
                         <div class="answers-list">{{ANSWERS_LIST}}</div>
                     </div>
                     <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
@@ -455,13 +585,13 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         let selectedAnswers = new Array(correctAnswers.length).fill('');
         
         function calculateResults() {
-            const totalQuestions = correctAnswers.length;
+            const totalQuestions = document.querySelectorAll('.answer-select').length;
             let correctCount = 0;
             const answers = {};
             
             document.querySelectorAll('.answer-select').forEach((select, index) => {
                 const userAnswer = select.value.trim();
-                const correctAnswer = correctAnswers[index];
+                const correctAnswer = select.getAttribute('data-correct');
                 selectedAnswers[index] = userAnswer;
                 
                 const isCorrect = correctAnswer === userAnswer;
@@ -469,7 +599,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 answers[index] = userAnswer;
             });
 
-            const rawScore = correctCount / totalQuestions;
+            const rawScore = totalQuestions > 0 ? correctCount / totalQuestions : 0;
             const message = correctCount === totalQuestions ? '正解です！' : '不正解です。';
 
             state.answer = JSON.stringify(answers);
@@ -496,7 +626,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             document.querySelectorAll('.answer-select').forEach((select, index) => {
                 const number = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'][index];
                 const userAnswer = selectedAnswers[index];
-                const correctAnswer = correctAnswers[index];
+                const correctAnswer = select.getAttribute('data-correct');
                 const isCorrect = correctAnswer === userAnswer;
                 
                 select.classList.remove('correct', 'incorrect');
@@ -511,13 +641,14 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 
                 if (userAnswer) {
                     if (isCorrect) {
-                        answerHtml += '<span class="correct-answer">' + userAnswer + '</span>';
+                        answerHtml += '<span class="correct-answer">' + userAnswer + '</span> ✓';
                     } else {
                         answerHtml += '<span class="wrong-answer">' + userAnswer + '</span> → ' +
-                                     '<span class="correct-answer">' + correctAnswer + '</span>';
+                                     '<span class="correct-answer">' + correctAnswer + '</span> ✗';
                     }
                 } else {
-                    answerHtml += '<span class="no-answer">選択してください</span>';
+                    answerHtml += '<span class="no-answer">未回答</span> → ' +
+                                 '<span class="correct-answer">' + correctAnswer + '</span>';
                 }
                 
                 answerHtml += '</div>';

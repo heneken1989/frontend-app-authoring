@@ -18,6 +18,7 @@ import { highlightFillStyleTemplate } from './templates/template_41_highlight_ja
 import { getListenSingleChoiceTemplate } from './templates/template_39_listen_single_choice';
 import { dragDropQuizTemplate } from './templates/template_20_drag_drop';
 import { getListenImageSelectMultipleAnswerTemplate } from './templates/template_63_listen_image_select_multiple_answer';
+import FORM_COMPONENTS, { getFormComponent } from './forms';
 
 // QuizModal Component
 const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, courseId, dispatch }) => {
@@ -27,6 +28,9 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
     e.preventDefault();
     onSubmit();
   };
+
+  // Get the appropriate form component for the selected problem type
+  const FormComponent = getFormComponent(quizData.problemTypeId);
 
   return (
     <ModalDialog
@@ -129,1099 +133,211 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               If checked, learners will be able to see and attempt this problem. If unchecked, the problem will be hidden from learners.
             </Form.Text>
           </Form.Group>
-          {quizData.problemTypeId === TEMPLATE_IDS.DRAG_DROP ? (
-            <>
-              <Form.Group>
-                <Form.Label>Paragraph Text with Blanks</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  value={quizData.paragraphText}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      paragraphText: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter paragraph text with blanks marked as （ー）. For example: たしかに （ー）晴れるでしょう。"
-                />
-                <Form.Text>
-                  Mark blanks in your text using （ー）. Each blank will be replaced with a draggable word.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Word Bank (Correct Answers)</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={quizData.wordBank}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      wordBank: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter words in the correct order, separated by commas. For example: たぶん,もし,きっと,たしか"
-                />
-                <Form.Text>
-                  Enter the words in the order they should appear in the blanks. The first word will be the correct answer for the first blank, second word for the second blank, and so on. The words will appear in random order in the quiz.
-                </Form.Text>
-              </Form.Group>
-            </>
-          ) : quizData.problemTypeId === TEMPLATE_IDS.LISTEN_FILL_BLANK ? (
-            <>
-              <Form.Group>
-                <Form.Label>Paragraph Text with Blanks</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  value={quizData.paragraphText}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      paragraphText: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter paragraph text with blanks marked as （ー）. For example: どうしてですか。（ー）がありますから、映画(えいが)を（ー）。"
-                />
-                <Form.Text>
-                  Mark blanks in your text using （ー）. Each blank will be replaced with a dropdown list.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Script Text (スクリプト)</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  value={quizData.scriptText}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      scriptText: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter the complete script text that will be shown after submission."
-                />
-                <Form.Text>
-                  This text will be shown as the script (スクリプト) after the user submits their answers.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Options for Each Blank</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={quizData.blankOptions}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      blankOptions: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter options for each blank, separated by semicolons. First option is correct. Example: e,a,b,c,d,f;飲(の)みません,飲(の)みま"
-                />
-                <Form.Text>
-                  For each blank, provide a list of options separated by commas. Use semicolons to separate different blanks.
-                  The first option for each blank will be the correct answer.
-                  Example: "e,a,b,c,d,f;飲(の)みません,飲(の)みま" creates two dropdowns:
-                  1st blank: [e,a,b,c,d,f] (e is correct)
-                  2nd blank: [飲(の)みません,飲(の)みま] (飲(の)みません is correct)
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Instructions</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={2}
-                  value={quizData.instructions}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      instructions: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter instructions for the quiz"
-                />
-                <Form.Text>
-                  Instructions that will appear above the quiz paragraph.
-                  Default is "Listen to the audio and select the correct answer for each blank."
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Audio File</Form.Label>
-                <div className="d-flex">
-                  <Form.Control
-                    type="text"
-                    value={quizData.audioFile}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        audioFile: e.target.value
-                      }));
-                    }}
-                    placeholder="Enter the URL of the audio file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/audio.mp3)"
-                    className="mr-2"
-                  />
-                  <input
-                    type="file"
-                    id="audioFileUpload"
-                    accept="audio/*"
-                    style={{ display: 'none' }}
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        try {
-                          // Use the same file upload function that's used for the quiz HTML
-                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-                          if (!courseIdMatch) {
-                            throw new Error('Invalid course ID format');
-                          }
-                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-                          
-                          // Upload the file
-                          await dispatch(addAssetFile(formattedCourseId, file, false));
-                          
-                          // Generate proper asset URL in Open edX format
-                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
-                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${file.name}`;
-                          
-                          // Set the URL in the form
-                          setQuizData(prev => ({
-                            ...prev,
-                            audioFile: assetUrl
-                          }));
-                          
-                          // Show success message
-                          alert(`Audio file ${file.name} uploaded successfully!`);
-                        } catch (error) {
-                          console.error('Error uploading audio file:', error);
-                          alert(`Error uploading audio file: ${error.message}`);
-                        }
+          
+          {/* Common fields for audio and image uploads */}
+          <Form.Group>
+            <Form.Label>Audio File</Form.Label>
+            <div className="d-flex">
+              <Form.Control
+                type="text"
+                value={quizData.audioFile}
+                onChange={(e) => {
+                  setQuizData(prev => ({
+                    ...prev,
+                    audioFile: e.target.value
+                  }));
+                }}
+                placeholder="Enter the URL of the audio file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/audio.mp3)"
+                className="mr-2"
+              />
+              <input
+                type="file"
+                id="audioFileUpload"
+                accept="audio/*"
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const file = e.target.files[0];
+                    try {
+                      // Use the same file upload function that's used for the quiz HTML
+                      const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
+                      if (!courseIdMatch) {
+                        throw new Error('Invalid course ID format');
                       }
-                    }}
-                  />
-                  <Button
-                    variant="outline-primary"
-                    onClick={() => document.getElementById('audioFileUpload').click()}
-                  >
-                    Upload
-                  </Button>
-                </div>
-                <Form.Text>
-                  URL to the audio file. You can enter the URL manually or upload a new audio file.
-                  <br />
-                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.mp3</code>
-                </Form.Text>
-                {quizData.audioFile && (
-                  <div className="mt-3">
-                    <audio controls style={{ width: '100%', maxWidth: '300px' }}>
-                      <source src={quizData.audioFile} type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
-                  </div>
-                )}
-              </Form.Group>
-              <Form.Row>
-                <Form.Group className="col-md-6">
-                  <Form.Label>Start Time (seconds)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={quizData.startTime}
-                    onChange={(e) => {
+                      const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
+                      
+                      // Upload the file
+                      await dispatch(addAssetFile(formattedCourseId, file, false));
+                      
+                      // Generate proper asset URL in Open edX format
+                      const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
+                      const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${file.name}`;
+                      
+                      // Set the URL in the form
                       setQuizData(prev => ({
                         ...prev,
-                        startTime: parseFloat(e.target.value) || 0
+                        audioFile: assetUrl
                       }));
-                    }}
-                    placeholder="Enter start time in seconds"
-                    min="0"
-                    step="0.1"
-                  />
-                  <Form.Text>
-                    Time in seconds where the script starts in the audio.
-                  </Form.Text>
-                </Form.Group>
-                <Form.Group className="col-md-6">
-                  <Form.Label>End Time (seconds)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={quizData.endTime}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        endTime: parseFloat(e.target.value) || 0
-                      }));
-                    }}
-                    placeholder="Enter end time in seconds"
-                    min="0"
-                    step="0.1"
-                  />
-                  <Form.Text>
-                    Time in seconds where the script ends in the audio. Set to 0 to play until the end.
-                  </Form.Text>
-                </Form.Group>
-              </Form.Row>
-              <Form.Group>
-                <Form.Label>Image File</Form.Label>
-                <div className="d-flex">
-                  <Form.Control
-                    type="text"
-                    value={quizData.imageFile}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        imageFile: e.target.value
-                      }));
-                    }}
-                    placeholder="Enter the URL of the image file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/image.jpg)"
-                    className="mr-2"
-                  />
-                  <input
-                    type="file"
-                    id="imageFileUpload"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        try {
-                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-                          if (!courseIdMatch) {
-                            throw new Error('Invalid course ID format');
-                          }
-                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-                          
-                          // Ensure filename is URL-safe
-                          const safeFileName = encodeURIComponent(file.name).replace(/%20/g, '_');
-                          
-                          // Upload the file
-                          await dispatch(addAssetFile(formattedCourseId, file, false));
-                          
-                          // Generate proper asset URL in Open edX format
-                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
-                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${safeFileName}`;
-                          
-                          // Set the URL in the form
-                          setQuizData(prev => ({
-                            ...prev,
-                            imageFile: assetUrl
-                          }));
-                          
-                          // Show success message
-                          alert(`Image file ${file.name} uploaded successfully!`);
-                        } catch (error) {
-                          console.error('Error uploading image file:', error);
-                          alert(`Error uploading image file: ${error.message}`);
-                        }
+                      
+                      // Show success message
+                      alert(`Audio file ${file.name} uploaded successfully!`);
+                    } catch (error) {
+                      console.error('Error uploading audio file:', error);
+                      alert(`Error uploading audio file: ${error.message}`);
+                    }
+                  }
+                }}
+              />
+              <Button
+                variant="outline-primary"
+                onClick={() => document.getElementById('audioFileUpload').click()}
+              >
+                Upload
+              </Button>
+            </div>
+            <Form.Text>
+              URL to the audio file. You can enter the URL manually or upload a new audio file.
+              <br />
+              Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.mp3</code>
+            </Form.Text>
+            {quizData.audioFile && (
+              <div className="mt-3">
+                <audio controls style={{ width: '100%', maxWidth: '300px' }}>
+                  <source src={quizData.audioFile} type="audio/mpeg" />
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            )}
+          </Form.Group>
+          <Form.Row>
+            <Form.Group className="col-md-6">
+              <Form.Label>Start Time (seconds)</Form.Label>
+              <Form.Control
+                type="number"
+                value={quizData.startTime}
+                onChange={(e) => {
+                  setQuizData(prev => ({
+                    ...prev,
+                    startTime: parseFloat(e.target.value) || 0
+                  }));
+                }}
+                placeholder="Enter start time in seconds"
+                min="0"
+                step="0.1"
+              />
+              <Form.Text>
+                Time in seconds where the script starts in the audio.
+              </Form.Text>
+            </Form.Group>
+            <Form.Group className="col-md-6">
+              <Form.Label>End Time (seconds)</Form.Label>
+              <Form.Control
+                type="number"
+                value={quizData.endTime}
+                onChange={(e) => {
+                  setQuizData(prev => ({
+                    ...prev,
+                    endTime: parseFloat(e.target.value) || 0
+                  }));
+                }}
+                placeholder="Enter end time in seconds"
+                min="0"
+                step="0.1"
+              />
+              <Form.Text>
+                Time in seconds where the script ends in the audio. Set to 0 to play until the end.
+              </Form.Text>
+            </Form.Group>
+          </Form.Row>
+          <Form.Group>
+            <Form.Label>Image File</Form.Label>
+            <div className="d-flex">
+              <Form.Control
+                type="text"
+                value={quizData.imageFile}
+                onChange={(e) => {
+                  setQuizData(prev => ({
+                    ...prev,
+                    imageFile: e.target.value
+                  }));
+                }}
+                placeholder="Enter the URL of the image file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/image.jpg)"
+                className="mr-2"
+              />
+              <input
+                type="file"
+                id="imageFileUpload"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const file = e.target.files[0];
+                    try {
+                      const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
+                      if (!courseIdMatch) {
+                        throw new Error('Invalid course ID format');
                       }
-                    }}
-                  />
-                  <Button
-                    variant="outline-primary"
-                    onClick={() => document.getElementById('imageFileUpload').click()}
-                  >
-                    Upload
-                  </Button>
-                </div>
-                <Form.Text>
-                  URL to the image file. You can enter the URL manually or upload a new image file.
-                  <br />
-                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.jpg</code>
-                  <br />
-                  Note: File names should be in English and avoid special characters for best compatibility.
-                </Form.Text>
-                {quizData.imageFile && (
-                  <div className="mt-3">
-                    <img 
-                      src={quizData.imageFile}
-                      alt="Preview" 
-                      style={{ maxWidth: '300px', maxHeight: '200px', objectFit: 'contain' }} 
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-              </Form.Group>
-            </>
-          ) : quizData.problemTypeId === TEMPLATE_IDS.HIGHLIGHT_JAPANESE || quizData.problemTypeId === TEMPLATE_IDS.HIGHLIGHT_WORD ? (
-            <>
-              <Form.Group>
-                <Form.Label>Paragraph Text</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  value={quizData.paragraphText}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      paragraphText: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter the paragraph. For example: Now this you're letting your imagination stray, think about that scenario. A mysterious fungus..."
-                />
-                <Form.Text>
-                  Enter the paragraph. Users will click words to highlight them as answers.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Fixed Words Explanation</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={quizData.fixedWordsExplanation}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      fixedWordsExplanation: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter pairs of wrong=correct words. For example: learners=learner,checked=check,able=ableable"
-                />
-                <Form.Text>
-                  <strong>Important:</strong> This field is required for the quiz to work correctly. 
-                  Provide pairs of wrong=correct words separated by commas. For each highlighted word, the correct version will be shown in parentheses.
-                  <br />
-                  <strong>Simple format:</strong> wrong=correct (e.g., "learners=learner,checked=check")
-                  <br />
-                  <strong>Indexed format:</strong> For repeated words, use word:index=correct (e.g., "the:0=a,the:1=an" for different occurrences of "the")
-                  <br />
-                  <strong>Note:</strong> Both standard (=) and full-width (＝) equals signs are supported.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Instructions</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={2}
-                  value={quizData.instructions}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      instructions: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter instructions for the quiz"
-                />
-                <Form.Text>
-                  Instructions that will appear above the quiz paragraph. 
-                  {quizData.problemTypeId === TEMPLATE_IDS.HIGHLIGHT_JAPANESE 
-                    ? 'Default is in Japanese: "正(ただ)しくない言葉(ことば)をえらんでください" (Please select the incorrect words).'
-                    : 'Default is in Japanese: "聞いて間違った単語を選んでください。間違った単語を選ぶには、その単語をクリックしてください" (Listen and select the incorrect words. To select an incorrect word, click on it).'}
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Audio File</Form.Label>
-                <div className="d-flex">
-                  <Form.Control
-                    type="text"
-                    value={quizData.audioFile}
-                    onChange={(e) => {
+                      const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
+                      
+                      // Ensure filename is URL-safe
+                      const safeFileName = encodeURIComponent(file.name).replace(/%20/g, '_');
+                      
+                      // Upload the file
+                      await dispatch(addAssetFile(formattedCourseId, file, false));
+                      
+                      // Generate proper asset URL in Open edX format
+                      const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
+                      const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${safeFileName}`;
+                      
+                      // Set the URL in the form
                       setQuizData(prev => ({
                         ...prev,
-                        audioFile: e.target.value
+                        imageFile: assetUrl
                       }));
-                    }}
-                    placeholder="Enter the URL of the audio file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/audio.mp3)"
-                    className="mr-2"
-                  />
-                  <input
-                    type="file"
-                    id="audioFileUpload"
-                    accept="audio/*"
-                    style={{ display: 'none' }}
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        try {
-                          // Use the same file upload function that's used for the quiz HTML
-                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-                          if (!courseIdMatch) {
-                            throw new Error('Invalid course ID format');
-                          }
-                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-                          
-                          // Upload the file
-                          await dispatch(addAssetFile(formattedCourseId, file, false));
-                          
-                          // Generate proper asset URL in Open edX format
-                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
-                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${file.name}`;
-                          
-                          // Set the URL in the form
-                          setQuizData(prev => ({
-                            ...prev,
-                            audioFile: assetUrl
-                          }));
-                          
-                          // Show success message
-                          alert(`Audio file ${file.name} uploaded successfully!`);
-                        } catch (error) {
-                          console.error('Error uploading audio file:', error);
-                          alert(`Error uploading audio file: ${error.message}`);
-                        }
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="outline-primary"
-                    onClick={() => document.getElementById('audioFileUpload').click()}
-                  >
-                    Upload
-                  </Button>
-                </div>
-                <Form.Text>
-                  URL to the audio file. You can enter the URL manually or upload a new audio file.
-                  <br />
-                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.mp3</code>
-                </Form.Text>
-                {quizData.audioFile && (
-                  <div className="mt-3">
-                    <audio controls style={{ width: '100%', maxWidth: '300px' }}>
-                      <source src={quizData.audioFile} type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
-                  </div>
-                )}
-              </Form.Group>
-              <Form.Row>
-                <Form.Group className="col-md-6">
-                  <Form.Label>Start Time (seconds)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={quizData.startTime}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        startTime: parseFloat(e.target.value) || 0
-                      }));
-                    }}
-                    placeholder="Enter start time in seconds"
-                    min="0"
-                    step="0.1"
-                  />
-                  <Form.Text>
-                    Time in seconds where the script starts in the audio.
-                  </Form.Text>
-                </Form.Group>
-                <Form.Group className="col-md-6">
-                  <Form.Label>End Time (seconds)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={quizData.endTime}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        endTime: parseFloat(e.target.value) || 0
-                      }));
-                    }}
-                    placeholder="Enter end time in seconds"
-                    min="0"
-                    step="0.1"
-                  />
-                  <Form.Text>
-                    Time in seconds where the script ends in the audio. Set to 0 to play until the end.
-                  </Form.Text>
-                </Form.Group>
-              </Form.Row>
-            </>
-          ) : quizData.problemTypeId === TEMPLATE_IDS.LISTEN_SINGLE_CHOICE ? (
-            <>
-              <Form.Group>
-                <Form.Label>Question Text</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={quizData.paragraphText}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      paragraphText: e.target.value
-                    }));
+                      
+                      // Show success message
+                      alert(`Image file ${file.name} uploaded successfully!`);
+                    } catch (error) {
+                      console.error('Error uploading image file:', error);
+                      alert(`Error uploading image file: ${error.message}`);
+                    }
+                  }
+                }}
+              />
+              <Button
+                variant="outline-primary"
+                onClick={() => document.getElementById('imageFileUpload').click()}
+              >
+                Upload
+              </Button>
+            </div>
+            <Form.Text>
+              URL to the image file. You can enter the URL manually or upload a new image file.
+              <br />
+              Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.jpg</code>
+              <br />
+              Note: File names should be in English and avoid special characters for best compatibility.
+            </Form.Text>
+            {quizData.imageFile && (
+              <div className="mt-3">
+                <img 
+                  src={quizData.imageFile}
+                  alt="Preview" 
+                  style={{ maxWidth: '300px', maxHeight: '200px', objectFit: 'contain' }} 
+                  onError={(e) => {
+                    e.target.style.display = 'none';
                   }}
-                  placeholder="Enter the question text. For example: 男の人は何と言いましたか。"
                 />
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Answer Options</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={quizData.blankOptions}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      blankOptions: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter options separated by commas. First option is correct. Example: はい、分かりました,いいえ、分かりません,すみません"
-                />
-                <Form.Text>
-                  Enter options separated by commas. The first option will be the correct answer.
-                  Example: "はい、分かりました,いいえ、分かりません,すみません" creates three options where "はい、分かりました" is correct.
-                  Options will be displayed in alphabetical order.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Script Text (スクリプト)</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  value={quizData.scriptText}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      scriptText: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter the complete script text that will be shown after submission."
-                />
-                <Form.Text>
-                  This text will be shown as the script (スクリプト) after the user submits their answer.
-                  Text in quotes ("...") will be shown in red.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Audio File</Form.Label>
-                <div className="d-flex">
-                  <Form.Control
-                    type="text"
-                    value={quizData.audioFile}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        audioFile: e.target.value
-                      }));
-                    }}
-                    placeholder="Enter the URL of the audio file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/audio.mp3)"
-                    className="mr-2"
-                  />
-                  <input
-                    type="file"
-                    id="audioFileUpload"
-                    accept="audio/*"
-                    style={{ display: 'none' }}
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        try {
-                          // Use the same file upload function that's used for the quiz HTML
-                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-                          if (!courseIdMatch) {
-                            throw new Error('Invalid course ID format');
-                          }
-                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-                          
-                          // Upload the file
-                          await dispatch(addAssetFile(formattedCourseId, file, false));
-                          
-                          // Generate proper asset URL in Open edX format
-                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
-                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${file.name}`;
-                          
-                          // Set the URL in the form
-                          setQuizData(prev => ({
-                            ...prev,
-                            audioFile: assetUrl
-                          }));
-                          
-                          // Show success message
-                          alert(`Audio file ${file.name} uploaded successfully!`);
-                        } catch (error) {
-                          console.error('Error uploading audio file:', error);
-                          alert(`Error uploading audio file: ${error.message}`);
-                        }
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="outline-primary"
-                    onClick={() => document.getElementById('audioFileUpload').click()}
-                  >
-                    Upload
-                  </Button>
-                </div>
-                <Form.Text>
-                  URL to the audio file. You can enter the URL manually or upload a new audio file.
-                  <br />
-                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.mp3</code>
-                </Form.Text>
-                {quizData.audioFile && (
-                  <div className="mt-3">
-                    <audio controls style={{ width: '100%', maxWidth: '300px' }}>
-                      <source src={quizData.audioFile} type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
-                  </div>
-                )}
-              </Form.Group>
-              <Form.Row>
-                <Form.Group className="col-md-6">
-                  <Form.Label>Start Time (seconds)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={quizData.startTime}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        startTime: parseFloat(e.target.value) || 0
-                      }));
-                    }}
-                    placeholder="Enter start time in seconds"
-                    min="0"
-                    step="0.1"
-                  />
-                  <Form.Text>
-                    Time in seconds where the script starts in the audio.
-                  </Form.Text>
-                </Form.Group>
-                <Form.Group className="col-md-6">
-                  <Form.Label>End Time (seconds)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={quizData.endTime}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        endTime: parseFloat(e.target.value) || 0
-                      }));
-                    }}
-                    placeholder="Enter end time in seconds"
-                    min="0"
-                    step="0.1"
-                  />
-                  <Form.Text>
-                    Time in seconds where the script ends in the audio. Set to 0 to play until the end.
-                  </Form.Text>
-                </Form.Group>
-              </Form.Row>
-              <Form.Group>
-                <Form.Label>Image File</Form.Label>
-                <div className="d-flex">
-                  <Form.Control
-                    type="text"
-                    value={quizData.imageFile}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        imageFile: e.target.value
-                      }));
-                    }}
-                    placeholder="Enter the URL of the image file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/image.jpg)"
-                    className="mr-2"
-                  />
-                  <input
-                    type="file"
-                    id="imageFileUpload"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        try {
-                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-                          if (!courseIdMatch) {
-                            throw new Error('Invalid course ID format');
-                          }
-                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-                          
-                          // Ensure filename is URL-safe
-                          const safeFileName = encodeURIComponent(file.name).replace(/%20/g, '_');
-                          
-                          // Upload the file
-                          await dispatch(addAssetFile(formattedCourseId, file, false));
-                          
-                          // Generate proper asset URL in Open edX format
-                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
-                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${safeFileName}`;
-                          
-                          // Set the URL in the form
-                          setQuizData(prev => ({
-                            ...prev,
-                            imageFile: assetUrl
-                          }));
-                          
-                          // Show success message
-                          alert(`Image file ${file.name} uploaded successfully!`);
-                        } catch (error) {
-                          console.error('Error uploading image file:', error);
-                          alert(`Error uploading image file: ${error.message}`);
-                        }
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="outline-primary"
-                    onClick={() => document.getElementById('imageFileUpload').click()}
-                  >
-                    Upload
-                  </Button>
-                </div>
-                <Form.Text>
-                  URL to the image file. You can enter the URL manually or upload a new image file.
-                  <br />
-                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.jpg</code>
-                  <br />
-                  Note: File names should be in English and avoid special characters for best compatibility.
-                </Form.Text>
-                {quizData.imageFile && (
-                  <div className="mt-3">
-                    <img 
-                      src={quizData.imageFile}
-                      alt="Preview" 
-                      style={{ maxWidth: '300px', maxHeight: '200px', objectFit: 'contain' }} 
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-              </Form.Group>
-            </>
-          ) : quizData.problemTypeId === TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER ? (
-            <>
-              <Form.Group>
-                <Form.Label>Question Text</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={quizData.paragraphText}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      paragraphText: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter the question text"
-                />
-                <Form.Text>
-                  Enter the main question text that appears above the blanks.
-                </Form.Text>
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>Blanks</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={4}
-                  value={quizData.blanks || "①（ー）\n②（ー）\n③（ー）\n④（ー）"}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      blanks: e.target.value
-                    }));
-                  }}
-                  placeholder="①（ー）
-②（ー）
-③（ー）
-④（ー）"
-                />
-                <Form.Text>
-                  Enter the blanks, one per line, using the format shown (①（ー）, ②（ー）, etc.)
-                </Form.Text>
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>Answers (in order)</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={quizData.correctAnswers}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      correctAnswers: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter answers in order, separated by commas. Example: c,a,d,e"
-                />
-                <Form.Text>
-                  Enter the answers in order, separated by commas. The first answer corresponds to ①, second to ②, etc.
-                  Example: "c,a,d,e" means 'c' is for ①, 'a' for ②, 'd' for ③, 'e' for ④.
-                  These answers will be automatically sorted alphabetically in each dropdown.
-                </Form.Text>
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>Script Text (スクリプト)</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  value={quizData.scriptText}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      scriptText: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter the complete script text that will be shown after submission."
-                />
-                <Form.Text>
-                  This text will be shown as the script (スクリプト) after the user submits their answers.
-                  Text in quotes ("...") will be shown in red.
-                </Form.Text>
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>Instructions</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={2}
-                  value={quizData.instructions}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      instructions: e.target.value
-                    }));
-                  }}
-                  placeholder="Enter instructions for the quiz"
-                />
-                <Form.Text>
-                  Instructions that will appear above the quiz. Default is "音声を聞いて、絵を見て、正しい答えを選んでください。"
-                </Form.Text>
-              </Form.Group>
-
-              <Form.Group>
-                <Form.Label>Audio File</Form.Label>
-                <div className="d-flex">
-                  <Form.Control
-                    type="text"
-                    value={quizData.audioFile}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        audioFile: e.target.value
-                      }));
-                    }}
-                    placeholder="Enter the URL of the audio file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/audio.mp3)"
-                    className="mr-2"
-                  />
-                  <input
-                    type="file"
-                    id="audioFileUpload"
-                    accept="audio/*"
-                    style={{ display: 'none' }}
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        try {
-                          // Use the same file upload function that's used for the quiz HTML
-                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-                          if (!courseIdMatch) {
-                            throw new Error('Invalid course ID format');
-                          }
-                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-                          
-                          // Upload the file
-                          await dispatch(addAssetFile(formattedCourseId, file, false));
-                          
-                          // Generate proper asset URL in Open edX format
-                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
-                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${file.name}`;
-                          
-                          // Set the URL in the form
-                          setQuizData(prev => ({
-                            ...prev,
-                            audioFile: assetUrl
-                          }));
-                          
-                          // Show success message
-                          alert(`Audio file ${file.name} uploaded successfully!`);
-                        } catch (error) {
-                          console.error('Error uploading audio file:', error);
-                          alert(`Error uploading audio file: ${error.message}`);
-                        }
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="outline-primary"
-                    onClick={() => document.getElementById('audioFileUpload').click()}
-                  >
-                    Upload
-                  </Button>
-                </div>
-                <Form.Text>
-                  URL to the audio file. You can enter the URL manually or upload a new audio file.
-                  <br />
-                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.mp3</code>
-                </Form.Text>
-                {quizData.audioFile && (
-                  <div className="mt-3">
-                    <audio controls style={{ width: '100%', maxWidth: '300px' }}>
-                      <source src={quizData.audioFile} type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
-                  </div>
-                )}
-              </Form.Group>
-
-              <Form.Row>
-                <Form.Group className="col-md-6">
-                  <Form.Label>Start Time (seconds)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={quizData.startTime}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        startTime: parseFloat(e.target.value) || 0
-                      }));
-                    }}
-                    placeholder="Enter start time in seconds"
-                    min="0"
-                    step="0.1"
-                  />
-                  <Form.Text>
-                    Time in seconds where the script starts in the audio.
-                  </Form.Text>
-                </Form.Group>
-                <Form.Group className="col-md-6">
-                  <Form.Label>End Time (seconds)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={quizData.endTime}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        endTime: parseFloat(e.target.value) || 0
-                      }));
-                    }}
-                    placeholder="Enter end time in seconds"
-                    min="0"
-                    step="0.1"
-                  />
-                  <Form.Text>
-                    Time in seconds where the script ends in the audio. Set to 0 to play until the end.
-                  </Form.Text>
-                </Form.Group>
-              </Form.Row>
-
-              <Form.Group>
-                <Form.Label>Image File</Form.Label>
-                <div className="d-flex">
-                  <Form.Control
-                    type="text"
-                    value={quizData.imageFile}
-                    onChange={(e) => {
-                      setQuizData(prev => ({
-                        ...prev,
-                        imageFile: e.target.value
-                      }));
-                    }}
-                    placeholder="Enter the URL of the image file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/image.jpg)"
-                    className="mr-2"
-                  />
-                  <input
-                    type="file"
-                    id="imageFileUpload"
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    onChange={async (e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        try {
-                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-                          if (!courseIdMatch) {
-                            throw new Error('Invalid course ID format');
-                          }
-                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-                          
-                          // Ensure filename is URL-safe
-                          const safeFileName = encodeURIComponent(file.name).replace(/%20/g, '_');
-                          
-                          // Upload the file
-                          await dispatch(addAssetFile(formattedCourseId, file, false));
-                          
-                          // Generate proper asset URL in Open edX format
-                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
-                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${safeFileName}`;
-                          
-                          // Set the URL in the form
-                          setQuizData(prev => ({
-                            ...prev,
-                            imageFile: assetUrl
-                          }));
-                          
-                          // Show success message
-                          alert(`Image file ${file.name} uploaded successfully!`);
-                        } catch (error) {
-                          console.error('Error uploading image file:', error);
-                          alert(`Error uploading image file: ${error.message}`);
-                        }
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="outline-primary"
-                    onClick={() => document.getElementById('imageFileUpload').click()}
-                  >
-                    Upload
-                  </Button>
-                </div>
-                <Form.Text>
-                  URL to the image file. You can enter the URL manually or upload a new image file.
-                  <br />
-                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.jpg</code>
-                  <br />
-                  Note: File names should be in English and avoid special characters for best compatibility.
-                </Form.Text>
-                {quizData.imageFile && (
-                  <div className="mt-3">
-                    <img 
-                      src={quizData.imageFile}
-                      alt="Preview" 
-                      style={{ maxWidth: '300px', maxHeight: '200px', objectFit: 'contain' }} 
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-              </Form.Group>
-            </>
-          ) : (
-            <>
-              <Form.Group>
-                <Form.Label>
-                  {intl.formatMessage(quizMessages.quizParagraphLabel)}
-                </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  value={quizData.paragraphText}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      paragraphText: e.target.value
-                    }));
-                  }}
-                  placeholder={intl.formatMessage(quizMessages.quizParagraphPlaceholder)}
-                />
-                <Form.Text>
-                  {intl.formatMessage(quizMessages.quizParagraphHelp, { blank: '{{blank}}' })}
-                </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>
-                  {intl.formatMessage(quizMessages.quizAnswersLabel)}
-                </Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={quizData.correctAnswers}
-                  onChange={(e) => {
-                    setQuizData(prev => ({
-                      ...prev,
-                      correctAnswers: e.target.value
-                    }));
-                  }}
-                  placeholder={'{\n  "blank": "answer"\n}'}
-                />
-                <Form.Text>
-                  {intl.formatMessage(quizMessages.quizAnswersHelp)}
-                </Form.Text>
-              </Form.Group>
-            </>
+              </div>
+            )}
+          </Form.Group>
+          
+          {/* Render the appropriate form component based on problem type */}
+          {FormComponent && (
+            <div className="mt-4 pt-3 border-top">
+              <h4>Problem-Specific Fields</h4>
+              <FormComponent quizData={quizData} setQuizData={setQuizData} />
+            </div>
           )}
         </Form>
       </ModalDialog.Body>
@@ -1360,18 +476,18 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
         );
         break;
       case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER: // Listen and Image Select Multiple Answer
-        // Combine blanks with question text
-        const combinedText = quizData.paragraphText + '\n' + quizData.blanks;
-        
+        // Just pass the question text directly, no need to combine with blanks
         htmlContent = getListenImageSelectMultipleAnswerTemplate(
-          combinedText,
-          quizData.correctAnswers,
+          quizData.paragraphText,
+          quizData.blankOptions || '', // Use blankOptions as correctAnswers
           quizData.audioFile || '',
           quizData.startTime || 0,
           quizData.endTime || 0,
           quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
           quizData.scriptText || '',
-          quizData.imageFile || ''  // Make sure imageFile is properly passed
+          quizData.imageFile || '',
+          quizData.answerContent || '',
+          quizData.blankOptions || ''  // Pass the blank options as the last parameter
         );
         break;
       default:
@@ -1598,19 +714,20 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
   const [quizData, setQuizData] = useState({
     problemTypeId: TEMPLATE_IDS.LISTEN_FILL_BLANK, // Default to Listen and Fill in the Blank Quiz
     unitTitle: 'Quick Test Quiz',
-    paragraphText: '女の人の仕事はaですか、bですか。',
-    scriptText: 'いいえ、医者(いしゃ)です。',
-    correctAnswers: '{}',
+    paragraphText: '',
+    answerContent: '',
+    blankOptions: '',
+    scriptText: '',
+    correctAnswers: '',
     wordBank: '',
     timeLimit: 3,
     published: true,
     fixedWordsExplanation: '',
-    instructions: '聞いて、絵を見て、正しい答えを選んでください',
+    instructions: '',
     audioFile: '/asset-v1:Xuan+N51+2025+type@asset+block/1.mp3',
-    imageFile: '/asset-v1:Xuan+N51+2025+type@asset+block/sample_image.jpg',
+    imageFile: '/asset-v1:Xuan+N51+2025+type@asset+block/1.png',
     startTime: 0,
-    endTime: 0,
-    blankOptions: 'a,b'
+    endTime: 0
   });
 
   const dispatch = useDispatch();
@@ -1624,24 +741,15 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
     setQuizData({ 
       problemTypeId: TEMPLATE_IDS.LISTEN_FILL_BLANK,
       unitTitle: 'Quick Test Quiz',
-      paragraphText: quizData.problemTypeId === TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER 
-        ? '問題を聞いて答えてください。'
-        : 'どうしてですか。（ー）がありますから、映画(えいが)を（ー）。',
-      blanks: quizData.problemTypeId === TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER
-        ? '①（ー）\n②（ー）\n③（ー）\n④（ー）'
-        : '',
-      scriptText: quizData.problemTypeId === TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER
-        ? 'A: 質問の答えは次のとおりです：\nB: "①は c、②は a、③は d、④は e です。"'
-        : 'A:佐藤(さとう)さん、映画(えいが)のチケット(ちけっと)があります。あした、いっしょにいかがですか。\nB: あしたですか。"あしたはちょっと"\nA: 忙(いそが)しいですか。\nB: すみません。"友達(ともだち)と約束(やくそく)がありますから･･････。"',
-      correctAnswers: quizData.problemTypeId === TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER
-        ? 'c,a,d,e'
-        : '{}',
+      paragraphText: '',
+      answerContent: '',
+      blankOptions: '',
+      scriptText: '',
+      correctAnswers: '',
       wordBank: '',
       timeLimit: 3,
       published: true,
-      instructions: quizData.problemTypeId === TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER
-        ? '音声を聞いて、絵を見て、正しい答えを選んでください。'
-        : '音声を聞いて、空欄に入る適切な言葉を選んでください。',
+      instructions: '',
       audioFile: '/asset-v1:Xuan+N51+2025+type@asset+block/1.mp3',
       imageFile: '/asset-v1:Xuan+N51+2025+type@asset+block/1.png',
       startTime: 0,
@@ -1686,7 +794,8 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
           endTime: quizData.endTime,
           blankOptions: quizData.blankOptions,
           scriptText: quizData.scriptText,
-          imageFile: quizData.imageFile
+          imageFile: quizData.imageFile,
+          answerContent: quizData.answerContent
         },
         onFileCreated: async (files) => {
           try {

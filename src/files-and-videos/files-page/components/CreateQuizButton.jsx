@@ -8,6 +8,9 @@ import {
   getQuizTemplate, 
   getDragDropQuizTemplate, 
   getListenFillInBlankTemplate,
+  getFillInBlankTemplate,
+  getListenWithImageMultipleDifferentBlankOptionsTemplate,
+  getGrammarDropdownTemplate,
   TEMPLATE_IDS 
 } from './templates/templateUtils';
 import { getConfig } from '@edx/frontend-platform';
@@ -16,8 +19,11 @@ import { useDispatch } from 'react-redux';
 import { addAssetFile } from '../data/thunks';
 import { highlightFillStyleTemplate } from './templates/template_41_highlight_japanese';
 import { getListenSingleChoiceTemplate } from './templates/template_39_listen_single_choice';
+import { getListenSingleChoiceNoImageTemplate } from './templates/template_40_listen_single_choice_no_image';
 import { dragDropQuizTemplate } from './templates/template_20_drag_drop';
 import { getListenImageSelectMultipleAnswerTemplate } from './templates/template_63_listen_image_select_multiple_answer';
+import { getListenImageSelectMultipleAnswerMultiOptionsTemplate } from './templates/template_65_listen_image_select_multiple_answer_multioptions';
+import { getListenWriteAnswerWithImageTemplate } from './templates/template_67_listen_write_answer_with_image';
 import FORM_COMPONENTS, { getFormComponent } from './forms';
 
 // QuizModal Component
@@ -60,6 +66,8 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
                     ? '正(ただ)しくない言葉(ことば)をえらんでください' 
                     : newTypeId === TEMPLATE_IDS.LISTEN_SINGLE_CHOICE
                     ? '音声を聞いて、正しい答えを選んでください。'
+                    : newTypeId === TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE
+                    ? '音声を聞いて、正しい答えを選んでください。'
                     : newTypeId === TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER
                     ? '音声を聞いて、絵を見て、正しい答えを選んでください。'
                     : '聞いて間違った単語を選んでください。間違った単語を選ぶには、その単語をクリックしてください';
@@ -73,12 +81,15 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               }}
             >
               <option value={TEMPLATE_IDS.FILL_IN_BLANK}>{TEMPLATE_IDS.FILL_IN_BLANK} - Fill in the Blank Quiz</option>
-              <option value={TEMPLATE_IDS.DRAG_DROP}>{TEMPLATE_IDS.DRAG_DROP} - Drag and Drop Quiz</option>
+              <option value={TEMPLATE_IDS.GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
+              <option value={TEMPLATE_IDS.DRAG_DROP_OLD}>{TEMPLATE_IDS.DRAG_DROP_OLD} - Drag and Drop Quiz</option>
               <option value={TEMPLATE_IDS.LISTEN_SINGLE_CHOICE}>{TEMPLATE_IDS.LISTEN_SINGLE_CHOICE} - Listen and Choose Quiz</option>
-              <option value={TEMPLATE_IDS.HIGHLIGHT_JAPANESE}>{TEMPLATE_IDS.HIGHLIGHT_JAPANESE} - Nghe và highlight Từ Sai N5</option>
+              <option value={TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE}>{TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE} - Listen and Choose Quiz (No Image)</option>
               <option value={TEMPLATE_IDS.LISTEN_FILL_BLANK}>{TEMPLATE_IDS.LISTEN_FILL_BLANK} - Listen and Fill in the Blank Quiz</option>
-              <option value={TEMPLATE_IDS.HIGHLIGHT_WORD}>{TEMPLATE_IDS.HIGHLIGHT_WORD} - Highlight Word Quiz</option>
+              <option value={TEMPLATE_IDS.LISTEN_WITH_IMAGE_MULTIPLE_DIFFERENT_BLANK_OPTIONS}>{TEMPLATE_IDS.LISTEN_WITH_IMAGE_MULTIPLE_DIFFERENT_BLANK_OPTIONS} - Listen with Image Multiple Different Blank Options</option>
               <option value={TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER}>{TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER} - Listen and Image Select Multiple Answer</option>
+              <option value={TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS}>{TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS} - Listen and Image Select Multiple Answer (MultiOptions)</option>
+              <option value={TEMPLATE_IDS.LISTEN_WRITE_ANSWER_WITH_IMAGE}>{TEMPLATE_IDS.LISTEN_WRITE_ANSWER_WITH_IMAGE} - Listen Write Answer with Image Quiz</option>
             </Form.Control>
             <Form.Text>
               Select the type of quiz you want to create.
@@ -135,209 +146,211 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
           </Form.Group>
           
           {/* Common fields for audio and image uploads */}
-          <Form.Group>
-            <Form.Label>Audio File</Form.Label>
-            <div className="d-flex">
-              <Form.Control
-                type="text"
-                value={quizData.audioFile}
-                onChange={(e) => {
-                  setQuizData(prev => ({
-                    ...prev,
-                    audioFile: e.target.value
-                  }));
-                }}
-                placeholder="Enter the URL of the audio file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/audio.mp3)"
-                className="mr-2"
-              />
-              <input
-                type="file"
-                id="audioFileUpload"
-                accept="audio/*"
-                style={{ display: 'none' }}
-                onChange={async (e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    const file = e.target.files[0];
-                    try {
-                      // Use the same file upload function that's used for the quiz HTML
-                      const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-                      if (!courseIdMatch) {
-                        throw new Error('Invalid course ID format');
-                      }
-                      const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-                      
-                      // Upload the file
-                      await dispatch(addAssetFile(formattedCourseId, file, false));
-                      
-                      // Generate proper asset URL in Open edX format
-                      const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
-                      const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${file.name}`;
-                      
-                      // Set the URL in the form
+              <Form.Group>
+                <Form.Label>Audio File</Form.Label>
+                <div className="d-flex">
+                  <Form.Control
+                    type="text"
+                    value={quizData.audioFile}
+                    onChange={(e) => {
                       setQuizData(prev => ({
                         ...prev,
-                        audioFile: assetUrl
+                        audioFile: e.target.value
                       }));
-                      
-                      // Show success message
-                      alert(`Audio file ${file.name} uploaded successfully!`);
-                    } catch (error) {
-                      console.error('Error uploading audio file:', error);
-                      alert(`Error uploading audio file: ${error.message}`);
-                    }
-                  }
-                }}
-              />
-              <Button
-                variant="outline-primary"
-                onClick={() => document.getElementById('audioFileUpload').click()}
-              >
-                Upload
-              </Button>
-            </div>
-            <Form.Text>
-              URL to the audio file. You can enter the URL manually or upload a new audio file.
-              <br />
-              Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.mp3</code>
-            </Form.Text>
-            {quizData.audioFile && (
-              <div className="mt-3">
-                <audio controls style={{ width: '100%', maxWidth: '300px' }}>
-                  <source src={quizData.audioFile} type="audio/mpeg" />
-                  Your browser does not support the audio element.
-                </audio>
-              </div>
-            )}
-          </Form.Group>
-          <Form.Row>
-            <Form.Group className="col-md-6">
-              <Form.Label>Start Time (seconds)</Form.Label>
-              <Form.Control
-                type="number"
-                value={quizData.startTime}
-                onChange={(e) => {
-                  setQuizData(prev => ({
-                    ...prev,
-                    startTime: parseFloat(e.target.value) || 0
-                  }));
-                }}
-                placeholder="Enter start time in seconds"
-                min="0"
-                step="0.1"
-              />
-              <Form.Text>
-                Time in seconds where the script starts in the audio.
-              </Form.Text>
-            </Form.Group>
-            <Form.Group className="col-md-6">
-              <Form.Label>End Time (seconds)</Form.Label>
-              <Form.Control
-                type="number"
-                value={quizData.endTime}
-                onChange={(e) => {
-                  setQuizData(prev => ({
-                    ...prev,
-                    endTime: parseFloat(e.target.value) || 0
-                  }));
-                }}
-                placeholder="Enter end time in seconds"
-                min="0"
-                step="0.1"
-              />
-              <Form.Text>
-                Time in seconds where the script ends in the audio. Set to 0 to play until the end.
-              </Form.Text>
-            </Form.Group>
-          </Form.Row>
-          <Form.Group>
-            <Form.Label>Image File</Form.Label>
-            <div className="d-flex">
-              <Form.Control
-                type="text"
-                value={quizData.imageFile}
-                onChange={(e) => {
-                  setQuizData(prev => ({
-                    ...prev,
-                    imageFile: e.target.value
-                  }));
-                }}
-                placeholder="Enter the URL of the image file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/image.jpg)"
-                className="mr-2"
-              />
-              <input
-                type="file"
-                id="imageFileUpload"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={async (e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    const file = e.target.files[0];
-                    try {
-                      const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-                      if (!courseIdMatch) {
-                        throw new Error('Invalid course ID format');
+                    }}
+                    placeholder="Enter the URL of the audio file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/audio.mp3)"
+                    className="mr-2"
+                  />
+                  <input
+                    type="file"
+                    id="audioFileUpload"
+                    accept="audio/*"
+                    style={{ display: 'none' }}
+                    onChange={async (e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        try {
+                          // Use the same file upload function that's used for the quiz HTML
+                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
+                          if (!courseIdMatch) {
+                            throw new Error('Invalid course ID format');
+                          }
+                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
+                          
+                          // Upload the file
+                          await dispatch(addAssetFile(formattedCourseId, file, false));
+                          
+                          // Generate proper asset URL in Open edX format
+                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
+                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${file.name}`;
+                          
+                          // Set the URL in the form
+                          setQuizData(prev => ({
+                            ...prev,
+                            audioFile: assetUrl
+                          }));
+                          
+                          // Show success message
+                          alert(`Audio file ${file.name} uploaded successfully!`);
+                        } catch (error) {
+                          console.error('Error uploading audio file:', error);
+                          alert(`Error uploading audio file: ${error.message}`);
+                        }
                       }
-                      const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-                      
-                      // Ensure filename is URL-safe
-                      const safeFileName = encodeURIComponent(file.name).replace(/%20/g, '_');
-                      
-                      // Upload the file
-                      await dispatch(addAssetFile(formattedCourseId, file, false));
-                      
-                      // Generate proper asset URL in Open edX format
-                      const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
-                      const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${safeFileName}`;
-                      
-                      // Set the URL in the form
+                    }}
+                  />
+                  <Button
+                    variant="outline-primary"
+                    onClick={() => document.getElementById('audioFileUpload').click()}
+                  >
+                    Upload
+                  </Button>
+                </div>
+                <Form.Text>
+                  URL to the audio file. You can enter the URL manually or upload a new audio file.
+                  <br />
+                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.mp3</code>
+                </Form.Text>
+                {quizData.audioFile && (
+                  <div className="mt-3">
+                    <audio controls style={{ width: '100%', maxWidth: '300px' }}>
+                      <source src={quizData.audioFile} type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                )}
+              </Form.Group>
+              <Form.Row>
+                <Form.Group className="col-md-6">
+                  <Form.Label>Start Time (seconds)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={quizData.startTime}
+                    onChange={(e) => {
                       setQuizData(prev => ({
                         ...prev,
-                        imageFile: assetUrl
+                        startTime: parseFloat(e.target.value) || 0
                       }));
-                      
-                      // Show success message
-                      alert(`Image file ${file.name} uploaded successfully!`);
-                    } catch (error) {
-                      console.error('Error uploading image file:', error);
-                      alert(`Error uploading image file: ${error.message}`);
-                    }
-                  }
-                }}
-              />
-              <Button
-                variant="outline-primary"
-                onClick={() => document.getElementById('imageFileUpload').click()}
-              >
-                Upload
-              </Button>
-            </div>
-            <Form.Text>
-              URL to the image file. You can enter the URL manually or upload a new image file.
-              <br />
-              Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.jpg</code>
-              <br />
-              Note: File names should be in English and avoid special characters for best compatibility.
-            </Form.Text>
-            {quizData.imageFile && (
-              <div className="mt-3">
-                <img 
-                  src={quizData.imageFile}
-                  alt="Preview" 
-                  style={{ maxWidth: '300px', maxHeight: '200px', objectFit: 'contain' }} 
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
-          </Form.Group>
+                    }}
+                    placeholder="Enter start time in seconds"
+                    min="0"
+                    step="0.1"
+                  />
+                  <Form.Text>
+                    Time in seconds where the script starts in the audio.
+                  </Form.Text>
+                </Form.Group>
+                <Form.Group className="col-md-6">
+                  <Form.Label>End Time (seconds)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={quizData.endTime}
+                    onChange={(e) => {
+                      setQuizData(prev => ({
+                        ...prev,
+                        endTime: parseFloat(e.target.value) || 0
+                      }));
+                    }}
+                    placeholder="Enter end time in seconds"
+                    min="0"
+                    step="0.1"
+                  />
+                  <Form.Text>
+                    Time in seconds where the script ends in the audio. Set to 0 to play until the end.
+                  </Form.Text>
+                </Form.Group>
+              </Form.Row>
+              {quizData.problemTypeId !== TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS && quizData.problemTypeId !== TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE && (
+              <Form.Group>
+                <Form.Label>Image File</Form.Label>
+                <div className="d-flex">
+                  <Form.Control
+                    type="text"
+                    value={quizData.imageFile}
+                    onChange={(e) => {
+                      setQuizData(prev => ({
+                        ...prev,
+                        imageFile: e.target.value
+                      }));
+                    }}
+                    placeholder="Enter the URL of the image file (e.g., /asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/image.jpg)"
+                    className="mr-2"
+                  />
+                  <input
+                    type="file"
+                    id="imageFileUpload"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={async (e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        try {
+                          const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
+                          if (!courseIdMatch) {
+                            throw new Error('Invalid course ID format');
+                          }
+                          const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
+                          
+                          // Ensure filename is URL-safe
+                          const safeFileName = encodeURIComponent(file.name).replace(/%20/g, '_');
+                          
+                          // Upload the file
+                          await dispatch(addAssetFile(formattedCourseId, file, false));
+                          
+                          // Generate proper asset URL in Open edX format
+                          const courseComponents = formattedCourseId.replace('course-v1:', '').split('+');
+                          const assetUrl = `/asset-v1:${courseComponents[0]}+${courseComponents[1]}+${courseComponents[2]}+type@asset+block/${safeFileName}`;
+                          
+                          // Set the URL in the form
+                          setQuizData(prev => ({
+                            ...prev,
+                            imageFile: assetUrl
+                          }));
+                          
+                          // Show success message
+                          alert(`Image file ${file.name} uploaded successfully!`);
+                        } catch (error) {
+                          console.error('Error uploading image file:', error);
+                          alert(`Error uploading image file: ${error.message}`);
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="outline-primary"
+                    onClick={() => document.getElementById('imageFileUpload').click()}
+                  >
+                    Upload
+                  </Button>
+                </div>
+                <Form.Text>
+                  URL to the image file. You can enter the URL manually or upload a new image file.
+                  <br />
+                  Format: <code>/asset-v1:OrganizationX+CourseNumber+Term+type@asset+block/filename.jpg</code>
+                  <br />
+                  Note: File names should be in English and avoid special characters for best compatibility.
+                </Form.Text>
+                {quizData.imageFile && (
+                  <div className="mt-3">
+                    <img 
+                      src={quizData.imageFile}
+                      alt="Preview" 
+                      style={{ maxWidth: '300px', maxHeight: '200px', objectFit: 'contain' }} 
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </Form.Group>
+              )}
           
           {/* Render the appropriate form component based on problem type */}
           {FormComponent && (
             <div className="mt-4 pt-3 border-top">
               <h4>Problem-Specific Fields</h4>
               <FormComponent quizData={quizData} setQuizData={setQuizData} />
-            </div>
+                  </div>
           )}
         </Form>
       </ModalDialog.Body>
@@ -399,10 +412,14 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
     console.log('Selecting template for problemTypeId:', problemTypeId);
     
     switch (problemTypeId) {
-      case TEMPLATE_IDS.FILL_IN_BLANK: // Fill in the Blank
-        htmlContent = getQuizTemplate(quizData.paragraphText);
+      case TEMPLATE_IDS.FILL_IN_BLANK:
+        htmlContent = getFillInBlankTemplate(
+          quizData.paragraphText,
+          quizData.correctAnswers,
+          quizData.instructions || 'Fill in the blanks with the correct answers.'
+        );
         break;
-      case TEMPLATE_IDS.DRAG_DROP: // Drag and Drop
+      case TEMPLATE_IDS.DRAG_DROP_OLD: // Drag and Drop Quiz (ID 20)
         const words = quizData.wordBank.split(',').map(word => word.trim());
         htmlContent = getDragDropQuizTemplate(quizData.paragraphText, words);
         break;
@@ -424,7 +441,6 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
         );
         break;
       case TEMPLATE_IDS.HIGHLIGHT_JAPANESE: // Highlight Word Quiz (Japanese)
-      case TEMPLATE_IDS.HIGHLIGHT_WORD: // Highlight Word Quiz
         const correctWords = quizData.fixedWordsExplanation.split(',')
           .map(pair => {
             // Extract the wrong word from each pair
@@ -445,10 +461,8 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
         console.log('Extracted correctWords:', correctWords);
         console.log('Original fixedWordsExplanation:', quizData.fixedWordsExplanation);
         
-        // Set default instructions based on problem type
-        let defaultInstructions = quizData.problemTypeId === TEMPLATE_IDS.HIGHLIGHT_JAPANESE 
-          ? '正(ただ)しくない言葉(ことば)をえらんでください' 
-          : '聞いて間違った単語を選んでください。間違った単語を選ぶには、その単語をクリックしてください';
+        // Set default instructions for Japanese highlight
+        let defaultInstructions = '正(ただ)しくない言葉(ことば)をえらんでください';
         
         // Make sure fixedWordsExplanation is not empty
         const fixedWordsExplanation = quizData.fixedWordsExplanation || 'These are the words that should be selected.';
@@ -475,8 +489,31 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
           quizData.imageFile || ''
         );
         break;
-      case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER: // Listen and Image Select Multiple Answer
-        // Just pass the question text directly, no need to combine with blanks
+      case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
+        htmlContent = getListenSingleChoiceNoImageTemplate(
+          quizData.paragraphText,
+          quizData.blankOptions,
+          quizData.audioFile || '',
+          quizData.startTime || 0,
+          quizData.endTime || 0,
+          quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
+          quizData.scriptText || ''
+        );
+        break;
+      case TEMPLATE_IDS.LISTEN_WITH_IMAGE_MULTIPLE_DIFFERENT_BLANK_OPTIONS:
+        htmlContent = getListenWithImageMultipleDifferentBlankOptionsTemplate(
+          quizData.paragraphText,
+          quizData.optionsForBlanks || '',
+          quizData.audioFile || '',
+          quizData.startTime || 0,
+          quizData.endTime || 0,
+          quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
+          quizData.scriptText || '',
+          quizData.imageFile || '',
+          quizData.answerContent || ''
+        );
+        break;
+      case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER:
         htmlContent = getListenImageSelectMultipleAnswerTemplate(
           quizData.paragraphText,
           quizData.blankOptions || '', // Use blankOptions as correctAnswers
@@ -488,6 +525,46 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
           quizData.imageFile || '',
           quizData.answerContent || '',
           quizData.blankOptions || ''  // Pass the blank options as the last parameter
+        );
+        break;
+      case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS:
+        htmlContent = getListenImageSelectMultipleAnswerMultiOptionsTemplate(
+          quizData.paragraphText,
+          quizData.optionsForBlanks || '',
+          quizData.audioFile || '',
+          quizData.startTime || 0,
+          quizData.endTime || 0,
+          quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
+          quizData.scriptText || '',
+          quizData.imageFile || '',
+          quizData.answerContent || ''
+        );
+        break;
+      case TEMPLATE_IDS.LISTEN_WRITE_ANSWER_WITH_IMAGE:
+        htmlContent = getListenWriteAnswerWithImageTemplate(
+          quizData.paragraphText,
+          quizData.correctAnswers || quizData.blankOptions,
+          quizData.audioFile,
+          quizData.startTime,
+          quizData.endTime,
+          quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
+          quizData.scriptText,
+          quizData.imageFile,
+          quizData.answerContent,
+          quizData.blankOptions
+        );
+        break;
+      case TEMPLATE_IDS.GRAMMAR_DROPDOWN:
+        htmlContent = getGrammarDropdownTemplate(
+          quizData.paragraphText,
+          quizData.optionsForBlanks || '',
+          quizData.audioFile || '',
+          quizData.startTime || 0,
+          quizData.endTime || 0,
+          quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
+          quizData.scriptText || '',
+          quizData.imageFile || '',
+          quizData.answerContent || ''
         );
         break;
       default:
@@ -712,11 +789,12 @@ def check_fun(e, ans):
 const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUnit }) => {
   const [showQuizModal, setShowQuizModal] = useState(false);
   const [quizData, setQuizData] = useState({
-    problemTypeId: TEMPLATE_IDS.LISTEN_FILL_BLANK, // Default to Listen and Fill in the Blank Quiz
+    problemTypeId: TEMPLATE_IDS.FILL_IN_BLANK, // Default to Fill in the Blank Quiz (ID 10)
     unitTitle: 'Quick Test Quiz',
     paragraphText: '',
     answerContent: '',
     blankOptions: '',
+    optionsForBlanks: '',
     scriptText: '',
     correctAnswers: '',
     wordBank: '',
@@ -739,11 +817,12 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
   const handleCloseModal = () => {
     setShowQuizModal(false);
     setQuizData({ 
-      problemTypeId: TEMPLATE_IDS.LISTEN_FILL_BLANK,
+      problemTypeId: TEMPLATE_IDS.FILL_IN_BLANK,
       unitTitle: 'Quick Test Quiz',
       paragraphText: '',
       answerContent: '',
       blankOptions: '',
+      optionsForBlanks: '',
       scriptText: '',
       correctAnswers: '',
       wordBank: '',
@@ -760,7 +839,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
   const handleQuizSubmit = async () => {
     try {
       // Validate required fields based on problem type
-      if (quizData.problemTypeId === TEMPLATE_IDS.HIGHLIGHT_JAPANESE || quizData.problemTypeId === TEMPLATE_IDS.HIGHLIGHT_WORD) {
+      if (quizData.problemTypeId === TEMPLATE_IDS.HIGHLIGHT_JAPANESE) {
         // For highlight quizzes, ensure fixedWordsExplanation is not empty
         if (!quizData.fixedWordsExplanation || quizData.fixedWordsExplanation.trim() === '') {
           alert('Fixed Words Explanation is required for highlight quizzes. Please enter at least one word pair.');
@@ -793,6 +872,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
           startTime: quizData.startTime,
           endTime: quizData.endTime,
           blankOptions: quizData.blankOptions,
+          optionsForBlanks: quizData.optionsForBlanks,
           scriptText: quizData.scriptText,
           imageFile: quizData.imageFile,
           answerContent: quizData.answerContent

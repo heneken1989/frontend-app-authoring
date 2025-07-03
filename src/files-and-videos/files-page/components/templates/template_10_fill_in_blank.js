@@ -1,14 +1,37 @@
-import { dragDropQuizTemplate } from './template_20_drag_drop';
-import { getFillInBlankTemplate } from './template_10_fill_in_blank';
-import { listenFillInBlankTemplate, getListenFillInBlankTemplate } from './template_42_listen_fill_blank';
-import { getListenWithImageMultipleDifferentBlankOptionsTemplate } from './template_46_listen_with_image_multiple_different_blank_options';
-import { getGrammarDropdownTemplate } from './template_18_grammar_dropdown';
+export const getFillInBlankTemplate = (questionText, correctAnswers, instructions = 'Fill in the blanks with the correct answers.') => {
+    // Log the incoming parameters to help debug
+    console.log('getFillInBlankTemplate called with:', {
+        questionText,
+        correctAnswers
+    });
+    
+    // Process the paragraph to replace blanks
+    const blanks = {};
+    let currentId = 1;
+    
+    // Process the paragraph to replace blanks marked with [BLANK: option1|option2|option3]
+    const processedParagraph = questionText.replace(/\[BLANK\s*\d*:\s*([^\]]+)\]/g, (match, content) => {
+        const blankId = `blank${currentId}`;
+        const options = content.split('|').map(opt => opt.trim());
+        const correctAnswer = options[0]; // First option is correct
+        blanks[blankId] = correctAnswer;
+        currentId += 1;
+        return `<input type="text" id="${blankId}" class="blank-input" placeholder="Type your answer">`;
+    });
 
-const fillBlankQuizTemplate = `<!DOCTYPE html>
+    let template = fillInBlankTemplate
+        .replace('{{PARAGRAPH_TEXT}}', processedParagraph)
+        .replace('{{CORRECT_ANSWERS}}', JSON.stringify(blanks))
+        .replace('{{INSTRUCTIONS}}', instructions);
+    
+    return template;
+};
+
+export const fillInBlankTemplate = `<!DOCTYPE html>
 <html>
 <head>
     <title>Fill in the Blank Quiz</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         body {
             font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -20,16 +43,23 @@ const fillBlankQuizTemplate = `<!DOCTYPE html>
             position: relative;
         }
         .container {
-            padding: 0;
+            padding: 20px;
             position: relative;
             height: 100%;
         }
+        .instructions {
+            background-color: #f8f8f8;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #0075b4;
+            font-style: italic;
+        }
         .paragraph {
             background-color: #f8f8f8;
-            padding: 0rem;
+            padding: 1rem;
             margin-bottom: 0.5rem;
             font-size: 1.2rem;
-            line-height: 1;
+            line-height: 1.6;
             position: relative;
             z-index: 1;
         }
@@ -128,6 +158,7 @@ const fillBlankQuizTemplate = `<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
+        <div class="instructions">{{INSTRUCTIONS}}</div>
         <div class="paragraph">
             <form id="quizForm" onsubmit="return false;">
                 {{PARAGRAPH_TEXT}}
@@ -350,16 +381,6 @@ const fillBlankQuizTemplate = `<!DOCTYPE html>
                 }
             }
 
-            // Check cookie on load
-            document.addEventListener('DOMContentLoaded', function() {
-                if (document.cookie.includes('showAnswerParagraph=true')) {
-                    console.log("Found cookie, showing answer");
-                    const result = calculateResults();
-                    updateDisplay(result);
-                    document.getElementById('answer-paragraph').style.display = 'block';
-                }
-            });
-
             // Set up EdX bindings
             if (channel) {
                 channel.bind('getGrade', getGrade);
@@ -369,101 +390,4 @@ const fillBlankQuizTemplate = `<!DOCTYPE html>
         })();
     </script>
 </body>
-</html>`;
-
-const processParagraph = (paragraphText) => {
-  const blanks = {};
-  let currentId = 1;
-  
-  // Process the paragraph to replace blanks
-  const processedParagraph = paragraphText.replace(/\[BLANK\s*\d*:\s*([^\]]+)\]/g, (match, content) => {
-    const blankId = `blank${currentId}`;
-    const options = content.split('|').map(opt => opt.trim());
-    const correctAnswer = options[0]; // First option is correct
-    blanks[blankId] = correctAnswer;
-    currentId += 1;
-    return `<input type="text" id="${blankId}" class="blank-input" placeholder="Type your answer">`;
-  });
-
-  return {
-    processedParagraph,
-    blanks
-  };
-};
-
-const getQuizTemplate = (paragraphText) => {
-  const { processedParagraph, blanks } = processParagraph(paragraphText);
-  
-  // Replace placeholders in the template
-  return fillBlankQuizTemplate
-    .replace('{{PARAGRAPH_TEXT}}', processedParagraph)
-    .replace('{{CORRECT_ANSWERS}}', JSON.stringify(blanks));
-};
-
-const processDragDropQuiz = (paragraphText, words) => {
-  const blanks = {};
-  let currentId = 1;
-  
-  // Process the paragraph to replace blanks marked with （ー）
-  const processedParagraph = paragraphText.replace(/（ー）/g, (match) => {
-    const blankId = `blank${currentId}`;
-    const correctAnswer = words[currentId - 1]; // Get the correct word from the array
-    blanks[blankId] = correctAnswer;
-    currentId += 1;
-    return `<div id="${blankId}" class="blank" draggable="false"></div>`;
-  });
-
-  // Create a copy of words array and shuffle it
-  const shuffledWords = [...words];
-  for (let i = shuffledWords.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
-  }
-
-  // Create word bank HTML with the shuffled words
-  const wordBankHTML = shuffledWords.map(word => 
-    `<div class="draggable-word" draggable="true">${word}</div>`
-  ).join('');
-
-  return {
-    processedParagraph,
-    wordBankHTML,
-    blanks
-  };
-};
-
-const getDragDropQuizTemplate = (paragraphText, words) => {
-  const { processedParagraph, wordBankHTML, blanks } = processDragDropQuiz(paragraphText, words);
-  
-  // Replace placeholders in the template
-  return dragDropQuizTemplate
-    .replace('{{PARAGRAPH_TEXT}}', processedParagraph)
-    .replace('{{WORD_BANK}}', wordBankHTML)
-    .replace('{{CORRECT_ANSWERS}}', JSON.stringify(blanks));
-};
-
-// Template IDs - matching actual template files
-const TEMPLATE_IDS = {
-  FILL_IN_BLANK: 10,                                   // template_10_fill_in_blank.js
-  GRAMMAR_DROPDOWN: 18,                                // template_18_grammar_dropdown.js
-  DRAG_DROP_OLD: 20,                                   // template_20_drag_drop.js  
-  LISTEN_SINGLE_CHOICE: 39,                           // template_39_listen_single_choice.js
-  LISTEN_SINGLE_CHOICE_NO_IMAGE: 40,                  // template_40_listen_single_choice_no_image.js
-  HIGHLIGHT_JAPANESE: 41,                             // template_41_highlight_japanese.js
-  LISTEN_FILL_BLANK: 42,                              // template_42_listen_fill_blank.js
-  LISTEN_WITH_IMAGE_MULTIPLE_DIFFERENT_BLANK_OPTIONS: 46, // template_46_listen_with_image_multiple_different_blank_options.js
-  LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER: 63,            // template_63_listen_image_select_multiple_answer.js
-  LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS: 65, // template_65_listen_image_select_multiple_answer_multioptions.js
-  LISTEN_WRITE_ANSWER_WITH_IMAGE: 67                  // template_67_listen_write_answer_with_image.js
-};
-
-export { 
-  getDragDropQuizTemplate, 
-  getListenFillInBlankTemplate,
-  getFillInBlankTemplate,
-  getQuizTemplate,
-  listenFillInBlankTemplate,
-  getListenWithImageMultipleDifferentBlankOptionsTemplate,
-  getGrammarDropdownTemplate,
-  TEMPLATE_IDS 
-}; 
+</html>`; 

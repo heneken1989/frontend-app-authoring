@@ -1,32 +1,20 @@
-export const getListenImageSelectMultipleAnswerTemplate = (questionText, correctAnswers, audioFile, startTime = 0, endTime = 0, instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
+export const getListenWriteAnswerWithImageTemplate = (questionText, correctAnswers, audioFile, startTime = 0, endTime = 0, instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
     // Log the incoming parameters to help debug
-    console.log('getListenImageSelectMultipleAnswerTemplate called with:', {
+    console.log('getListenWriteAnswerWithImageTemplate called with:', {
         questionText,
         correctAnswers,
         answerContent,
         blankOptions
     });
     
-    // Parse the blank options for dropdowns - these are the options for all dropdowns
-    let optionsArray = [];
-    if (blankOptions && blankOptions.trim()) {
-        // Remove duplicates by converting to Set and back to array
-        optionsArray = [...new Set(blankOptions.split(',').map(option => option.trim()).filter(option => option))];
-    } else {
-        // Default options if none provided
-        optionsArray = ['O', 'X'];
-    }
-    
-    // Parse the correct answers - each position corresponds to a day of the week
-    // If correctAnswers is a string like "O,O,X,O,X,X,X", parse it into an array
+    // Parse the correct answers from blankOptions
+    // Format: "9:00〜12:00;4:30〜7:30;日/にち" - each blank separated by semicolon, multiple answers for one blank separated by /
     let correctAnswersArray = [];
-    if (correctAnswers && typeof correctAnswers === 'string') {
-        correctAnswersArray = correctAnswers.split(',').map(answer => answer.trim());
-    } else if (Array.isArray(correctAnswers)) {
-        correctAnswersArray = correctAnswers;
-    } else {
-        // Default to the first option for all answers if no correct answers provided
-        correctAnswersArray = new Array(7).fill(optionsArray[0]);
+    if (blankOptions && blankOptions.trim()) {
+        correctAnswersArray = blankOptions.split(';').map(answerGroup => {
+            const answers = answerGroup.trim().split('/').map(answer => answer.trim());
+            return answers;
+        });
     }
     
     // Process the question text (only for display, not for answers)
@@ -38,44 +26,46 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
         // Process each line of the answer content
         const answerLines = answerContent.split('\n').map(line => line.trim()).filter(line => line);
         
-        // Process each line of answer content to replace placeholders with dropdowns
-        let answerDropdownIndex = 0;
+        // Process each line of answer content to replace placeholders with text inputs
+        let answerInputIndex = 0;
         const processedAnswerLines = answerLines.map((line, lineIndex) => {
             // Process each placeholder in the line
             let processedLine = line;
-            let placeholderMatch;
             const placeholderRegex = /（ー）/g;
-            
-            // Replace each placeholder in the line with a dropdown
-            while ((placeholderMatch = placeholderRegex.exec(line)) !== null) {
-                // Get the correct answer for this dropdown (use the index if available, otherwise default to first option)
-                const correctAnswer = correctAnswersArray[answerDropdownIndex] || optionsArray[0];
+            let match;
+            let currentPosition = 0;
+            let resultLine = '';
+
+            // Process each placeholder match in sequence
+            while ((match = placeholderRegex.exec(line)) !== null) {
+                // Add text before the placeholder
+                resultLine += line.substring(currentPosition, match.index);
                 
-                // Create dropdown options from the options array
-                const optionsHtml = optionsArray.map(option => {
-                    // Remove the selected attribute to make "Select" the default
-                    return `<option value="${option}">${option}</option>`;
-                }).join('');
+                // Get the correct answers for this input
+                const correctAnswersForBlank = correctAnswersArray[answerInputIndex] || [''];
                 
-                const dropdown = `
-                    <select class="answer-select" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}" style="width: auto; min-width: 80px;">
-                        <option value="" selected>Select</option>
-                        ${optionsHtml}
-                    </select>
+                // Create the text input element
+                const textInput = `
+                    <input type="text" 
+                           class="answer-input" 
+                           data-blank-number="${answerInputIndex + 1}" 
+                           data-correct='${JSON.stringify(correctAnswersForBlank)}' 
+                           placeholder="答えを入力してください" 
+                           style="width: auto; min-width: 120px; padding: 4px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 1rem;">
                 `;
                 
-                // Replace the placeholder with the dropdown
-                const beforePlaceholder = processedLine.substring(0, placeholderMatch.index);
-                const afterPlaceholder = processedLine.substring(placeholderMatch.index + 4); // 4 is the length of （ー）
-                processedLine = beforePlaceholder + dropdown + afterPlaceholder;
+                // Add the text input
+                resultLine += textInput;
                 
-                // Update the regex's lastIndex to account for the new dropdown
-                placeholderRegex.lastIndex = beforePlaceholder.length + dropdown.length;
-                
-                answerDropdownIndex++;
+                // Update position and index
+                currentPosition = match.index + match[0].length;
+                answerInputIndex++;
             }
             
-            return processedLine;
+            // Add any remaining text after the last placeholder
+            resultLine += line.substring(currentPosition);
+            
+            return resultLine;
         });
         
         // Wrap each line in a div
@@ -90,7 +80,7 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
     // Extract the first line as the question text
     const firstLine = processedLines[0] || questionText;
     
-    let template = listenImageSelectMultipleAnswerTemplate
+    let template = listenWriteAnswerWithImageTemplate
         .replace('{{QUESTION_TEXT}}', firstLine)
         .replace(/{{ANSWERS_LIST}}/g, answersList) // Replace all occurrences
         .replace('{{AUDIO_FILE}}', audioFile || '')
@@ -114,10 +104,10 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
     return template;
 };
 
-export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
+export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
 <html>
 <head>
-    <title>Listen and Select Multiple Answer Quiz</title>
+    <title>Listen Write Answer with Image Quiz</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         body {
@@ -248,7 +238,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             gap: 8px;
             border: 1px solid #e8e8e8;
         }
-        .select-container {
+        .input-container {
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -257,40 +247,36 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             background: white;
             max-width: 400px;
         }
-        .select-answer-header {
+        .input-answer-header {
             font-size: 1rem;
             color: #333;
             margin: 0;
             font-weight: bold;
         }
-        .answer-select {
+        .answer-input {
             font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
             font-size: 1rem;
             font-weight: 400;
             line-height: 1.5;
             text-align: left;
             width: auto;
-            min-width: 80px;
+            min-width: 120px;
+            padding: 4px 8px;
             border: 1px solid #666;
             border-radius: 4px;
             background-color: white;
             color: #333;
-            cursor: pointer;
             display: inline-block;
         }
-        .answer-select:focus {
+        .answer-input:focus {
             outline: none;
             border-color: #0075b4;
         }
-        .answer-select option {
-            padding: 8px;
-            font-size: 0.95rem;
-        }
-        .answer-select.correct {
+        .answer-input.correct {
             border-color: #2e7d32;
             background-color: #ecf3ec;
         }
-        .answer-select.incorrect {
+        .answer-input.incorrect {
             border-color: #b40000;
             background-color: #f9ecec;
         }
@@ -503,7 +489,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             .quiz-image {
                 max-height: 200px;
             }
-            .select-container {
+            .input-container {
                 width: 100%;
             }
         }
@@ -555,7 +541,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                             <span id="end-time">{{END_TIME}}</span>
                         </div>
                     </div>
-                    <div class="select-container">
+                    <div class="input-container">
                         <div class="answers-list">{{ANSWERS_LIST}}</div>
                     </div>
                     <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
@@ -589,16 +575,20 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         let selectedAnswers = new Array(correctAnswers.length).fill('');
         
         function calculateResults() {
-            const totalQuestions = document.querySelectorAll('.answer-select').length;
+            const totalQuestions = document.querySelectorAll('.answer-input').length;
             let correctCount = 0;
             const answers = {};
             
-            document.querySelectorAll('.answer-select').forEach((select, index) => {
-                const userAnswer = select.value.trim();
-                const correctAnswer = select.getAttribute('data-correct');
+            document.querySelectorAll('.answer-input').forEach((input, index) => {
+                const userAnswer = input.value.trim();
+                const correctAnswersForBlank = JSON.parse(input.getAttribute('data-correct'));
                 selectedAnswers[index] = userAnswer;
                 
-                const isCorrect = correctAnswer === userAnswer;
+                // Check if user answer matches any of the correct answers (case insensitive)
+                const isCorrect = correctAnswersForBlank.some(correctAnswer => 
+                    correctAnswer.toLowerCase() === userAnswer.toLowerCase()
+                );
+                
                 if (isCorrect) correctCount++;
                 answers[index] = userAnswer;
             });
@@ -627,18 +617,22 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             scoreDisplay.textContent = result.message;
             
             let answerHtml = '';
-            document.querySelectorAll('.answer-select').forEach((select, index) => {
+            document.querySelectorAll('.answer-input').forEach((input, index) => {
                 const number = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'][index];
                 const userAnswer = selectedAnswers[index];
-                const correctAnswer = select.getAttribute('data-correct');
-                const isCorrect = correctAnswer === userAnswer;
+                const correctAnswersForBlank = JSON.parse(input.getAttribute('data-correct'));
                 
-                select.classList.remove('correct', 'incorrect');
+                // Check if user answer is correct (case insensitive)
+                const isCorrect = correctAnswersForBlank.some(correctAnswer => 
+                    correctAnswer.toLowerCase() === userAnswer.toLowerCase()
+                );
+                
+                input.classList.remove('correct', 'incorrect');
                 if (state.showAnswer) {
-                    select.classList.add(isCorrect ? 'correct' : 'incorrect');
-                    select.disabled = true;
+                    input.classList.add(isCorrect ? 'correct' : 'incorrect');
+                    input.disabled = true;
                 } else {
-                    select.disabled = false;
+                    input.disabled = false;
                 }
                 
                 answerHtml += '<div class="answer-item-result">' + number + ' ';
@@ -648,11 +642,11 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         answerHtml += '<span class="correct-answer">' + userAnswer + '</span> ✓';
                     } else {
                         answerHtml += '<span class="wrong-answer">' + userAnswer + '</span> → ' +
-                                     '<span class="correct-answer">' + correctAnswer + '</span> ✗';
+                                     '<span class="correct-answer">' + correctAnswersForBlank.join(' / ') + '</span> ✗';
                     }
                 } else {
                     answerHtml += '<span class="no-answer">未回答</span> → ' +
-                                 '<span class="correct-answer">' + correctAnswer + '</span>';
+                                 '<span class="correct-answer">' + correctAnswersForBlank.join(' / ') + '</span>';
                 }
                 
                 answerHtml += '</div>';
@@ -667,9 +661,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             }
         }
 
-        // Add change event listener to each dropdown
-        document.querySelectorAll('.answer-select').forEach((select, index) => {
-            select.addEventListener('change', function() {
+        // Add change event listener to each input
+        document.querySelectorAll('.answer-input').forEach((input, index) => {
+            input.addEventListener('input', function() {
                 selectedAnswers[index] = this.value;
                 if (state.showAnswer) {
                     const result = calculateResults();
@@ -740,9 +734,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         const answers = JSON.parse(state.answer);
                         Object.entries(answers).forEach(([index, value]) => {
                             selectedAnswers[index] = value;
-                            const select = document.querySelectorAll('.answer-select')[index];
-                            if (select) {
-                                select.value = value;
+                            const input = document.querySelectorAll('.answer-input')[index];
+                            if (input) {
+                                input.value = value;
                             }
                         });
 

@@ -33,19 +33,26 @@ B：いいえ、ミラーさん（ー）ブラジル人じゃありません。`
         <Form.Control
           as="textarea"
           rows={3}
-          value={quizData.optionsForBlanks || "は,が,で,に,を,へ,から,まで"}
+          value={quizData.optionsForBlanks || "は,が,で,に,を"}
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
               optionsForBlanks: e.target.value
             }));
           }}
-          placeholder="は,が,で,に,を,へ,から,まで"
+          placeholder="は,が,で,に,を"
         />
         <Form.Text>
-          Enter options for each blank, separated by semicolons. Each blank's options are comma-separated.<br />
-          Example: <code>option1a,option1b;option2a,option2b</code><br />
-          The first option for each blank will be the correct answer.
+          You can enter options in two ways:<br />
+          1. Single list: <code>は,が,で,に,を</code><br />
+          - First N words will be correct answers in order (N = number of blanks)<br />
+          - Remaining words will be wrong options for all blanks<br />
+          Example: If you have 2 blanks and enter "は,が,で,に,を":<br />
+          - First blank: は (correct), で,に,を (wrong options)<br />
+          - Second blank: が (correct), で,に,を (wrong options)<br /><br />
+          2. Different options for each blank: <code>は,が,を;に,へ,で</code><br />
+          - Use semicolons (;) to separate options for each blank<br />
+          - First option in each group is the correct answer
         </Form.Text>
       </Form.Group>
 

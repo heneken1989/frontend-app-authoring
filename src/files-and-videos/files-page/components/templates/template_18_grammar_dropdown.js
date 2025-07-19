@@ -1,11 +1,29 @@
 export const getGrammarDropdownTemplate = (questionText, optionsForBlanks, audioFile, startTime = 0, endTime = 0, instructions = '正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '') => {
-    // Parse the options for each blank: semicolon-separated, each blank's options are comma-separated
-    // Example: "a.韓国(かんこく),b.中国(ちゅうごく);a.コンピューター,b.自動車(じどうしゃ)"
+    // Parse the options for each blank
     let blanksOptionsArray = [];
     if (optionsForBlanks && optionsForBlanks.trim()) {
-        blanksOptionsArray = optionsForBlanks.split(';').map(opt =>
-            opt.split(',').map(o => o.trim()).filter(Boolean)
-        );
+        // If there's no semicolon, use first N words as correct answers in order, rest as wrong options
+        if (!optionsForBlanks.includes(';')) {
+            const allOptions = optionsForBlanks.split(',').map(o => o.trim()).filter(Boolean);
+            // Count number of blanks in answerContent
+            const blankCount = (answerContent.match(/（ー）/g) || []).length;
+            
+            // Take first N words as correct answers (N = number of blanks)
+            const correctAnswers = allOptions.slice(0, blankCount);
+            // All words can be options (including correct answers)
+            // For each blank, create options array with its correct answer first
+            blanksOptionsArray = correctAnswers.map((correctAnswer, index) => {
+                // Get all options except the current correct answer
+                const otherOptions = allOptions.filter(opt => opt !== correctAnswer);
+                // Put correct answer first, followed by all other options
+                return [correctAnswer, ...otherOptions];
+            });
+        } else {
+            // Original behavior: split by semicolon for different options per blank
+            blanksOptionsArray = optionsForBlanks.split(';').map(opt =>
+                opt.split(',').map(o => o.trim()).filter(Boolean)
+            );
+        }
     }
 
     // Process answer content to replace placeholders with dropdowns

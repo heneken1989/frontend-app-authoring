@@ -15,6 +15,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             color: #414141;
             height: 100%;
             position: relative;
+            font-size: 0.8rem;
         }
         .container {
             padding: 1rem;
@@ -25,7 +26,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             background-color: #f8f8f8;
             padding: 1.5rem;
             margin-bottom: 1rem;
-            font-size: 1.3rem;
+            font-size: 0.8rem;
             line-height: 2;
             position: relative;
             z-index: 1;
@@ -48,7 +49,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             cursor: move;
             user-select: none;
             transition: background-color 0.2s;
-            font-size: 1.2rem;
+            font-size: 0.8rem;
             min-width: 80px;
             text-align: center;
         }
@@ -69,6 +70,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             background-color: white;
             text-align: center;
             line-height: 45px;
+            font-size: 0.8rem;
         }
         .blank.dragover {
             background-color: #e6f3f8;
@@ -91,7 +93,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             padding: 1rem;
             border-radius: 4px;
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 0.8rem;
         }
         .success {
             background-color: #ecf3ec;
@@ -105,7 +107,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
         }
         .answer-feedback {
             margin-top: 1rem;
-            font-size: 1.1rem;
+            font-size: 0.8rem;
         }
         .correct-answer {
             color: #2e7d32;
@@ -152,7 +154,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             padding: 0.8rem 1rem;
             border-radius: 3px;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 0.8rem;
             background: #f9ecec;
             color: #b40000;
             border: 1px solid #ebccd1;
@@ -169,7 +171,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             box-shadow: none;
             border-radius: 3px;
             padding: 0;
-            font-size: 1.2rem;
+            font-size: 0.8rem;
             display: block;
         }
         .quiz-word {
@@ -180,6 +182,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
             box-sizing: border-box;
+            font-size: 0.8rem;
         }
         .quiz-word.correct {
             background: #2e7d32;
@@ -196,26 +199,81 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             vertical-align: middle;
             min-width: 120px;
             text-align: center;
+            font-size: 0.8rem;
         }
         .answer-blank .quiz-word {
             margin: 0 0.2rem;
             padding: 0.5rem 0.8rem;
             border-radius: 4px;
             font-weight: bold;
+            font-size: 0.8rem;
         }
         #answer-paragraph form {
             padding: 0;
             margin: 0;
             background: transparent;
         }
+        .instructor-section {
+            background-color: #f0f8ff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #0075b4;
+        }
+        .instructor-title {
+            font-weight: bold;
+            color: #0075b4;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+        .instructor-content {
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: #333;
+        }
+        .instructor-note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 3px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            color: #856404;
+        }
+        .instructions {
+            font-family: Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
+            background-color: white;
+            color: #333;
+            font-style: italic;
+            margin: 0;
+            position: relative;
+            padding-left: 20px;
+        }
+        .instructions:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #0075b4;
+        }
         #answer-paragraph form > div {
             margin-bottom: 1rem;
             line-height: 1.8;
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="instructions" id="quiz-instructions">
+            {{INSTRUCTIONS}}
+        </div>
         <div class="paragraph">
             <form id="quizForm" onsubmit="return false;">
                 {{PARAGRAPH_TEXT}}
@@ -231,7 +289,7 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                 <div id="answer-paragraph" class="answer-paragraph"></div>
             </div>
         </div>
-        <div id="answer-details" class="answer-feedback"></div>
+ 
     </div>
 
     <script>
@@ -700,14 +758,33 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         var formContent = quizForm.innerHTML;
                         console.log('Form content without word bank:', formContent);
                         
-                        // Split the content by Japanese period and filter out empty strings
-                        var sentences = formContent.split('。').filter(function(s) { return s.trim(); });
+                        // Check if content contains numbered characters (①②③...)
+                        var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩]/;
+                        var sentences = [];
+                        
+                        if (numberedPattern.test(formContent)) {
+                            // Split by numbered characters
+                            console.log('Found numbered characters, splitting by them');
+                            sentences = formContent.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/).filter(function(s) { 
+                                return s.trim(); 
+                            });
+                        } else {
+                            // Fall back to splitting by Japanese period
+                            console.log('No numbered characters found, splitting by Japanese periods');
+                            sentences = formContent.split('。').filter(function(s) { 
+                                return s.trim(); 
+                            });
+                            // Add periods back for non-numbered splitting
+                            sentences = sentences.map(function(s, index) {
+                                return s + (index < sentences.length - 1 || s.trim() ? '。' : '');
+                            });
+                        }
+                        
                         console.log('Split sentences:', sentences.length);
                         
-                        // Wrap each sentence in a div and add the period back
-                        var wrappedContent = sentences.map(function(s, index) {
-                            // Only add period if it's not the last empty sentence
-                            return '<div>' + s + (index < sentences.length - 1 || s.trim() ? '。' : '') + '</div>';
+                        // Wrap each sentence in a div
+                        var wrappedContent = sentences.map(function(s) {
+                            return '<div>' + s + '</div>';
                         }).join('');
                         
                         // Reconstruct the form with the wrapped sentences and the word bank
@@ -731,7 +808,26 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         var originalBlanks = tempDiv.querySelectorAll('.blank');
                         console.log('Number of blanks in original HTML:', originalBlanks.length);
                         
-                        var sentences = original.split('。').filter(function(s) { return s; }).map(function(s) { return s + '。'; });
+                        // Check if content contains numbered characters for fallback too
+                        var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩]/;
+                        var sentences = [];
+                        
+                        if (numberedPattern.test(original)) {
+                            // Split by numbered characters
+                            console.log('Found numbered characters in fallback, splitting by them');
+                            sentences = original.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/).filter(function(s) { 
+                                return s.trim(); 
+                            });
+                        } else {
+                            // Fall back to splitting by Japanese period
+                            console.log('No numbered characters found in fallback, splitting by Japanese periods');
+                            sentences = original.split('。').filter(function(s) { 
+                                return s; 
+                            }).map(function(s) { 
+                                return s + '。'; 
+                            });
+                        }
+                        
                         console.log('Split sentences (fallback):', sentences.length);
                         
                         para.innerHTML = sentences.map(function(s) { return '<div>' + s + '</div>'; }).join('');

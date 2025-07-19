@@ -144,7 +144,6 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
             background-color: #ffffff;
             line-height: 1.6;
             box-shadow: none;
-            border-radius: 3px;
             padding: 0;
             font-size: 1.2rem;
             display: flex;

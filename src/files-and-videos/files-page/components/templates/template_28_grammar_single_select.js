@@ -477,25 +477,27 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
 </html>`;
 
 export const getGrammarSingleSelectTemplate = (questionText, optionsString, instructions = '正しい文を選んでください。', explanationText = '') => {
-    // Split the options string and trim each option
-    const options = optionsString.split(',').map(opt => opt.trim());
-    
-    // First option is correct, sort others alphabetically
-    const correctAnswer = options[0];
-    const sortedOptions = [...options].sort((a, b) => a.localeCompare(b, 'ja'));
-    
-    // Generate options HTML
-    const optionsHtml = sortedOptions.map(option => 
-        '<button type="button" class="option-button" data-value="' + option + '">' + option + '</button>'
-    ).join('');
-    
-    // Process explanation text to highlight quoted text in red
-    const processedExplanationText = explanationText.replace(/"([^"]+)"/g, '<span class="explanation-highlight">$1</span>');
-    
-    return grammarSingleSelectTemplate
-        .replace('{{QUESTION_TEXT}}', questionText)
-        .replace('{{OPTIONS}}', optionsHtml)
-        .replace('{{CORRECT_ANSWER}}', correctAnswer)
-        .replace('{{INSTRUCTIONS}}', instructions)
-        .replace('{{EXPLANATION_TEXT}}', processedExplanationText || '');
+  // Process questionText to underline text in quotes
+  const processedQuestionText = questionText.replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
+
+  // Split options string into array and trim each option
+  const options = optionsString.split(',').map(option => option.trim());
+  const correctAnswer = options[0]; // First option is the correct answer
+
+  // Create HTML for options
+  const optionsHtml = options
+    .sort((a, b) => a.localeCompare(b)) // Sort alphabetically
+    .map(option => {
+      // Process each option to underline text in quotes
+      const processedOption = option.replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
+      return `<button type="button" class="option-button" data-value="${option}">${processedOption}</button>`;
+    })
+    .join('');
+
+  return grammarSingleSelectTemplate
+    .replace('{{INSTRUCTIONS}}', instructions)
+    .replace('{{QUESTION_TEXT}}', processedQuestionText)
+    .replace('{{OPTIONS}}', optionsHtml)
+    .replace('{{EXPLANATION_TEXT}}', explanationText)
+    .replace('{{CORRECT_ANSWER}}', correctAnswer); // Add this line
 }; 

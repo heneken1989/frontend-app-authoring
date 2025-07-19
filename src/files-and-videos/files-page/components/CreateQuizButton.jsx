@@ -48,6 +48,20 @@ const shouldShowAudioField = (problemTypeId) => ![
   TEMPLATE_IDS.READING_SELECT_1, // Add Reading Select 1 to the list of templates that don't need audio
   TEMPLATE_IDS.ID38_READING_SELECT_2, // Add Reading Select 2 to the list of templates that don't need audio
   TEMPLATE_IDS.VOCAB_MATCHING,
+  TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE, // Add ID3 to the list
+  TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1, // Add ID4 to the list
+  TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2, // Add ID5 to the list
+  TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3, // Add ID7 to the list
+  TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4, // Add ID8 to the list
+  TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5, // Add ID9 to the list
+  TEMPLATE_IDS.ID10_VOCAB_SINGLE_SELECT_6, // Add ID10 to the list
+  TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP, // Add ID12 to the list
+  TEMPLATE_IDS.DRAG_DROP_OLD, // Add ID20 to the list
+  TEMPLATE_IDS.ID13_VOCAB_SINGLE_SELECT_7, // Add ID13 to the list
+  TEMPLATE_IDS.ID14_VOCAB_SINGLE_SELECT_8, // Add ID14 to the list
+  TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9, // Add ID15 to the list
+  TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10, // Add ID16 to the list
+  TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11, // Add ID17 to the list
 ].includes(problemTypeId);
 
 const shouldShowImageField = (problemTypeId) => ![
@@ -60,7 +74,21 @@ const shouldShowImageField = (problemTypeId) => ![
   TEMPLATE_IDS.READING_SAME_31,
   TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS,
   TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE,
-  TEMPLATE_IDS.READING_DROPLIST_NO_IMAGE
+  TEMPLATE_IDS.READING_DROPLIST_NO_IMAGE,
+  TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE, // Add ID3 to the list
+  TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1, // Add ID4 to the list
+  TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2, // Add ID5 to the list
+  TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3,
+  TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4,
+  TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5,
+  TEMPLATE_IDS.ID10_VOCAB_SINGLE_SELECT_6,
+  TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP, // Add ID12 to the list
+  TEMPLATE_IDS.DRAG_DROP_OLD, // Add ID20 to the list
+  TEMPLATE_IDS.ID13_VOCAB_SINGLE_SELECT_7, // Add ID13 to the list
+  TEMPLATE_IDS.ID14_VOCAB_SINGLE_SELECT_8, // Add ID14 to the list
+  TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9, // Add ID15 to the list
+  TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10, // Add ID16 to the list
+  TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11, // Add ID17 to the list
 ].includes(problemTypeId);
 
 // QuizModal Component
@@ -111,7 +139,7 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
                 }));
               }}
             >
-              <option value={TEMPLATE_IDS.FILL_IN_BLANK}>{TEMPLATE_IDS.FILL_IN_BLANK} - Fill in the Blank Quiz</option>
+          
               <option value={TEMPLATE_IDS.GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
               <option value={TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT}>{TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT} - Grammar Sentence Rearrangement Quiz</option>
               <option value={TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT}>{TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT} - Grammar Single Select Quiz</option>
@@ -135,6 +163,19 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               <option value={TEMPLATE_IDS.ID38_READING_SELECT_2}>38 - Reading Select Quiz 2</option>
               <option value={TEMPLATE_IDS.READING_MULTIPLE_QUESTION_CONVERSATION}>{TEMPLATE_IDS.READING_MULTIPLE_QUESTION_CONVERSATION} - Reading Multiple Question (Conversation)</option>
               <option value={TEMPLATE_IDS.VOCAB_MATCHING}>{TEMPLATE_IDS.VOCAB_MATCHING} - Vocabulary Matching Quiz</option>
+              <option value={TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE}>{TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE} - Vocabulary Single Choice Quiz</option>
+              <option value={TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1}>{TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1} - Vocabulary Single Choice Quiz 1</option>
+              <option value={TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2}>{TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2} - Vocabulary Single Choice Quiz 2</option>
+              <option value={TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3}>{TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3} - Vocabulary Single Choice Quiz 3</option>
+              <option value={TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4}>{TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4} - Vocabulary Single Choice Quiz 4</option>
+              <option value={TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5}>{TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5} - Vocabulary Single Choice Quiz 5</option>
+              <option value={TEMPLATE_IDS.ID10_VOCAB_SINGLE_SELECT_6}>{TEMPLATE_IDS.ID10_VOCAB_SINGLE_SELECT_6} - Vocabulary Single Choice Quiz 6</option>  
+              <option value={TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP}>{TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP} - Vocabulary Drag and Drop Quiz</option>
+              <option value={TEMPLATE_IDS.ID13_VOCAB_SINGLE_SELECT_7}>{TEMPLATE_IDS.ID13_VOCAB_SINGLE_SELECT_7} - Vocabulary Single Choice Quiz 7</option>
+              <option value={TEMPLATE_IDS.ID14_VOCAB_SINGLE_SELECT_8}>{TEMPLATE_IDS.ID14_VOCAB_SINGLE_SELECT_8} - Vocabulary Single Choice Quiz 8</option>
+              <option value={TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9}>{TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9} - Vocabulary Single Choice Quiz 9</option>
+              <option value={TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10}>{TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10} - Vocabulary Single Choice Quiz 10</option>
+              <option value={TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11}>{TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11} - Vocabulary Single Choice Quiz 11</option>
             </Form.Control>
             <Form.Text>
               Select the type of quiz you want to create.
@@ -443,53 +484,65 @@ QuizModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
 };
 
-// Export the createQuiz function
-export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreated, onCreateUnit }) => {
-  try {
-    console.log('createQuiz called with:', {
-      courseId,
-      subsectionId,
-      quizData,
-      hasOnFileCreated: !!onFileCreated,
-      hasOnCreateUnit: !!onCreateUnit
-    });
+// Add this function before createQuiz
+const generateQuizTemplate = (templateId, quizData) => {
+  switch (templateId) {
+    case TEMPLATE_IDS.VOCAB_MATCHING:
+      const wordList = quizData.words.split(',').map(word => word.trim());
+      const dropZones = JSON.parse(quizData.dropZones || '[]');
+      return getVocabMatchingTemplate(
+        quizData.imageFile,
+        dropZones,
+        wordList,
+        quizData.instructions || '画像の正しい位置に単語をドラッグしてください。'
+      );
 
-    const client = getAuthenticatedHttpClient();
-    let htmlContent;
-    
-    // Select template based on problem type ID
-    const problemTypeId = parseInt(quizData?.problemTypeId, 10) || TEMPLATE_IDS.FILL_IN_BLANK; // Ensure number type
-    console.log('Selecting template for problemTypeId:', problemTypeId, typeof problemTypeId);
-    
-    switch (problemTypeId) {
-      case TEMPLATE_IDS.VOCAB_MATCHING:
-        const wordList = quizData.words.split(',').map(word => word.trim());
-        const dropZones = JSON.parse(quizData.dropZones || '[]');
-        htmlContent = getVocabMatchingTemplate(
-          quizData.imageFile,
-          dropZones,
-          wordList,
-          quizData.instructions || '画像の正しい位置に単語をドラッグしてください。'
-        );
-        break;
-      case TEMPLATE_IDS.FILL_IN_BLANK:
-        htmlContent = getFillInBlankTemplate(
-          quizData.paragraphText,
-          quizData.correctAnswers,
-          quizData.instructions || 'Fill in the blanks with the correct answers.'
-        );
-        break;
-      case TEMPLATE_IDS.DRAG_DROP_OLD: // Drag and Drop Quiz (ID 20)
-        const words = quizData.wordBank.split(',').map(word => word.trim());
-        htmlContent = getDragDropQuizTemplate(quizData.paragraphText, words);
-        break;
+    case TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || 'どう　かきますか',
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || 'どう　よみますか',
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '正しい　ほうを　えらんでください。',
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.FILL_IN_BLANK:
+      return getFillInBlankTemplate(
+        quizData.paragraphText,
+        quizData.correctAnswers,
+        quizData.instructions || 'Fill in the blanks with the correct answers.'
+      );
+
+    case TEMPLATE_IDS.DRAG_DROP_OLD: // Drag and Drop Quiz (ID 20)
+      const dragDropWords = quizData.wordBank.split(',').map(word => word.trim());
+      return getDragDropQuizTemplate(quizData.paragraphText, dragDropWords, quizData.instructions, quizData.instructorContent || '');
+
+    case TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP: // Drag and Drop Quiz (ID 12)
+      const vocabDragDropWords = quizData.wordBank.split(',').map(word => word.trim());
+      return getDragDropQuizTemplate(quizData.paragraphText, vocabDragDropWords);
+
       case TEMPLATE_IDS.LISTEN_FILL_BLANK: // Listen and Fill in the Blank
         // Parse the options for each blank
         const blankOptionsList = quizData.blankOptions.split(';').map(options => 
           options.split(',').map(opt => opt.trim())
         );
         
-        htmlContent = getListenFillInBlankTemplate(
+      return getListenFillInBlankTemplate(
           quizData.paragraphText,
           quizData.audioFile || '',
           quizData.startTime || 0,
@@ -499,7 +552,7 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
           quizData.scriptText || '',
           quizData.imageFile || ''
         );
-        break;
+
       case TEMPLATE_IDS.HIGHLIGHT_JAPANESE: // Highlight Word Quiz (Japanese)
         const correctWords = quizData.fixedWordsExplanation.split(',')
           .map(pair => {
@@ -521,14 +574,14 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
         console.log('Extracted correctWords:', correctWords);
         console.log('Original fixedWordsExplanation:', quizData.fixedWordsExplanation);
         
-        // Set default instructions for Japanese highlight
-        let defaultInstructions = '正(ただ)しくない言葉(ことば)をえらんでください';
+      // Set default instructions for Japanese highlight
+      let defaultInstructions = '正(ただ)しくない言葉(ことば)をえらんでください';
         
         // Make sure fixedWordsExplanation is not empty
         const fixedWordsExplanation = quizData.fixedWordsExplanation || 'These are the words that should be selected.';
         console.log('Final fixedWordsExplanation:', fixedWordsExplanation);
         
-        htmlContent = highlightFillStyleTemplate
+      return highlightFillStyleTemplate
           .replace('{{PARAGRAPH}}', quizData.paragraphText.replace(/'/g, "\\'").replace(/\n/g, ' '))
           .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords))
           .replace('{{FIXED_WORDS_EXPLANATION}}', fixedWordsExplanation)
@@ -536,9 +589,9 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
           .replace('{{AUDIO_FILE}}', quizData.audioFile || '')
           .replace('{{START_TIME}}', quizData.startTime || 0)
           .replace('{{END_TIME}}', quizData.endTime || 0);
-        break;
+
       case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE: // Listen and Choose Quiz
-        htmlContent = getListenSingleChoiceTemplate(
+      return getListenSingleChoiceTemplate(
           quizData.paragraphText,
           quizData.blankOptions,
           quizData.audioFile || '',
@@ -548,204 +601,321 @@ export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreat
           quizData.scriptText || '',
           quizData.imageFile || ''
         );
-        break;
-      case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
-        htmlContent = getListenSingleChoiceNoImageTemplate(
-          quizData.paragraphText,
-          quizData.blankOptions,
-          quizData.audioFile || '',
-          quizData.startTime || 0,
-          quizData.endTime || 0,
-          quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
-          quizData.scriptText || ''
-        );
-        break;
-      case TEMPLATE_IDS.LISTEN_WITH_IMAGE_MULTIPLE_DIFFERENT_BLANK_OPTIONS:
-        htmlContent = getListenWithImageMultipleDifferentBlankOptionsTemplate(
-          quizData.paragraphText,
-          quizData.optionsForBlanks || '',
-          quizData.audioFile || '',
-          quizData.startTime || 0,
-          quizData.endTime || 0,
-          quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
-          quizData.scriptText || '',
-          quizData.imageFile || '',
-          quizData.answerContent || ''
-        );
-        break;
-      case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER:
-        htmlContent = getListenImageSelectMultipleAnswerTemplate(
-          quizData.paragraphText,
-          quizData.blankOptions || '', // Use blankOptions as correctAnswers
+
+    case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
+      return getListenSingleChoiceNoImageTemplate(
+        quizData.paragraphText,
+        quizData.blankOptions,
+        quizData.audioFile || '',
+        quizData.startTime || 0,
+        quizData.endTime || 0,
+        quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.LISTEN_WITH_IMAGE_MULTIPLE_DIFFERENT_BLANK_OPTIONS:
+      return getListenWithImageMultipleDifferentBlankOptionsTemplate(
+        quizData.paragraphText,
+        quizData.optionsForBlanks || '',
           quizData.audioFile || '',
           quizData.startTime || 0,
           quizData.endTime || 0,
           quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
           quizData.scriptText || '',
-          quizData.imageFile || '',
-          quizData.answerContent || '',
-          quizData.blankOptions || ''  // Pass the blank options as the last parameter
-        );
-        break;
-      case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS:
-        htmlContent = getListenImageSelectMultipleAnswerMultiOptionsTemplate(
-          quizData.paragraphText,
-          quizData.optionsForBlanks || '',
-          quizData.audioFile || '',
-          quizData.startTime || 0,
-          quizData.endTime || 0,
-          quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
-          quizData.scriptText || '',
-          quizData.imageFile || '',
-          quizData.answerContent || ''
-        );
-        break;
-      case TEMPLATE_IDS.LISTEN_WRITE_ANSWER_WITH_IMAGE:
-        htmlContent = getListenWriteAnswerWithImageTemplate(
-          quizData.paragraphText,
-          quizData.correctAnswers || quizData.blankOptions,
-          quizData.audioFile,
-          quizData.startTime,
-          quizData.endTime,
-          quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
-          quizData.scriptText,
-          quizData.imageFile,
-          quizData.answerContent,
-          quizData.blankOptions
-        );
-        break;
-      case TEMPLATE_IDS.GRAMMAR_DROPDOWN:
-        htmlContent = getGrammarDropdownTemplate(
-          quizData.paragraphText,
-          quizData.optionsForBlanks || '',
-          quizData.audioFile || '',
-          quizData.startTime || 0,
-          quizData.endTime || 0,
-          quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
-          quizData.scriptText || '',
-          quizData.imageFile || '',
-          quizData.answerContent || ''
-        );
-        break;
-      case TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT:
-        const sentenceWords = quizData.wordBank.split(',').map(word => word.trim());
-        htmlContent = getGrammarSentenceRearrangementTemplate(sentenceWords);
-        break;
-      case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT:
-        htmlContent = getGrammarSingleSelectTemplate(
+        quizData.imageFile || '',
+        quizData.answerContent || ''
+      );
+
+    case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER:
+      return getListenImageSelectMultipleAnswerTemplate(
+        quizData.paragraphText,
+        quizData.blankOptions || '', // Use blankOptions as correctAnswers
+        quizData.audioFile || '',
+        quizData.startTime || 0,
+        quizData.endTime || 0,
+        quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
+        quizData.scriptText || '',
+        quizData.imageFile || '',
+        quizData.answerContent || '',
+        quizData.blankOptions || ''  // Pass the blank options as the last parameter
+      );
+
+    case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS:
+      return getListenImageSelectMultipleAnswerMultiOptionsTemplate(
+        quizData.paragraphText,
+        quizData.optionsForBlanks || '',
+        quizData.audioFile || '',
+        quizData.startTime || 0,
+        quizData.endTime || 0,
+        quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
+        quizData.scriptText || '',
+        quizData.imageFile || '',
+        quizData.answerContent || ''
+      );
+
+    case TEMPLATE_IDS.LISTEN_WRITE_ANSWER_WITH_IMAGE:
+      return getListenWriteAnswerWithImageTemplate(
+        quizData.paragraphText,
+        quizData.correctAnswers || quizData.blankOptions,
+        quizData.audioFile,
+        quizData.startTime,
+        quizData.endTime,
+        quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
+        quizData.scriptText,
+        quizData.imageFile,
+        quizData.answerContent,
+        quizData.blankOptions
+      );
+
+    case TEMPLATE_IDS.GRAMMAR_DROPDOWN:
+      return getGrammarDropdownTemplate(
+        quizData.paragraphText,
+        quizData.optionsForBlanks || '',
+        quizData.audioFile || '',
+        quizData.startTime || 0,
+        quizData.endTime || 0,
+        quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
+        quizData.scriptText || '',
+        quizData.imageFile || '',
+        quizData.answerContent || ''
+      );
+
+    case TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT:
+      const sentenceWords = quizData.wordBank.split(',').map(word => word.trim());
+      return getGrammarSentenceRearrangementTemplate(sentenceWords);
+
+    case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '正しい文を選んでください。',
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '★＿＿＿に　入る　ものは　どれですか。',
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.READING_MULTIPLE_QUESTION:
+      console.log('Creating Reading Multiple Question Quiz');
+      quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
+      return getReadingMultipleQuestionTemplate(
+        quizData.paragraphText || '',
+        quizData.questionText || '',
+        quizData.blankOptions || '',
+        quizData.instructions,
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.READING_MULTIPLE_QUESTION_ALT:
+      console.log('Creating Reading Multiple Question Quiz (Alternative)');
+      quizData.instructions = quizData.instructions || '次の文章を読んで、質問に答えてください。';
+      return getReadingMultipleQuestionTemplate(
+        quizData.paragraphText || '',
+        quizData.questionText || '',
+        quizData.blankOptions || '',
+        quizData.instructions,
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.READING_SAME_31:
+      console.log('Creating Reading Same as 31 Quiz');
+      quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
+      return getReadingMultipleQuestionTemplate32(
+        quizData.paragraphText || '',
+        quizData.questionText || '',
+        quizData.blankOptions || '',
+        quizData.instructions,
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.READING_MULTIPLE_QUESTION_CONVERSATION:
+      console.log('Creating Reading Multiple Question (Conversation) Quiz');
+      quizData.instructions = quizData.instructions || 'つぎのぶんしょうを読(よ)んで、質問(しつもん)にこたえてください。答(こた)えは、１・２・３・４からいちばん いいものを一(ひと)つ えらんでください。';
+      return getReadingMultipleQuestionTemplate(
+        quizData.paragraphText || '',
+        quizData.questionText || '',
+        quizData.blankOptions || '',
+        quizData.instructions,
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.READING_DROPLIST:
+      return getReadingDroplistTemplate(
+        quizData.paragraphText,
+        quizData.blankOptions,
+        quizData.instructions,
+        quizData.scriptText,
+        quizData.imageFile,
+        quizData.answerContent,
+        quizData.blankOptions
+      );
+
+    case TEMPLATE_IDS.READING_DROPLIST_NO_IMAGE:
+      return getReadingDroplistNoImageTemplate(
+        quizData.paragraphText,
+        quizData.blankOptions,
+        quizData.instructions,
+        quizData.scriptText,
+        quizData.answerContent,
+        quizData.blankOptions
+      );
+
+    case TEMPLATE_IDS.READING_SELECT:
+      return getReadingSelectTemplate(
+        quizData.paragraphText,
+        quizData.blankOptions,
+        quizData.instructions ,
+        quizData.scriptText || '',
+        quizData.imageFile || '',
+        quizData.questionText
+      );
+
+    case TEMPLATE_IDS.READING_SELECT_1:
+      return getReadingSelectTemplate(
+        quizData.paragraphText,
+        quizData.blankOptions,
+        quizData.instructions,
+        quizData.scriptText || '',
+        quizData.imageFile || '',
+        quizData.questionText
+      );
+
+    case TEMPLATE_IDS.ID38_READING_SELECT_2:
+      return getReadingSelectTemplate(
+        quizData.paragraphText,
+        quizData.blankOptions,
+        quizData.instructions || '情報の内容を見て、下のしつもんにこたえてください。こたえは、1・2・3・4からいちばんいいものを一つえらんでください。',
+        quizData.scriptText || '',
+        quizData.imageFile || '',
+        quizData.questionText
+      );
+
+    case TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || 'どう　かきますか',
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || 'どう　かきますか',
+        quizData.scriptText || ''
+      );
+
+    case TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '正しい　ほうを　えらんでください。',
+        quizData.scriptText || ''
+      );
+    case TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3:
+        return getGrammarSingleSelectTemplate(
           quizData.paragraphText || '',
           quizData.blankOptions || '',
-          quizData.instructions || '正しい文を選んでください。',
+          quizData.instructions || '_______　の文と　だいたい　同じ　いみの　文が　あります。１～４から　１つ　えらんで　ください。',
           quizData.scriptText || ''
         );
-        break;
-      case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT:
-        htmlContent = getGrammarSingleSelectTemplate(
-          quizData.paragraphText || '',
-          quizData.blankOptions || '',
-          quizData.instructions || '★＿＿＿に　入る　ものは　どれですか。',
-          quizData.scriptText || ''
-        );
-        break;
-      case TEMPLATE_IDS.READING_MULTIPLE_QUESTION:
-        console.log('Creating Reading Multiple Question Quiz');
-        quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
-        htmlContent = getReadingMultipleQuestionTemplate(
-          quizData.paragraphText || '',
-          quizData.questionText || '',
-          quizData.blankOptions || '',
-          quizData.instructions,
-          quizData.scriptText || ''
-        );
-        break;
-      case TEMPLATE_IDS.READING_MULTIPLE_QUESTION_ALT:
-        console.log('Creating Reading Multiple Question Quiz (Alternative)');
-        quizData.instructions = quizData.instructions || '次の文章を読んで、質問に答えてください。';
-        htmlContent = getReadingMultipleQuestionTemplate(
-          quizData.paragraphText || '',
-          quizData.questionText || '',
-          quizData.blankOptions || '',
-          quizData.instructions,
-          quizData.scriptText || ''
-        );
-        break;
-      case TEMPLATE_IDS.READING_SAME_31:
-        console.log('Creating Reading Same as 31 Quiz');
-        quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
-        htmlContent = getReadingMultipleQuestionTemplate32(
-          quizData.paragraphText || '',
-          quizData.questionText || '',
-          quizData.blankOptions || '',
-          quizData.instructions,
-          quizData.scriptText || ''
-        );
-        break;
-      case TEMPLATE_IDS.READING_MULTIPLE_QUESTION_CONVERSATION:
-        console.log('Creating Reading Multiple Question (Conversation) Quiz');
-        quizData.instructions = quizData.instructions || 'つぎのぶんしょうを読(よ)んで、質問(しつもん)にこたえてください。答(こた)えは、１・２・３・４からいちばん いいものを一(ひと)つ えらんでください。';
-        htmlContent = getReadingMultipleQuestionTemplate(
-          quizData.paragraphText || '',
-          quizData.questionText || '',
-          quizData.blankOptions || '',
-          quizData.instructions,
-          quizData.scriptText || ''
-        );
-        break;
-      case TEMPLATE_IDS.READING_DROPLIST:
-        htmlContent = getReadingDroplistTemplate(
-          quizData.paragraphText,
-          quizData.blankOptions,
-          quizData.instructions,
-          quizData.scriptText,
-          quizData.imageFile,
-          quizData.answerContent,
-          quizData.blankOptions
-        );
-        break;
-      case TEMPLATE_IDS.READING_DROPLIST_NO_IMAGE:
-        htmlContent = getReadingDroplistNoImageTemplate(
-          quizData.paragraphText,
-          quizData.blankOptions,
-          quizData.instructions,
-          quizData.scriptText,
-          quizData.answerContent,
-          quizData.blankOptions
-        );
-        break;
-      case TEMPLATE_IDS.READING_SELECT:
-        htmlContent = getReadingSelectTemplate(
-          quizData.paragraphText,
-          quizData.blankOptions,
-          quizData.instructions ,
-          quizData.scriptText || '',
-          quizData.imageFile || '',
-          quizData.questionText
-        );
-        break;
-      case TEMPLATE_IDS.READING_SELECT_1:
-        htmlContent = getReadingSelectTemplate(
-          quizData.paragraphText,
-          quizData.blankOptions,
-          quizData.instructions,
-          quizData.scriptText || '',
-          quizData.imageFile || '',
-          quizData.questionText
-        );
-        break;
-      case TEMPLATE_IDS.ID38_READING_SELECT_2:
-        htmlContent = getReadingSelectTemplate(
-          quizData.paragraphText,
-          quizData.blankOptions,
-          quizData.instructions || '情報の内容を見て、下のしつもんにこたえてください。こたえは、1・2・3・4からいちばんいいものを一つえらんでください。',
-          quizData.scriptText || '',
-          quizData.imageFile || '',
-          quizData.questionText
-        );
-        break;
+    case TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4:
+          return getGrammarSingleSelectTemplate(
+            quizData.paragraphText || '',
+            quizData.blankOptions || '',
+            quizData.instructions || 'どう　かきますか',
+            quizData.scriptText || ''
+          );
+    case TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5:
+          return getGrammarSingleSelectTemplate(
+            quizData.paragraphText || '',
+            quizData.blankOptions || '',
+            quizData.instructions || 'どう　よみますか',
+            quizData.scriptText || ''
+          );
+    case TEMPLATE_IDS.ID10_VOCAB_SINGLE_SELECT_6:
+          return getGrammarSingleSelectTemplate(
+            quizData.paragraphText || '',
+            quizData.blankOptions || '',
+            quizData.instructions || '正しい　ものを　一つ　えらびましょう。',
+            quizData.scriptText || ''
+          );
+    case TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP:
+      const vocabDragDropWords2 = quizData.wordBank.split(',').map(word => word.trim());
+      const cleanParagraph = (quizData.paragraphText || '')
+        .replace(/([「」])\s*[\r\n]+\s*/g, '$1')
+        .replace(/([。！？])\s*[\r\n]+\s*([「」])/g, '$1$2')
+        .replace(/([。！？])\s*[\r\n]+\s*(\d|①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩)/g, '$1\n$2')
+        .replace(/[\r\n]+/g, '\n')
+        .trim();
+      return getDragDropQuizTemplate(
+        cleanParagraph,
+        vocabDragDropWords2,
+        quizData.instructions || '正しい　ものを　一つ　えらびましょう。',
+        quizData.instructorContent || ''
+      );
+    case TEMPLATE_IDS.ID13_VOCAB_SINGLE_SELECT_7:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '_______　の文と　だいたい　同じ　いみの　文が　あります。１～４から　１つ　えらんで　ください。',
+        quizData.scriptText || ''
+      );
+    case TEMPLATE_IDS.ID14_VOCAB_SINGLE_SELECT_8:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '_____の　ことばは　ひらがなで　どう　かきますか。1・2・3・4から　いちばん　いい　ものを　ひとつ　えらんで　ください。',
+        quizData.scriptText || ''
+      );
+    case TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '_____の　ことばは　どう　かきますか。1・2・3・4から　いちばん　いい　ものを　ひとつ　えらんで　ください。',
+        quizData.scriptText || ''
+      );
+    case TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '（ー）に　何を　入れますか。1～4から　１つ　えらんで　ください。',
+        quizData.scriptText || ''
+      );
+    case TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11:
+      return getGrammarSingleSelectTemplate(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '_______　のぶんと　だいたい　同じ　いみの　ぶんは　どれですか。',
+        quizData.scriptText || ''
+      );
       default:
-        console.error('Invalid problemTypeId:', problemTypeId);
-        throw new Error(`Unsupported problem type ID: ${problemTypeId}`);
-    }
+      throw new Error(`Unsupported problem type ID: ${templateId}`);
+  }
+};
+
+// Export the createQuiz function
+export const createQuiz = async ({ courseId, subsectionId, quizData, onFileCreated, onCreateUnit }) => {
+  try {
+    console.log('createQuiz called with:', {
+      courseId,
+      subsectionId,
+      quizData,
+      hasOnFileCreated: !!onFileCreated,
+      hasOnCreateUnit: !!onCreateUnit
+    });
+
+    const client = getAuthenticatedHttpClient();
+    
+    // Use the new generateQuizTemplate function
+    const problemTypeId = parseInt(quizData?.problemTypeId, 10) || TEMPLATE_IDS.FILL_IN_BLANK;
+    const htmlContent = generateQuizTemplate(problemTypeId, quizData);
 
     const htmlFileName = `quiz_${Date.now()}.html`;
     console.log('Generated HTML content:', htmlContent);

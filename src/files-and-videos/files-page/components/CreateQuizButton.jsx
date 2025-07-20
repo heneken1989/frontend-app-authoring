@@ -955,7 +955,7 @@ def check_fun(e, ans):
       initial_state='{"showAnswer": false}' 
       width="100%" 
       height="460px" 
-      html_file="/static/${htmlFileName}" 
+      html_file="/asset-v1:${courseId.replace('course-v1:', '')}+type@asset+block@${htmlFileName}" 
       sop="false" 
       id="paragraph_quiz_input" 
       title="${quizData.unitTitle}"

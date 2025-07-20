@@ -955,7 +955,7 @@ def check_fun(e, ans):
       initial_state='{"showAnswer": false}' 
       width="100%" 
       height="460px" 
-      html_file="/asset-v1:${courseId.replace('course-v1:', '')}+type@asset+block@${htmlFileName}" 
+      html_file="https://nocodb.shop/asset-v1:Xuan+N51+2026+type@asset+block@quiz_1753013813880.html" 
       sop="false" 
       id="paragraph_quiz_input" 
       title="${quizData.unitTitle}"

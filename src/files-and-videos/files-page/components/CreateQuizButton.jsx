@@ -211,6 +211,8 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
             />
             <Form.Text>
               Set the time limit for completing this quiz. Default is 3 minutes.
+              <br />
+              <strong>Note:</strong> This will be converted to seconds when saved to the problem.
             </Form.Text>
           </Form.Group>
           <Form.Group>
@@ -1057,7 +1059,7 @@ def check_fun(e, ans):
             metadata: {
               display_name: quizData.unitTitle,
               visible_to_staff_only: !quizData.published,
-              time_limit: quizData.timeLimit
+              time_limit: quizData.timeLimit * 60  // Convert minutes to seconds
             },
             data: problemContent
           },

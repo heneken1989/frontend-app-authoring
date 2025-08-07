@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, intlShape } from '@edx/frontend-platform/i18n';
 import { Button, ModalDialog, Form, ActionRow } from '@openedx/paragon';
-import { Quiz } from '@openedx/paragon/icons';
+import { Quiz, Upload } from '@openedx/paragon/icons';
 import quizMessages from '../quiz-messages';
 import { 
   getQuizTemplate, 
@@ -33,6 +33,129 @@ import { getListenImageSelectMultipleAnswerMultiOptionsTemplate } from './templa
 import { getListenWriteAnswerWithImageTemplate } from './templates/template_67_listen_write_answer_with_image';
 import FORM_COMPONENTS, { getFormComponent } from './forms';
 import { getVocabMatchingTemplate } from './templates/template_2_vocab_matching';
+import * as XLSX from 'xlsx'; // Added for Excel parsing
+
+// Excel parsing function
+const parseExcelFile = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        
+        // Skip header row and convert to quiz data format
+        const headers = jsonData[0];
+        const quizRows = jsonData.slice(1);
+        
+        const quizzes = quizRows.map((row, index) => {
+          const quiz = {};
+          headers.forEach((header, colIndex) => {
+            if (header && row[colIndex] !== undefined) {
+              quiz[header.trim()] = row[colIndex];
+            }
+          });
+          
+          // Parse time range if exists (format: "1-1.1" means 1 second to 1 minute 10 seconds = 70 seconds)
+          if (quiz.timeRange && typeof quiz.timeRange === 'string') {
+            const timeRangeParts = quiz.timeRange.split('-');
+            if (timeRangeParts.length === 2) {
+              const startTime = parseFloat(timeRangeParts[0]) || 0;
+              const endTimePart = timeRangeParts[1];
+              
+              // Parse end time: format like "1.1" = 1 minute 10 seconds, "1.05" = 1 minute 5 seconds
+              let endTime = 0;
+              if (endTimePart.includes('.')) {
+                const [minutes, secondsPart] = endTimePart.split('.');
+                const minutesNum = parseInt(minutes) || 0;
+                // Convert seconds part: "1" = 10s, "05" = 5s, "15" = 15s
+                const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
+                endTime = minutesNum * 60 + secondsNum;
+              } else {
+                // If no decimal point, treat as seconds
+                endTime = parseFloat(endTimePart) || 0;
+              }
+              
+              quiz.startTime = startTime;
+              quiz.endTime = endTime;
+              
+              console.log(`Parsed time range "${quiz.timeRange}": start=${startTime}s, end=${endTime}s (${Math.floor(endTime/60)}:${String(endTime%60).padStart(2,'0')})`);
+            }
+          }
+          
+          // Alternative: Parse separate startTime-endTime column (format: "1-70" or "1-1.05")
+          if (quiz.startEndTime && typeof quiz.startEndTime === 'string') {
+            const timeParts = quiz.startEndTime.split('-');
+            if (timeParts.length === 2) {
+              const startTime = parseFloat(timeParts[0]) || 0;
+              const endTimePart = timeParts[1];
+              
+              // Parse end time with same logic as above
+              let endTime = 0;
+              if (endTimePart.includes('.')) {
+                const [minutes, secondsPart] = endTimePart.split('.');
+                const minutesNum = parseInt(minutes) || 0;
+                const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
+                endTime = minutesNum * 60 + secondsNum;
+              } else {
+                endTime = parseFloat(endTimePart) || 0;
+              }
+              
+              quiz.startTime = startTime;
+              quiz.endTime = endTime;
+              console.log(`Parsed start-end time "${quiz.startEndTime}": start=${startTime}s, end=${endTime}s (${Math.floor(endTime/60)}:${String(endTime%60).padStart(2,'0')})`);
+            }
+          }
+          
+          // NEW: Parse startTime/endTime column (format: "0.34-0.50" = 34 seconds to 50 seconds)
+          if (quiz['startTime/endTime'] && typeof quiz['startTime/endTime'] === 'string') {
+            const timeParts = quiz['startTime/endTime'].split('-');
+            if (timeParts.length === 2) {
+              // Parse start time: "0.34" = 34 seconds
+              const startTimePart = timeParts[0];
+              let startTime = 0;
+              if (startTimePart.includes('.')) {
+                const [minutes, secondsPart] = startTimePart.split('.');
+                const minutesNum = parseInt(minutes) || 0;
+                const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
+                startTime = minutesNum * 60 + secondsNum;
+              } else {
+                startTime = parseFloat(startTimePart) || 0;
+              }
+              
+              // Parse end time: "0.50" = 50 seconds
+              const endTimePart = timeParts[1];
+              let endTime = 0;
+              if (endTimePart.includes('.')) {
+                const [minutes, secondsPart] = endTimePart.split('.');
+                const minutesNum = parseInt(minutes) || 0;
+                const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
+                endTime = minutesNum * 60 + secondsNum;
+              } else {
+                endTime = parseFloat(endTimePart) || 0;
+              }
+              
+              quiz.startTime = startTime;
+              quiz.endTime = endTime;
+              console.log(`Parsed startTime/endTime "${quiz['startTime/endTime']}": start=${startTime}s, end=${endTime}s`);
+            }
+          }
+          
+          return quiz;
+        }).filter(quiz => quiz.problemTypeId || quiz.unitTitle); // Filter out empty rows
+        
+        resolve(quizzes);
+      } catch (error) {
+        reject(new Error(`Error parsing Excel file: ${error.message}`));
+      }
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsBinaryString(file);
+  });
+};
 
 // Helper functions for field visibility
 const shouldShowAudioField = (problemTypeId) => ![
@@ -196,7 +319,7 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
             />
           </Form.Group>
           <Form.Group>
-            <Form.Label>Time Limit (minutes)</Form.Label>
+            <Form.Label>Time Limit (seconds)</Form.Label>
             <Form.Control
               type="number"
               value={quizData.timeLimit}
@@ -206,13 +329,13 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
                   timeLimit: parseInt(e.target.value, 10)
                 }));
               }}
-              placeholder="Enter time limit in minutes"
+              placeholder="Enter time limit in seconds"
               min="0"
             />
             <Form.Text>
-              Set the time limit for completing this quiz. Default is 3 minutes.
+              Set the time limit for completing this quiz. Default is 60 seconds.
               <br />
-              <strong>Note:</strong> This will be converted to seconds when saved to the problem.
+              <strong>Note:</strong> This will be saved directly in seconds.
             </Form.Text>
           </Form.Group>
           <Form.Group>
@@ -1030,7 +1153,7 @@ def check_fun(e, ans):
           `${getConfig().STUDIO_BASE_URL}/xblock/`,
           {
             metadata: {
-              display_name: quizData.unitTitle,
+              display_name: String(quizData.unitTitle),
               visible_to_staff_only: !quizData.published
             },
             data: problemContent,
@@ -1057,9 +1180,9 @@ def check_fun(e, ans):
           `${getConfig().STUDIO_BASE_URL}/xblock/${problemId}`,
           {
             metadata: {
-              display_name: quizData.unitTitle,
+              display_name: String(quizData.unitTitle),
               visible_to_staff_only: !quizData.published,
-              time_limit: quizData.timeLimit * 60  // Convert minutes to seconds
+              time_limit: parseInt(quizData.timeLimit) // timeLimit already in seconds
             },
             data: problemContent
           },
@@ -1132,9 +1255,296 @@ def check_fun(e, ans):
   }
 };
 
+// BulkImportModal Component
+const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, onDownloadTemplate, onCreateUnit }) => {
+  const [excelFile, setExcelFile] = useState(null);
+  const [previewData, setPreviewData] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setExcelFile(file);
+      try {
+        const quizzes = await parseExcelFile(file);
+        setPreviewData(quizzes.slice(0, 5)); // Show first 5 rows as preview
+        console.log('Parsed Excel data:', quizzes);
+      } catch (error) {
+        console.error('Error parsing Excel file:', error);
+        alert(`Error parsing Excel file: ${error.message}`);
+      }
+    }
+  };
+
+  const handleImport = async () => {
+    if (!excelFile) {
+      alert('Please select an Excel file first');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const quizzes = await parseExcelFile(excelFile);
+      setProgress({ current: 0, total: quizzes.length });
+
+      for (let i = 0; i < quizzes.length; i++) {
+        const quiz = quizzes[i];
+        setProgress({ current: i + 1, total: quizzes.length });
+
+        // Convert Excel data to quiz format
+        const quizData = {
+          problemTypeId: parseInt(quiz.problemTypeId) || 39, // Default to ID 39
+          unitTitle: String(quiz.unitTitle || `Quiz ${i + 1}`),
+          paragraphText: String(quiz.paragraphText || quiz.questionText || ''),
+          blankOptions: String(quiz.blankOptions || quiz.answerOptions || ''),
+          scriptText: String(quiz.scriptText || ''),
+          instructions: String(quiz.instructions || '音声を聞いて、正しい答えを選んでください。'),
+          audioFile: String(quiz.audioFile || '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3'),
+          imageFile: String(quiz.imageFile || '/asset-v1:Manabi+N51+2026+type@asset+block/1.png'),
+          startTime: parseFloat(quiz.startTime) || 0,
+          endTime: parseFloat(quiz.endTime) || 0,
+          timeLimit: parseInt(quiz.timeLimit) || 60, // Default to 60 seconds
+          published: quiz.published !== 'false',
+          correctAnswers: String(quiz.correctAnswers || ''),
+          wordBank: String(quiz.wordBank || ''),
+          fixedWordsExplanation: String(quiz.fixedWordsExplanation || ''),
+          optionsForBlanks: String(quiz.optionsForBlanks || ''),
+          answerContent: String(quiz.answerContent || ''),
+          questionText: String(quiz.questionText || ''),
+          words: String(quiz.words || ''),
+          dropZones: String(quiz.dropZones || '[]')
+        };
+
+        // Debug: Log the quiz data to check startTime and endTime
+        console.log(`Creating quiz ${i + 1}:`, {
+          unitTitle: quizData.unitTitle,
+          startTime: quizData.startTime,
+          endTime: quizData.endTime,
+          audioFile: quizData.audioFile,
+          problemTypeId: quizData.problemTypeId,
+          originalStartTime: quiz.startTime,
+          originalEndTime: quiz.endTime,
+          hasStartTimeEndTime: !!quiz['startTime/endTime'],
+          startTimeEndTimeValue: quiz['startTime/endTime']
+        });
+
+        // Create quiz using existing createQuiz function
+        await createQuiz({
+          courseId,
+          subsectionId: courseId,
+          quizData,
+          onFileCreated: async (files) => {
+            try {
+              const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
+              if (!courseIdMatch) {
+                throw new Error('Invalid course ID format');
+              }
+              const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
+              
+              for (const file of files) {
+                await dispatch(addAssetFile(formattedCourseId, file, false));
+                await new Promise(resolve => setTimeout(resolve, 500));
+              }
+              return true;
+            } catch (error) {
+              console.error('Error uploading files:', error);
+              throw error;
+            }
+          },
+          onCreateUnit: async (title) => {
+            try {
+              if (onCreateUnit) {
+                // Use the parent component's onCreateUnit function
+                const unitId = await onCreateUnit(title);
+                if (!unitId) {
+                  throw new Error('Failed to create unit');
+                }
+                return unitId;
+              } else {
+                // Fallback to direct API call if onCreateUnit is not provided
+                const client = getAuthenticatedHttpClient();
+                const response = await client.post(
+                  `${getConfig().STUDIO_BASE_URL}/xblock/`,
+                  {
+                    metadata: {
+                      display_name: title,
+                      category: 'vertical'
+                    },
+                    category: 'vertical',
+                    parent_locator: courseId
+                  },
+                  {
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json'
+                    }
+                  }
+                );
+                return response.data.locator;
+              }
+            } catch (error) {
+              console.error('Error creating unit:', error);
+              throw error;
+            }
+          }
+        });
+
+        // Add delay between quizzes to avoid overwhelming the server
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      alert(`Successfully created ${quizzes.length} quizzes!`);
+      onClose();
+    } catch (error) {
+      console.error('Error during bulk import:', error);
+      alert(`Error during bulk import: ${error.message}`);
+    } finally {
+      setIsProcessing(false);
+      setProgress({ current: 0, total: 0 });
+    }
+  };
+
+
+  if (!isOpen) return null;
+
+  return (
+    <ModalDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      size="lg"
+      title="Bulk Import Quizzes from Excel"
+      hasCloseButton
+    >
+      <ModalDialog.Header>
+        <ModalDialog.Title>
+          Bulk Import Quizzes from Excel
+        </ModalDialog.Title>
+      </ModalDialog.Header>
+      <ModalDialog.Body>
+        <Form>
+          <Form.Group>
+            <Form.Label>Excel File</Form.Label>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
+              <Form.Control
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileChange}
+              />
+              <Button
+                variant="outline-secondary"
+                onClick={onDownloadTemplate}
+                size="sm"
+              >
+                Download Template
+              </Button>
+            </div>
+            <Form.Text>
+              Upload an Excel file with quiz data. The first row should contain column headers.
+              <br />
+              <strong>Required columns:</strong> problemTypeId, unitTitle, paragraphText, blankOptions
+              <br />
+              <strong>Optional columns:</strong> scriptText, instructions, audioFile, imageFile, startTime, endTime, timeLimit, published
+              <br />
+              <strong>Time Range columns:</strong> 
+              <br />
+              • timeRange (format: "1-1.1" = 1s to 1min10s) 
+              <br />
+              • startEndTime (format: "1-1.05" = 1s to 1min5s)
+              <br />
+              • startTime/endTime (format: "0.34-0.50" = 34s to 50s)
+              <br />
+              <strong>Problem Type IDs:</strong> 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 20 (Drag Drop), etc.
+            </Form.Text>
+          </Form.Group>
+
+          {previewData.length > 0 && (
+            <Form.Group>
+              <Form.Label>Preview (First 5 rows)</Form.Label>
+              <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #ddd', padding: '10px' }}>
+                <table className="table table-sm">
+                  <thead>
+                    <tr>
+                      {Object.keys(previewData[0] || {}).map(key => (
+                        <th key={key}>{key}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.map((row, index) => (
+                      <tr key={index}>
+                        {Object.values(row).map((value, colIndex) => (
+                          <td key={colIndex}>{String(value || '')}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Form.Group>
+          )}
+
+          {isProcessing && (
+            <Form.Group>
+              <Form.Label>Progress</Form.Label>
+              <div className="progress">
+                <div 
+                  className="progress-bar" 
+                  style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                >
+                  {progress.current} / {progress.total}
+                </div>
+              </div>
+              <Form.Text>
+                Creating quiz {progress.current} of {progress.total}...
+              </Form.Text>
+            </Form.Group>
+          )}
+        </Form>
+      </ModalDialog.Body>
+      <ModalDialog.Footer>
+        <ActionRow>
+          <ActionRow.Spacer />
+          <Button
+            variant="outline-primary"
+            onClick={onClose}
+            disabled={isProcessing}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleImport}
+            disabled={!excelFile || isProcessing}
+            iconBefore={Upload}
+          >
+            {isProcessing ? 'Importing...' : 'Import Quizzes'}
+          </Button>
+        </ActionRow>
+      </ModalDialog.Footer>
+    </ModalDialog>
+  );
+};
+
+BulkImportModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onImport: PropTypes.func.isRequired,
+  intl: intlShape.isRequired,
+  courseId: PropTypes.string.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  onDownloadTemplate: PropTypes.func.isRequired,
+  onCreateUnit: PropTypes.func,
+};
+
+BulkImportModal.defaultProps = {
+  onCreateUnit: null,
+};
+
 // CreateQuizButton Component
 const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUnit }) => {
   const [showQuizModal, setShowQuizModal] = useState(false);
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [quizData, setQuizData] = useState({
     problemTypeId: TEMPLATE_IDS.FILL_IN_BLANK,
     unitTitle: 'Quick Test Quiz',
@@ -1145,12 +1555,12 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
     scriptText: '',
     correctAnswers: '',
     wordBank: '',
-    timeLimit: 3,
+    timeLimit: 60, // Default to 60 seconds
     published: true,
     fixedWordsExplanation: '',
     instructions: '',
-    audioFile: '/asset-v1:Xuan+N51+2025+type@asset+block/1.mp3',
-    imageFile: '/asset-v1:Xuan+N51+2025+type@asset+block/1.png',
+    audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
+    imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
     startTime: 0,
     endTime: 0,
     questionText: '',
@@ -1162,6 +1572,10 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
 
   const handleGenerateQuiz = () => {
     setShowQuizModal(true);
+  };
+
+  const handleBulkImport = () => {
+    setShowBulkImportModal(true);
   };
 
   const handleCloseModal = () => {
@@ -1176,17 +1590,63 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
       scriptText: '',
       correctAnswers: '',
       wordBank: '',
-      timeLimit: 3,
+      timeLimit: 60, // Default to 60 seconds
       published: true,
       instructions: '',
-      audioFile: '/asset-v1:Xuan+N51+2025+type@asset+block/1.mp3',
-      imageFile: '/asset-v1:Xuan+N51+2025+type@asset+block/1.png',
+      audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
+      imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
       startTime: 0,
       endTime: 0,
       questionText: '',
       words: '',
       dropZones: '[]'
     });
+  };
+
+  const handleCloseBulkModal = () => {
+    setShowBulkImportModal(false);
+  };
+
+  const downloadTemplate = () => {
+    // Create sample data for Excel template
+    const sampleData = [
+      {
+        problemTypeId: '39',
+        unitTitle: 'Sample Quiz 1',
+        paragraphText: '男の人は何と言いましたか。',
+        blankOptions: 'はい、分かりました,いいえ、分かりません,すみません',
+        scriptText: '男：はい、分かりました。',
+        instructions: '音声を聞いて、正しい答えを選んでください。',
+        audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
+        imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
+        'startTime/endTime': '0.34-0.50',
+        timeLimit: '60', // 60 seconds
+        published: 'true'
+      },
+      {
+        problemTypeId: '39',
+        unitTitle: 'Sample Quiz 2',
+        paragraphText: '女の人は何を買いましたか。',
+        blankOptions: '本,ペン,ノート,消しゴム',
+        scriptText: '女：本を買いました。',
+        instructions: '音声を聞いて、正しい答えを選んでください。',
+        audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/2.mp3',
+        imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/2.png',
+        'startTime/endTime': '1.20-2.15',
+        timeLimit: '60', // 60 seconds
+        published: 'true'
+      }
+    ];
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(sampleData);
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Quiz Template');
+    
+    // Generate and download file
+    XLSX.writeFile(wb, 'quiz_template.xlsx');
   };
 
   const handleQuizSubmit = async () => {
@@ -1308,14 +1768,25 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
 
   return (
     <>
-      <Button
-        variant="primary"
-        iconBefore={Quiz}
-        onClick={handleGenerateQuiz}
-        className={className}
-      >
-        {intl.formatMessage(quizMessages.generateButton)}
-      </Button>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <Button
+          variant="primary"
+          iconBefore={Quiz}
+          onClick={handleGenerateQuiz}
+          className={className}
+        >
+          {intl.formatMessage(quizMessages.generateButton)}
+        </Button>
+        
+        <Button
+          variant="outline-primary"
+          iconBefore={Upload}
+          onClick={handleBulkImport}
+          className={className}
+        >
+          Bulk Import
+        </Button>
+      </div>
 
       <QuizModal
         isOpen={showQuizModal}
@@ -1326,6 +1797,17 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
         intl={intl}
         courseId={courseId}
         dispatch={dispatch}
+      />
+
+      <BulkImportModal
+        isOpen={showBulkImportModal}
+        onClose={handleCloseBulkModal}
+        onImport={() => {}}
+        intl={intl}
+        courseId={courseId}
+        dispatch={dispatch}
+        onDownloadTemplate={downloadTemplate}
+        onCreateUnit={onCreateUnit}
       />
     </>
   );

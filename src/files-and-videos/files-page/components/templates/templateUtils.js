@@ -12,13 +12,9 @@ import { getReadingDroplistTemplate } from './template_51_reading_droplist';
 import { getReadingDroplistTemplate as getReadingDroplistNoImageTemplate } from './template_59_reading_droplist_no_image';
 import { readingSelectTemplate, getReadingSelectTemplate } from './template_33_reading_select';
 import { getVocabMatchingTemplate } from './template_2_vocab_matching';
-
-
 const processParagraph = (paragraphText) => {
   const blanks = {};
   let currentId = 1;
-  
-  // Process the paragraph to replace blanks
   const processedParagraph = paragraphText.replace(/\[BLANK\s*\d*:\s*([^\]]+)\]/g, (match, content) => {
     const blankId = `blank${currentId}`;
     const options = content.split('|').map(opt => opt.trim());
@@ -27,7 +23,6 @@ const processParagraph = (paragraphText) => {
     currentId += 1;
     return `<input type="text" id="${blankId}" class="blank-input" placeholder="Type your answer">`;
   });
-
   return {
     processedParagraph,
     blanks
@@ -123,6 +118,11 @@ export const TEMPLATE_IDS = {
   READING_SELECT: 33,                                  // template_33_reading_select.js
   READING_SELECT_1: 36,                                // Uses template_33_reading_select.js
   ID38_READING_SELECT_2: 38,                           // Uses template_33_reading_select.js
+  ID43_LISTEN_FILL_BLANK_2: 43,   
+  ID44_LISTEN_SINGLE_CHOICE_NO_IMAGE: 44,
+  ID45_LISTEN_HIGHTLIGHT: 45,
+  ID47_LISTEN_SINGLE_CHOICE: 47,  
+  ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER: 64,
 };
 
 export {

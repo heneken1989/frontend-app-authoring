@@ -10,11 +10,11 @@ const ListenFillBlankForm = ({ quizData, setQuizData }) => {
         <Form.Control
           as="textarea"
           rows={5}
-          value={quizData.paragraphText}
+          value={quizData.answerContent}
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
-              paragraphText: e.target.value
+              answerContent: e.target.value
             }));
           }}
           placeholder="Enter paragraph text with blanks marked as （ー）. For example: どうしてですか。（ー）がありますから、映画(えいが)を（ー）。"

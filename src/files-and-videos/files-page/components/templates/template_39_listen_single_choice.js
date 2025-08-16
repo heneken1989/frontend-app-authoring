@@ -46,7 +46,6 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             gap: 0;
         }
         .instructions {
-            background-color: #f5f9fc;
             padding: 10px;
             font-size: 1.1rem;
             line-height: 1.5;
@@ -71,8 +70,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
-            background: #f8f8f8;
+            padding: 5px;
         }
         .quiz-image {
             max-width: 100%;
@@ -82,7 +80,6 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
         .question-text {
             font-size: 1.2rem;
             padding: 10px;
-            background: #f5f9fc;
             color: #333;
             font-weight: bold;
             margin: 0;
@@ -117,9 +114,25 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             gap: 8px;
-            padding: 0;
+            padding: 10px;
             background: transparent;
             max-width: 400px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .options-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .options-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .options-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .options-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
         .option-button {
             appearance: none;
@@ -423,6 +436,11 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             margin: 0;
             padding: 5px 0;
             font-weight: bold;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 1;
+            border-bottom: 1px solid #e0e0e0;
         }
         @media (max-width: 768px) {
             .main-content {
@@ -439,7 +457,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 padding: 15px;
             }
             .image-container {
-                padding: 10px;
+                padding: 5px;
             }
             .quiz-image {
                 max-height: 200px;
@@ -621,7 +639,9 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 const startTime = parseFloat(startTimeElement.textContent) || 0;
                 const endTime = parseFloat(endTimeElement.textContent) || 0;
                 let isPlaying = false;
-                
+                let countdownInterval = null;
+                let isFirstLoad = true;
+
                 // Update volume level display based on slider value
                 function updateVolumeDisplay() {
                     const volume = volumeSlider.value;
@@ -644,28 +664,38 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     audioElement.volume = volume;
                     updateVolumeDisplay();
                 });
-                
-                // Initialize with 3-second delay
-                function initializePlayer() {
-                    // Set to start time
+
+                // Function to start with delay
+                function startWithDelay() {
+                    // Clear any existing countdown
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                    }
+                    
+                    // Reset to start time
                     audioElement.currentTime = startTime;
                     
-                    // Update status to show countdown
+                    // Update status with countdown
                     playerStatus.textContent = 'Current Status: Starting in 3s...';
                     
                     // Countdown timer
                     let countdown = 3;
-                    const countdownInterval = setInterval(function() {
+                    countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
                             playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                         } else {
                             clearInterval(countdownInterval);
+                            countdownInterval = null;
                             // Auto-play when countdown reaches 0
                             audioElement.play()
                                 .then(function() {
                                     isPlaying = true;
                                     playerStatus.textContent = 'Current Status: Playing';
+                                })
+                                .catch(function(error) {
+                                    console.error('Error playing audio:', error);
+                                    playerStatus.textContent = 'Current Status: Error playing audio';
                                 });
                         }
                     }, 1000);
@@ -680,7 +710,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                         
                         // Update progress bar width
                         const progressPercent = (currentRelative / durationRelative) * 100;
-                        progressBar.style.width = progressPercent + '%';
+                        progressBar.style.width = Math.max(0, Math.min(100, progressPercent)) + '%';
                     }
                     
                     // Check if we've reached the end time
@@ -692,20 +722,8 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     }
                 }
                 
-                // Click on progress bar to seek
-                progressContainer.addEventListener('click', (e) => {
-                    const clickPosition = (e.offsetX / progressContainer.offsetWidth);
-                    const durationRelative = (endTime > 0 ? endTime : audioElement.duration) - startTime;
-                    const seekTime = startTime + (clickPosition * durationRelative);
-                    
-                    // Ensure we stay within bounds
-                    audioElement.currentTime = Math.min(
-                        endTime > 0 ? endTime : audioElement.duration,
-                        Math.max(startTime, seekTime)
-                    );
-                    
-                    updateProgress();
-                });
+                // Remove click handler for progress bar
+                progressContainer.style.pointerEvents = 'none';
                 
                 // Update progress during playback
                 audioElement.addEventListener('timeupdate', updateProgress);
@@ -720,8 +738,11 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     // Set to start time
                     audioElement.currentTime = startTime;
                     
-                    // Initialize player with delay
-                    initializePlayer();
+                    // Start countdown after metadata is loaded
+                    if (isFirstLoad) {
+                        startWithDelay();
+                        isFirstLoad = false;
+                    }
                 });
                 
                 // Handle play event
@@ -736,38 +757,46 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     playerStatus.textContent = 'Current Status: Paused';
                 });
                 
+                // Handle error event
+                audioElement.addEventListener('error', (e) => {
+                    console.error('Audio error:', e);
+                    playerStatus.textContent = 'Current Status: Error loading audio';
+                });
+                
                 // Set initial volume
                 audioElement.volume = volumeSlider.value / 100;
                 updateVolumeDisplay();
                 
-                // Function to update player status with countdown
-                function startWithDelay() {
-                    // Update status with countdown
-                    playerStatus.textContent = 'Current Status: Starting in 3s...';
-                    
-                    // Countdown timer
-                    let countdown = 3;
-                    const countdownInterval = setInterval(function() {
-                        countdown--;
-                        if (countdown > 0) {
-                            playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
-                        } else {
-                            clearInterval(countdownInterval);
-                            // Auto-play when countdown reaches 0
-                            audioElement.play()
-                                .then(function() {
-                                    playerStatus.textContent = 'Current Status: Playing';
-                                });
-                        }
-                    }, 1000);
-                }
-                
-                // Expose the startWithDelay function
+                // Add event listener for visibility change
+                document.addEventListener('visibilitychange', () => {
+                    // Don't do anything when switching tabs
+                    // This allows audio to continue playing in background
+                });
+
+                // Add event listener for window focus
+                window.addEventListener('focus', () => {
+                    // Don't auto-start when window gains focus
+                    // But if audio was playing, it will continue playing
+                });
+
+                // Handle page unload/close
+                window.addEventListener('beforeunload', () => {
+                    if (audioElement) {
+                        audioElement.pause();
+                    }
+                });
+
+                // Return functions for external use
                 return {
                     startWithDelay,
                     resetToStart: () => {
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                            countdownInterval = null;
+                        }
                         audioElement.currentTime = startTime;
                         audioElement.pause();
+                        isPlaying = false;
                         playerStatus.textContent = 'Current Status: Paused';
                     }
                 };
@@ -786,6 +815,22 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             // Initialize audio player
             const audioPlayer = setupAudioPlayer();
 
+            // Add event listener for when audio is ready to play
+            const audioElement = document.getElementById('audio-player');
+            audioElement.addEventListener('canplaythrough', () => {
+                console.log('Audio is ready to play');
+            });
+
+            // Add event listener for when audio starts loading
+            audioElement.addEventListener('loadstart', () => {
+                console.log('Audio started loading');
+            });
+
+            // Add event listener for when audio finishes loading
+            audioElement.addEventListener('loadeddata', () => {
+                console.log('Audio data loaded');
+            });
+
             function getGrade() {
                 const answerContainer = document.getElementById('answer-paragraph-container');
                 const showFlag = document.getElementById('showAnswerFlag');
@@ -796,7 +841,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 const isVisible = answerContainer.style.display === 'block';
 
                 if (isVisible) {
-                    // Hide answers
+                    // Hide answers and reset audio
                     answerContainer.style.display = 'none';
                     showFlag.value = 'false';
                     state.showAnswer = false;
@@ -805,14 +850,14 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     audioElement.currentTime = startTime;
                     audioPlayer.startWithDelay();
                 } else {
-                    // Show answers
+                    // First submit - just show answers and pause audio
                     const result = calculateResults();
                     updateDisplay(result);
                     answerContainer.style.display = 'block';
                     showFlag.value = 'true';
                     state.showAnswer = true;
                     
-                    // Pause the audio
+                    // Just pause the audio without resetting
                     audioElement.pause();
                 }
 
@@ -863,8 +908,10 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                             document.getElementById('showAnswerFlag').value = 
                                 state.showAnswer ? 'true' : 'false';
                                 
+                            // If showing answers, just pause audio without resetting
                             if (state.showAnswer) {
-                                audioPlayer.resetToStart();
+                                const audioElement = document.getElementById('audio-player');
+                                audioElement.pause();
                             }
                         } catch (e) {
                             console.error('Error parsing answers:', e);

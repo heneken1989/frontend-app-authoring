@@ -192,6 +192,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         }
         .image-container {
             width: 100%;
+            max-height: 400px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -199,7 +200,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         }
         .quiz-image {
             max-width: 100%;
-            max-height: 300px;
+            max-height: 400px;
             object-fit: contain;
         }
         .question-text {
@@ -318,9 +319,10 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             background-color: #e0f0ff;
             border-radius: 3px;
             position: relative;
-            cursor: pointer;
+            cursor: default;
             width: 100%;
             margin-right: 0;
+            pointer-events: none; /* Disable all pointer interactions */
         }
         .progress-bar {
             height: 6px;
@@ -388,7 +390,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             display: none;
             z-index: 2;
             transition: transform 0.3s ease;
-            max-height: 460px;
+            max-height: 700px;
             overflow-y: auto;
         }
         .answer-paragraph-inner {
@@ -484,10 +486,6 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             .content-wrapper {
                 gap: 15px;
                 padding: 0px;
-            }
-
-            .quiz-image {
-                max-height: 200px;
             }
             .input-container {
                 width: 100%;
@@ -749,7 +747,9 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                             state.showAnswer ? 'true' : 'false';
                             
                         if (state.showAnswer) {
-                            audioPlayer.resetToStart();
+                            // If showing answers, just pause audio without resetting
+                            const audioElement = document.getElementById('audio-player');
+                            audioElement.pause();
                         }
                     } catch (e) {
                         console.error('Error parsing answers:', e);
@@ -786,8 +786,10 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             const playerStatus = document.getElementById('player-status');
             
             const startTime = parseFloat(startTimeElement?.textContent) || 0;
-            let endTime = parseFloat(endTimeElement?.textContent) || 0;
+            const endTime = parseFloat(endTimeElement?.textContent) || 0;
             let isPlaying = false;
+            let countdownInterval = null;
+            let isFirstLoad = true;
             
             // Update volume level display based on slider value
             function updateVolumeDisplay() {
@@ -812,8 +814,18 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 updateVolumeDisplay();
             });
             
-            // Initialize with 3-second delay
-            function initializePlayer() {
+            // Start countdown and auto-play
+            function startCountdown() {
+                // Only start countdown on first load or if explicitly requested
+                if (!isFirstLoad) {
+                    return;
+                }
+                
+                // Clear any existing countdown
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+                
                 // Set to start time
                 audioElement.currentTime = startTime;
                 
@@ -822,18 +834,41 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 
                 // Countdown timer
                 let countdown = 3;
-                const countdownInterval = setInterval(function() {
+                countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
                         playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                     } else {
                         clearInterval(countdownInterval);
-                        // Auto-play when countdown reaches 0
-                        audioElement.play()
-                            .then(function() {
-                                isPlaying = true;
-                                playerStatus.textContent = 'Current Status: Playing';
-                            });
+                        countdownInterval = null;
+                        
+                        // Function to try playing with multiple retries
+                        let retryCount = 0;
+                        const maxRetries = 3;
+                        
+                        const tryPlayWithRetry = () => {
+                            audioElement.play()
+                                .then(() => {
+                                    isPlaying = true;
+                                    playerStatus.textContent = 'Current Status: Playing';
+                                    isFirstLoad = false; // Set flag to false after first successful play
+                                })
+                                .catch((error) => {
+                                    console.error('Error playing audio (attempt ' + (retryCount + 1) + '):', error);
+                                    retryCount++;
+                                    
+                                    if (retryCount < maxRetries) {
+                                        setTimeout(() => {
+                                            tryPlayWithRetry();
+                                        }, retryCount * 500);
+                                    } else {
+                                        playerStatus.textContent = 'Current Status: Error playing audio';
+                                        isFirstLoad = false; // Set flag to false even if play fails
+                                    }
+                                });
+                        };
+                        
+                        tryPlayWithRetry();
                     }
                 }, 1000);
             }
@@ -847,7 +882,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                     
                     // Update progress bar width
                     const progressPercent = (currentRelative / durationRelative) * 100;
-                    progressBar.style.width = progressPercent + '%';
+                    progressBar.style.width = Math.max(0, Math.min(100, progressPercent)) + '%';
                 }
                 
                 // Check if we've reached the end time
@@ -859,20 +894,8 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 }
             }
             
-            // Click on progress bar to seek
-            progressContainer.addEventListener('click', (e) => {
-                const clickPosition = (e.offsetX / progressContainer.offsetWidth);
-                const durationRelative = (endTime > 0 ? endTime : audioElement.duration) - startTime;
-                const seekTime = startTime + (clickPosition * durationRelative);
-                
-                // Ensure we stay within bounds
-                audioElement.currentTime = Math.min(
-                    endTime > 0 ? endTime : audioElement.duration,
-                    Math.max(startTime, seekTime)
-                );
-                
-                updateProgress();
-            });
+            // Remove click handler for progress bar
+            progressContainer.style.pointerEvents = 'none';
             
             // Update progress during playback
             audioElement.addEventListener('timeupdate', updateProgress);
@@ -887,8 +910,8 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 // Set to start time
                 audioElement.currentTime = startTime;
                 
-                // Initialize player with delay
-                initializePlayer();
+                // Start countdown after metadata is loaded
+                startCountdown();
             });
             
             // Handle play event
@@ -903,44 +926,105 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 playerStatus.textContent = 'Current Status: Paused';
             });
             
+            // Handle error event
+            audioElement.addEventListener('error', (e) => {
+                console.error('Audio error:', e);
+                playerStatus.textContent = 'Current Status: Error loading audio';
+            });
+            
             // Set initial volume
             audioElement.volume = volumeSlider.value / 100;
             updateVolumeDisplay();
             
-            // Function to update player status with countdown
+            // Modify visibility change handler
+            document.addEventListener('visibilitychange', () => {
+                // Don't do anything when switching tabs
+                // This allows audio to continue playing in background
+            });
+
+            // Modify window focus handler
+            window.addEventListener('focus', () => {
+                // Don't auto-start when window gains focus
+                // But if audio was playing, it will continue playing
+            });
+
+            // Handle page unload/close
+            window.addEventListener('beforeunload', () => {
+                if (audioElement) {
+                    audioElement.pause();
+                }
+            });
+            
+            // Function to start with delay
             function startWithDelay() {
+                // Clear any existing countdown
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+                
+                // Reset to start time
+                audioElement.currentTime = startTime;
+                
                 // Update status with countdown
                 playerStatus.textContent = 'Current Status: Starting in 3s...';
                 
                 // Countdown timer
                 let countdown = 3;
-                const countdownInterval = setInterval(function() {
+                countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
                         playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                     } else {
                         clearInterval(countdownInterval);
+                        countdownInterval = null;
                         // Auto-play when countdown reaches 0
                         audioElement.play()
                             .then(function() {
+                                isPlaying = true;
                                 playerStatus.textContent = 'Current Status: Playing';
+                            })
+                            .catch(function(error) {
+                                console.error('Error playing audio:', error);
+                                playerStatus.textContent = 'Current Status: Error playing audio';
                             });
                     }
                 }, 1000);
             }
-            
-            // Expose the startWithDelay function
+
+            // Return functions for external use
             return {
+                startCountdown,
                 startWithDelay,
                 resetToStart: () => {
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
                     audioElement.currentTime = startTime;
                     audioElement.pause();
+                    isPlaying = false;
                     playerStatus.textContent = 'Current Status: Paused';
                 }
             };
         }
 
         const audioPlayer = setupAudioPlayer();
+
+        // Add event listener for when audio is ready to play
+        const audioElement = document.getElementById('audio-player');
+        audioElement.addEventListener('canplaythrough', () => {
+            console.log('Audio is ready to play');
+        });
+
+        // Add event listener for when audio starts loading
+        audioElement.addEventListener('loadstart', () => {
+            console.log('Audio started loading');
+        });
+
+        // Add event listener for when audio finishes loading
+        audioElement.addEventListener('loadeddata', () => {
+            console.log('Audio data loaded');
+        });
     })();
     </script>
 </body>

@@ -48,10 +48,15 @@ const FORM_COMPONENTS = {
   40: Form40,   // Listen and Choose Quiz (No Image)
   41: Form41,   // Highlight Word Quiz (Japanese)
   42: Form42,   // Listen and Fill in the Blank Quiz
+  43: Form39,   // Listen and Fill in the Blank Quiz (uses same form as 42)
+  44: Form40,   // Highlight Word Quiz (Japanese) - uses same form as ID 41
+  45: Form41,   // Highlight Word Quiz (Japanese) - uses same form as ID 41
   46: Form46,   // Listen with Image Multiple Different Blank Options
+  47: Form39,   // Listen and Choose Quiz (No Image) - uses same form as ID 40
   51: Form51,   // Reading Droplist
   59: Form59,   // Reading Droplist No Image
   63: Form63,   // Listen and Image Select Multiple Answer
+  64: Form63,   // Listen and Image Select Multiple Answer (uses same form as ID 63)
   65: Form65,   // Listen and Image Select Multiple Answer (MultiOptions)
   67: Form67,   // Listen Write Answer with Image Quiz
 };

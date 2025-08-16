@@ -52,17 +52,38 @@ const ListenImageSelectMultipleAnswerForm = ({ quizData, setQuizData }) => {
       </Form.Group>
 
       <Form.Group>
+        <Form.Label>Correct Answers for Each Blank</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={quizData.correctAnswers || "O,O,X,O,X,O,X"}
+          onChange={(e) => {
+            setQuizData(prev => ({
+              ...prev,
+              correctAnswers: e.target.value
+            }));
+          }}
+          placeholder="O,O,X,O,X,O,X"
+        />
+        <Form.Text>
+          Enter the correct answer for each blank, separated by commas.
+          This should match the number of blanks in your answer content.
+          Example: "O,O,X,O,X,O,X" for 7 blanks
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
         <Form.Label>Options for Each Blank</Form.Label>
         <Form.Control
           as="textarea"
           rows={3}
-          value={quizData.blankOptions || "O,O,X,O,X,X,X"}
+          value={quizData.blankOptions || "O,X"}
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
               blankOptions: e.target.value,
-              // Also update correctAnswers to match the first value of blank options
-              correctAnswers: e.target.value.split(',')[0]?.trim() || ''
+              // Also update correctAnswers to match the first value of blank options if correctAnswers is empty
+              correctAnswers: prev.correctAnswers || e.target.value.split(',')[0]?.trim() || ''
             }));
           }}
           placeholder="O,O,X,O,X,X,X"

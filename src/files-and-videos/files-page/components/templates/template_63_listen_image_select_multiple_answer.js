@@ -10,10 +10,13 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
     // Parse the blank options for dropdowns - these are the options for all dropdowns
     let optionsArray = [];
     if (blankOptions && blankOptions.trim()) {
-        // Remove duplicates by converting to Set and back to array
-        optionsArray = [...new Set(blankOptions.split(',').map(option => option.trim()).filter(option => option))];
+        // Remove duplicates and sort alphabetically
+        optionsArray = [...new Set(blankOptions.split(',')
+            .map(option => option.trim())
+            .filter(option => option))]
+            .sort((a, b) => a.localeCompare(b, 'ja')); // Use Japanese locale for sorting
     } else {
-        // Default options if none provided
+        // Default options if none provided, already sorted
         optionsArray = ['O', 'X'];
     }
     
@@ -133,7 +136,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             position: relative;
             overflow-y: auto;
             background-color: white;
-            max-height: 700px;
+            max-height: 620px;
         }
         .container {
             position: relative;
@@ -142,7 +145,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             flex-direction: column;
             gap: 0;
             background-color: white;
-            max-height: 700px;
+            max-height: 620px;
             overflow-y: auto;
             font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
             font-size: 1rem;
@@ -161,7 +164,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             flex: 6;
             background: white;
             overflow-y: auto;
-            max-height: 700px;
+            max-height: 620px;
         }
         .right-section {
             flex: 4;
@@ -170,7 +173,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             background: white;
             padding-left: 0;
             overflow-y: auto;
-            max-height: 700px;
+            max-height: 620px;
         }
         .content-wrapper {
             background: white;
@@ -185,7 +188,6 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             font-weight: 400;
             line-height: 1.5;
             text-align: left;
-            background-color: white;
             color: #333;
             font-style: italic;
             margin: 0;
@@ -205,12 +207,17 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             display: flex;
             justify-content: center;
             align-items: center;
-            background: white;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            max-width: 100%;
         }
         .quiz-image {
             max-width: 100%;
-            max-height: 300px;
+            max-height: 450px;
             object-fit: contain;
+            display: block;
+            margin: 0 auto;
         }
         .question-text {
             font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -218,7 +225,6 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             font-weight: 400;
             line-height: 1.5;
             text-align: left;
-            background: white;
             color: #333;
             margin: 0;
             position: relative;
@@ -488,20 +494,22 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
-                gap: 20px;
+                gap: 10px;
             }
             .left-section,
             .right-section {
                 flex: none;
                 width: 100%;
+                padding: 0;
+                margin: 0;
             }
             .content-wrapper {
-                gap: 15px;
-                padding: 0px;
+                gap: 10px;
+                padding: 0;
             }
-
-            .quiz-image {
-                max-height: 200px;
+            .image-container {
+                padding: 0;
+                margin: 0;
             }
             .select-container {
                 width: 100%;
@@ -684,11 +692,11 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             const audioElement = document.getElementById('audio-player');
             const startTimeElement = document.getElementById('start-time');
             
-            const startTime = parseFloat(startTimeElement?.textContent) || 0;
+            const startTime = parseFloat(startTimeElement.textContent) || 0;
             const isVisible = answerContainer.style.display === 'block';
 
             if (isVisible) {
-                // Hide answers
+                // Hide answers and reset audio
                 answerContainer.style.display = 'none';
                 showFlag.value = 'false';
                 state.showAnswer = false;
@@ -697,14 +705,14 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 audioElement.currentTime = startTime;
                 audioPlayer.startWithDelay();
             } else {
-                // Show answers
+                // First submit - just show answers and pause audio
                 const result = calculateResults();
                 updateDisplay(result);
                 answerContainer.style.display = 'block';
                 showFlag.value = 'true';
                 state.showAnswer = true;
                 
-                // Pause the audio
+                // Just pause the audio without resetting
                 audioElement.pause();
             }
 
@@ -725,6 +733,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             });
         }
 
+        // Update setState to handle audio state properly
         function setState(stateStr) {
             try {
                 const newState = JSON.parse(stateStr);
@@ -754,8 +763,10 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         document.getElementById('showAnswerFlag').value = 
                             state.showAnswer ? 'true' : 'false';
                             
+                        // If showing answers, just pause audio without resetting
                         if (state.showAnswer) {
-                            audioPlayer.resetToStart();
+                            const audioElement = document.getElementById('audio-player');
+                            audioElement.pause();
                         }
                     } catch (e) {
                         console.error('Error parsing answers:', e);
@@ -791,9 +802,11 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             const endTimeElement = document.getElementById('end-time');
             const playerStatus = document.getElementById('player-status');
             
-            const startTime = parseFloat(startTimeElement?.textContent) || 0;
-            let endTime = parseFloat(endTimeElement?.textContent) || 0;
+            const startTime = parseFloat(startTimeElement.textContent) || 0;
+            const endTime = parseFloat(endTimeElement.textContent) || 0;
             let isPlaying = false;
+            let countdownInterval = null;
+            let isFirstLoad = true;
             
             // Update volume level display based on slider value
             function updateVolumeDisplay() {
@@ -818,8 +831,18 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 updateVolumeDisplay();
             });
             
-            // Initialize with 3-second delay
-            function initializePlayer() {
+            // Start countdown and auto-play
+            function startCountdown() {
+                // Only start countdown on first load or if explicitly requested
+                if (!isFirstLoad) {
+                    return;
+                }
+                
+                // Clear any existing countdown
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+                
                 // Set to start time
                 audioElement.currentTime = startTime;
                 
@@ -828,18 +851,41 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 
                 // Countdown timer
                 let countdown = 3;
-                const countdownInterval = setInterval(function() {
+                countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
                         playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                     } else {
                         clearInterval(countdownInterval);
-                        // Auto-play when countdown reaches 0
-                        audioElement.play()
-                            .then(function() {
-                                isPlaying = true;
-                                playerStatus.textContent = 'Current Status: Playing';
-                            });
+                        countdownInterval = null;
+                        
+                        // Function to try playing with multiple retries
+                        let retryCount = 0;
+                        const maxRetries = 3;
+                        
+                        const tryPlayWithRetry = () => {
+                            audioElement.play()
+                                .then(() => {
+                                    isPlaying = true;
+                                    playerStatus.textContent = 'Current Status: Playing';
+                                    isFirstLoad = false; // Set flag to false after first successful play
+                                })
+                                .catch((error) => {
+                                    console.error('Error playing audio (attempt ' + (retryCount + 1) + '):', error);
+                                    retryCount++;
+                                    
+                                    if (retryCount < maxRetries) {
+                                        setTimeout(() => {
+                                            tryPlayWithRetry();
+                                        }, retryCount * 500);
+                                    } else {
+                                        playerStatus.textContent = 'Current Status: Error playing audio';
+                                        isFirstLoad = false; // Set flag to false even if play fails
+                                    }
+                                });
+                        };
+                        
+                        tryPlayWithRetry();
                     }
                 }, 1000);
             }
@@ -853,7 +899,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     
                     // Update progress bar width
                     const progressPercent = (currentRelative / durationRelative) * 100;
-                    progressBar.style.width = progressPercent + '%';
+                    progressBar.style.width = Math.max(0, Math.min(100, progressPercent)) + '%';
                 }
                 
                 // Check if we've reached the end time
@@ -865,20 +911,8 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 }
             }
             
-            // Click on progress bar to seek
-            progressContainer.addEventListener('click', (e) => {
-                const clickPosition = (e.offsetX / progressContainer.offsetWidth);
-                const durationRelative = (endTime > 0 ? endTime : audioElement.duration) - startTime;
-                const seekTime = startTime + (clickPosition * durationRelative);
-                
-                // Ensure we stay within bounds
-                audioElement.currentTime = Math.min(
-                    endTime > 0 ? endTime : audioElement.duration,
-                    Math.max(startTime, seekTime)
-                );
-                
-                updateProgress();
-            });
+            // Remove click handler for progress bar
+            progressContainer.style.pointerEvents = 'none';
             
             // Update progress during playback
             audioElement.addEventListener('timeupdate', updateProgress);
@@ -893,8 +927,8 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 // Set to start time
                 audioElement.currentTime = startTime;
                 
-                // Initialize player with delay
-                initializePlayer();
+                // Start countdown after metadata is loaded
+                startCountdown();
             });
             
             // Handle play event
@@ -909,44 +943,105 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 playerStatus.textContent = 'Current Status: Paused';
             });
             
+            // Handle error event
+            audioElement.addEventListener('error', (e) => {
+                console.error('Audio error:', e);
+                playerStatus.textContent = 'Current Status: Error loading audio';
+            });
+            
             // Set initial volume
             audioElement.volume = volumeSlider.value / 100;
             updateVolumeDisplay();
             
-            // Function to update player status with countdown
+            // Modify visibility change handler
+            document.addEventListener('visibilitychange', () => {
+                // Don't do anything when switching tabs
+                // This allows audio to continue playing in background
+            });
+
+            // Modify window focus handler
+            window.addEventListener('focus', () => {
+                // Don't auto-start when window gains focus
+                // But if audio was playing, it will continue playing
+            });
+
+            // Handle page unload/close
+            window.addEventListener('beforeunload', () => {
+                if (audioElement) {
+                    audioElement.pause();
+                }
+            });
+            
+            // Function to start with delay
             function startWithDelay() {
+                // Clear any existing countdown
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+                
+                // Reset to start time
+                audioElement.currentTime = startTime;
+                
                 // Update status with countdown
                 playerStatus.textContent = 'Current Status: Starting in 3s...';
                 
                 // Countdown timer
                 let countdown = 3;
-                const countdownInterval = setInterval(function() {
+                countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
                         playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                     } else {
                         clearInterval(countdownInterval);
+                        countdownInterval = null;
                         // Auto-play when countdown reaches 0
                         audioElement.play()
                             .then(function() {
+                                isPlaying = true;
                                 playerStatus.textContent = 'Current Status: Playing';
+                            })
+                            .catch(function(error) {
+                                console.error('Error playing audio:', error);
+                                playerStatus.textContent = 'Current Status: Error playing audio';
                             });
                     }
                 }, 1000);
             }
-            
-            // Expose the startWithDelay function
+
+            // Return functions for external use
             return {
+                startCountdown,
                 startWithDelay,
                 resetToStart: () => {
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
                     audioElement.currentTime = startTime;
                     audioElement.pause();
+                    isPlaying = false;
                     playerStatus.textContent = 'Current Status: Paused';
                 }
             };
         }
 
         const audioPlayer = setupAudioPlayer();
+
+        // Add event listener for when audio is ready to play
+        const audioElement = document.getElementById('audio-player');
+        audioElement.addEventListener('canplaythrough', () => {
+            console.log('Audio is ready to play');
+        });
+
+        // Add event listener for when audio starts loading
+        audioElement.addEventListener('loadstart', () => {
+            console.log('Audio started loading');
+        });
+
+        // Add event listener for when audio finishes loading
+        audioElement.addEventListener('loadeddata', () => {
+            console.log('Audio data loaded');
+        });
     })();
     </script>
 </body>

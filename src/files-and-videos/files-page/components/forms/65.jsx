@@ -31,14 +31,14 @@ aですか。bですか。
         <Form.Control
           as="textarea"
           rows={3}
-          value={quizData.optionsForBlanks || "働(はたら)きました,働(はたら)きませんでした;働(はたら)きました,働(はたら)きませんでした"}
+          value={quizData.blankOptions || "オーストラリア,アメリカ;英語(えいご),日本語(にほんご)"}
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
-              optionsForBlanks: e.target.value
+              blankOptions: e.target.value
             }));
           }}
-          placeholder="働(はたら)きました,働(はたら)きませんでした;働(はたら)きました,働(はたら)きませんでした"
+          placeholder="オーストラリア,アメリカ;英語(えいご),日本語(にほんご)"
         />
         <Form.Text>
           Enter options for each blank, separated by semicolons. Each blank's options are comma-separated.<br />

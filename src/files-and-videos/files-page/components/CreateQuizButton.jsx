@@ -268,7 +268,7 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               <option value={TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT}>{TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT} - Grammar Single Select Quiz</option>
               <option value={TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT}>{TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT} - Grammar Single Select Quiz (Alternative)</option>
               <option value={TEMPLATE_IDS.DRAG_DROP_OLD}>{TEMPLATE_IDS.DRAG_DROP_OLD} - Drag and Drop Quiz</option>
-              <option value={TEMPLATE_IDS.LISTEN_SINGLE_CHOICE}>{TEMPLATE_IDS.LISTEN_SINGLE_CHOICE} - Listen and Choose Quiz</option>
+              <option value={TEMPLATE_IDS.LISTEN_SINGLE_CHOICE}>{TEMPLATE_IDS.LISTEN_SINGLE_CHOICE} - Listen and Choose Quiz ID39</option>
               <option value={TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE}>{TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE} - Listen and Choose Quiz (No Image)</option>
               <option value={TEMPLATE_IDS.HIGHLIGHT_JAPANESE}>{TEMPLATE_IDS.HIGHLIGHT_JAPANESE} - Highlight Word Quiz (Japanese)</option>
               <option value={TEMPLATE_IDS.LISTEN_FILL_BLANK}>{TEMPLATE_IDS.LISTEN_FILL_BLANK} - Listen and Fill in the Blank Quiz</option>
@@ -299,6 +299,12 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               <option value={TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9}>{TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9} - Vocabulary Single Choice Quiz 9</option>
               <option value={TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10}>{TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10} - Vocabulary Single Choice Quiz 10</option>
               <option value={TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11}>{TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11} - Vocabulary Single Choice Quiz 11</option>
+              <option value={TEMPLATE_IDS.ID43_LISTEN_FILL_BLANK_2}>{TEMPLATE_IDS.ID43_LISTEN_FILL_BLANK_2} - Listen and Fill in the Blank Quiz 2</option>
+              <option value={TEMPLATE_IDS.ID44_LISTEN_SINGLE_CHOICE_NO_IMAGE}>{TEMPLATE_IDS.ID44_LISTEN_SINGLE_CHOICE_NO_IMAGE} - Listen and Choose Quiz (No Image)</option>
+              <option value={TEMPLATE_IDS.ID42_LISTEN_FILL_BLANK}>{TEMPLATE_IDS.ID42_LISTEN_FILL_BLANK} - Listen and Fill in the Blank Quiz</option>
+              <option value={TEMPLATE_IDS.ID45_LISTEN_HIGHTLIGHT}>{TEMPLATE_IDS.ID45_LISTEN_HIGHTLIGHT} - Highlight Word Quiz (Japanese) 2</option>
+              <option value={TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE}>{TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE} - Listen and Choose Quiz (No Image)</option>
+              <option value={TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER}>{TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER} - Listen and Image Select Multiple Answer</option>
             </Form.Control>
             <Form.Text>
               Select the type of quiz you want to create.
@@ -668,7 +674,7 @@ const generateQuizTemplate = (templateId, quizData) => {
         );
         
       return getListenFillInBlankTemplate(
-          quizData.paragraphText,
+          quizData.answerContent, // Changed from paragraphText to answerContent
           quizData.audioFile || '',
           quizData.startTime || 0,
           quizData.endTime || 0,
@@ -695,25 +701,55 @@ const generateQuizTemplate = (templateId, quizData) => {
             return '';
           })
           .filter(word => word !== ''); // Remove empty strings
-        
-        console.log('Extracted correctWords:', correctWords);
-        console.log('Original fixedWordsExplanation:', quizData.fixedWordsExplanation);
-        
-      // Set default instructions for Japanese highlight
-      let defaultInstructions = '正(ただ)しくない言葉(ことば)をえらんでください';
+            
+        // Set default instructions for Japanese highlight
+        let defaultInstructions = '正(ただ)しくない言葉(ことば)をえらんでください';
         
         // Make sure fixedWordsExplanation is not empty
         const fixedWordsExplanation = quizData.fixedWordsExplanation || 'These are the words that should be selected.';
         console.log('Final fixedWordsExplanation:', fixedWordsExplanation);
         
-      return highlightFillStyleTemplate
-          .replace('{{PARAGRAPH}}', quizData.paragraphText.replace(/'/g, "\\'").replace(/\n/g, ' '))
-          .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords))
-          .replace('{{FIXED_WORDS_EXPLANATION}}', fixedWordsExplanation)
-          .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions)
-          .replace('{{AUDIO_FILE}}', quizData.audioFile || '')
-          .replace('{{START_TIME}}', quizData.startTime || 0)
-          .replace('{{END_TIME}}', quizData.endTime || 0);
+        return highlightFillStyleTemplate
+            .replace('{{PARAGRAPH}}', quizData.paragraphText.replace(/'/g, "\\'").replace(/\n/g, ' '))
+            .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords))
+            .replace('{{FIXED_WORDS_EXPLANATION}}', fixedWordsExplanation)
+            .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions)
+            .replace('{{AUDIO_FILE}}', quizData.audioFile || '')
+            .replace('{{START_TIME}}', quizData.startTime || 0)
+            .replace('{{END_TIME}}', quizData.endTime || 0);
+
+      case TEMPLATE_IDS.ID45_LISTEN_HIGHTLIGHT: // Highlight Word Quiz (Japanese) - ID 45
+        const correctWords45 = quizData.fixedWordsExplanation.split(',')
+          .map(pair => {
+            // Extract the wrong word from each pair
+            if (pair.includes('=')) {
+              // For both simple and indexed formats
+              if (pair.includes(':')) {
+                // Indexed format: "word:index=fixed"
+                return pair.split('=')[0].split(':')[0].trim();
+              } else {
+                // Simple format: "word=fixed"
+                return pair.split('=')[0].trim();
+              }
+            }
+            return '';
+          })
+          .filter(word => word !== ''); // Remove empty words
+            
+        // Set default instructions for Japanese highlight
+        let defaultInstructions45 = '正(ただ)しくない言葉(ことば)をえらんでください';
+        
+        // Make sure fixedWordsExplanation is not empty
+        const fixedWordsExplanation45 = quizData.fixedWordsExplanation || 'These are the words that should be selected.';
+        
+        return highlightFillStyleTemplate
+            .replace('{{PARAGRAPH}}', quizData.paragraphText.replace(/'/g, "\\'").replace(/\n/g, ' '))
+            .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords45))
+            .replace('{{FIXED_WORDS_EXPLANATION}}', fixedWordsExplanation45)
+            .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions45)
+            .replace('{{AUDIO_FILE}}', quizData.audioFile || '')
+            .replace('{{START_TIME}}', quizData.startTime || 0)
+            .replace('{{END_TIME}}', quizData.endTime || 0);
 
       case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE: // Listen and Choose Quiz
       return getListenSingleChoiceTemplate(
@@ -727,7 +763,42 @@ const generateQuizTemplate = (templateId, quizData) => {
           quizData.imageFile || ''
         );
 
+      case TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE: // Listen and Choose Quiz
+        return getListenSingleChoiceTemplate(
+            quizData.paragraphText,
+            quizData.blankOptions,
+            quizData.audioFile || '',
+            quizData.startTime || 0,
+            quizData.endTime || 0,
+            quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
+            quizData.scriptText || '',
+            quizData.imageFile || ''
+          );
+
+      case TEMPLATE_IDS.ID43_LISTEN_FILL_BLANK_2: // Listen and Choose Quiz
+        return getListenSingleChoiceTemplate(
+            quizData.paragraphText,
+            quizData.blankOptions,
+            quizData.audioFile || '',
+            quizData.startTime || 0,
+            quizData.endTime || 0,
+            quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
+            quizData.scriptText || '',
+            quizData.imageFile || ''
+          );
+
     case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
+      return getListenSingleChoiceNoImageTemplate(
+        quizData.paragraphText,
+        quizData.blankOptions,
+        quizData.audioFile || '',
+        quizData.startTime || 0,
+        quizData.endTime || 0,
+        quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
+        quizData.scriptText || ''
+      );
+    
+    case TEMPLATE_IDS.ID44_LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
       return getListenSingleChoiceNoImageTemplate(
         quizData.paragraphText,
         quizData.blankOptions,
@@ -754,7 +825,7 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER:
       return getListenImageSelectMultipleAnswerTemplate(
         quizData.paragraphText,
-        quizData.blankOptions || '', // Use blankOptions as correctAnswers
+        quizData.correctAnswers || '', // Use correctAnswers as the second parameter
         quizData.audioFile || '',
         quizData.startTime || 0,
         quizData.endTime || 0,
@@ -765,10 +836,25 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.blankOptions || ''  // Pass the blank options as the last parameter
       );
 
+
+    case TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER:
+        return getListenImageSelectMultipleAnswerTemplate(
+          quizData.paragraphText,
+          quizData.correctAnswers || '', // Use correctAnswers as the second parameter
+          quizData.audioFile || '',
+          quizData.startTime || 0,
+          quizData.endTime || 0,
+          quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
+          quizData.scriptText || '',
+          quizData.imageFile || '',
+          quizData.answerContent || '',
+          quizData.blankOptions || ''  // Pass the blank options as the last parameter
+        );
+
     case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS:
       return getListenImageSelectMultipleAnswerMultiOptionsTemplate(
         quizData.paragraphText,
-        quizData.optionsForBlanks || '',
+        quizData.blankOptions || '', // Changed from optionsForBlanks to blankOptions
         quizData.audioFile || '',
         quizData.startTime || 0,
         quizData.endTime || 0,
@@ -1079,7 +1165,7 @@ def check_fun(e, ans):
       set_statefn="setState" 
       initial_state='{"showAnswer": false}' 
       width="100%" 
-      height="460px" 
+      height="620px" 
       html_file="/static/${htmlFileName}" 
       sop="false" 
       id="paragraph_quiz_input" 
@@ -1310,7 +1396,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           wordBank: String(quiz.wordBank || ''),
           fixedWordsExplanation: String(quiz.fixedWordsExplanation || ''),
           optionsForBlanks: String(quiz.optionsForBlanks || ''),
-          answerContent: String(quiz.answerContent || ''),
+          answerContent: String(quiz.answerContent || quiz.answers || ''),
           questionText: String(quiz.questionText || ''),
           words: String(quiz.words || ''),
           dropZones: String(quiz.dropZones || '[]')
@@ -1624,6 +1710,33 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
         published: 'true'
       },
       {
+        problemTypeId: '63',
+        unitTitle: 'Sample Quiz - Listen Image Select Multiple Answer',
+        paragraphText: 'リンさんは何曜日(なんようび)に働(はたら)きましたか働(はたら)きました（O）働(はたら)きませんでした（X）',
+        answerContent: `月曜日(げつようび)（ー）
+火曜日(かようび)（ー）
+水曜日(すいようび)（ー）
+木曜日(もくようび)（ー）
+金曜日(きんようび)（ー）
+土曜日(どようび)（ー）
+日曜日(にちようび)（ー）`,
+        correctAnswers: 'O,O,X,O,X,O,X',
+        blankOptions: 'O,X',
+        scriptText: `A:リンさんは先週(せんしゅう)、何曜日(なんようび)に働(はたら)きましたか。
+B:えーと、月曜日(げつようび)と火曜日(かようび)と木曜日(もくようび)に働(はたら)きました。
+A:水曜日(すいようび)は?
+B:働(はたら)きませんでした。水曜日(すいようび)は休(やす)みました。
+A:金曜日(きんようび)は?
+B:金曜日(きんようび)も働(はたら)きませんでした。土曜日(どようび)と日曜日(にちようび)は休(やす)みです。
+A:そうですか。`,
+        instructions: '音声を聞いて、絵を見て、正しい答えを選んでください。',
+        audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
+        imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
+        'startTime/endTime': '0.34-0.50',
+        timeLimit: '60',
+        published: 'true'
+      },
+      {
         problemTypeId: '39',
         unitTitle: 'Sample Quiz 2',
         paragraphText: '女の人は何を買いましたか。',
@@ -1634,6 +1747,18 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
         imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/2.png',
         'startTime/endTime': '1.20-2.15',
         timeLimit: '60', // 60 seconds
+        published: 'true'
+      },
+      {
+        problemTypeId: '45',
+        unitTitle: 'Sample Quiz - Highlight Japanese Words',
+        paragraphText: 'これは正しい日本語の文章です。間違った言葉があります。',
+        fixedWordsExplanation: '正しい=correct,間違った=wrong',
+        instructions: '正(ただ)しくない言葉(ことば)をえらんでください',
+        audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/3.mp3',
+        imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/3.png',
+        'startTime/endTime': '0.10-0.45',
+        timeLimit: '60',
         published: 'true'
       }
     ];
@@ -1654,6 +1779,13 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
       // Validate required fields based on problem type
       if (quizData.problemTypeId === TEMPLATE_IDS.HIGHLIGHT_JAPANESE) {
         // For highlight quizzes, ensure fixedWordsExplanation is not empty
+        if (!quizData.fixedWordsExplanation || quizData.fixedWordsExplanation.trim() === '') {
+          alert('Fixed Words Explanation is required for highlight quizzes. Please enter at least one word pair.');
+          return;
+        }
+      }
+      if (quizData.problemTypeId === TEMPLATE_IDS.ID45_LISTEN_HIGHTLIGHT) {
+        // For ID 45 highlight quizzes, ensure fixedWordsExplanation is not empty
         if (!quizData.fixedWordsExplanation || quizData.fixedWordsExplanation.trim() === '') {
           alert('Fixed Words Explanation is required for highlight quizzes. Please enter at least one word pair.');
           return;

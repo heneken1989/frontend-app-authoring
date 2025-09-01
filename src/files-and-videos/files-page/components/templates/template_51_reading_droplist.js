@@ -97,16 +97,26 @@ export const getReadingDroplistTemplate = (questionText, correctAnswers, instruc
         .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
         .replace('{{CORRECT_ANSWERS}}', JSON.stringify(correctAnswersArray));
 
-    // Handle image file
+    // Process images - support both single image string and array of images
+    let imagesHtml = '';
+    
     if (imageFile) {
-        template = template
-            .replace('{{#if IMAGE_FILE}}', '')
-            .replace('{{/if}}', '')
-            .replace('{{IMAGE_FILE}}', imageFile);
+        // If imageFile is a string, split by comma or semicolon
+        const imageArray = Array.isArray(imageFile) ? imageFile : imageFile.split(/[,;]/).map(img => img.trim()).filter(img => img);
+        
+        // Only generate HTML if we have valid image paths
+        if (imageArray.length > 0) {
+            imagesHtml = imageArray.map((imagePath) => {
+                return '<div class="image-item"><img src="' + imagePath + '" alt="Quiz Image" /></div>';
+            }).join('');
+        } else {
+            imagesHtml = '<div class="image-item" style="color: #999; font-style: italic;">No images provided (empty array)</div>';
+        }
     } else {
-        template = template
-            .replace(/{{#if IMAGE_FILE}}[\s\S]*?{{\/if}}/g, '');
+        imagesHtml = '<div class="image-item" style="color: #999; font-style: italic;">No images provided</div>';
     }
+
+    template = template.replace('{{IMAGES}}', imagesHtml);
     
     return template;
 };
@@ -197,12 +207,30 @@ export const readingDroplistTemplate = `<!DOCTYPE html>
             width: 4px;
             background-color: #0075b4;
         }
-        .image-container {
+        .images-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
             width: 100%;
+            overflow-x: hidden;
+            min-height: 300px;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .image-item {
+            width: 100%;
+            max-width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: white;
+        }
+        .image-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .quiz-image {
             max-width: 100%;
@@ -514,11 +542,9 @@ export const readingDroplistTemplate = `<!DOCTYPE html>
                     <div class="instructions" id="quiz-instructions">
                         {{INSTRUCTIONS}}
                     </div>
-                    {{#if IMAGE_FILE}}
-                    <div class="image-container">
-                        <img src="{{IMAGE_FILE}}" alt="Quiz illustration" class="quiz-image">
+                    <div class="images-container">
+                        {{IMAGES}}
                     </div>
-                    {{/if}}
                     <div class="question-text">{{QUESTION_TEXT}}</div>
                 </div>
             </div>

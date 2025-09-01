@@ -87,6 +87,7 @@ export const TEMPLATE_IDS = {
   ID3_VOCAB_SINGLE_CHOICE: 3,                          // Uses template_28_grammar_single_select.js
   ID4_VOCAB_SINGLE_SELECT_1: 4,                        // Uses template_28_grammar_single_select.js
   ID5_VOCAB_SINGLE_SELECT_2: 5,                        // Uses template_28_grammar_single_select.js
+  ID6_GRAMMAR_DROPDOWN: 6,                        // Uses template_28_grammar_single_select.js
   ID7_VOCAB_SINGLE_SELECT_3: 7,   
   ID8_VOCAB_SINGLE_SELECT_4: 8,  
   ID9_VOCAB_SINGLE_SELECT_5: 9,
@@ -98,7 +99,17 @@ export const TEMPLATE_IDS = {
   ID16_VOCAB_SINGLE_SELECT_10: 16,                                // Uses template_20_drag_drop.js
   ID17_VOCAB_SINGLE_SELECT_11: 17,                                // Uses template_20_drag_drop.js
   GRAMMAR_DROPDOWN: 18,                                // template_18_grammar_dropdown.js
-  GRAMMAR_SENTENCE_REARRANGEMENT: 22,                  // template_22_grammar_sentence_rearrangement.js
+  ID19_GRAMMAR_DROPDOWN: 19,  
+  ID21_GRAMMAR_DROPDOWN: 21,                               // template_18_grammar_dropdown.js
+  GRAMMAR_SENTENCE_REARRANGEMENT: 22,  
+  ID27_GRAMMAR_SENTENCE_REARRANGEMENT: 27,                  // template_22_grammar_sentence_rearrangement.js
+  ID23_GRAMMAR_DROPDOWN: 23,              // Uses template_22_grammar_sentence_rearrangement.js
+  ID24_GRAMMAR_DROPDOWN: 24,              // Uses template_22_grammar_sentence_rearrangement.js
+  ID62_GRAMMAR_DROPDOWN: 62,   
+  ID26_GRAMMAR_DROPDOWN: 26, 
+  ID30_GRAMMAR_DROPDOWN: 30,
+  ID25_DRAG_DROP: 25,              // Uses template_20_drag_drop.js
+  
   GRAMMAR_SINGLE_SELECT: 28,                           // template_28_grammar_single_select.js
   GRAMMAR_SINGLE_SELECT_ALT: 29,                       // Uses template_28_grammar_single_select.js
   DRAG_DROP_OLD: 20,                                   // template_20_drag_drop.js  
@@ -112,6 +123,7 @@ export const TEMPLATE_IDS = {
   LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS: 65, // template_65_listen_image_select_multiple_answer_multioptions.js
   LISTEN_WRITE_ANSWER_WITH_IMAGE: 67,                  // template_67_listen_write_answer_with_image.js
   READING_MULTIPLE_QUESTION: 31,                       // template_31_reading_multiple_question.js
+  ID34_READING_MULTIPLE_QUESTION: 34,                   // Uses template_31_reading_multiple_question.js
   READING_MULTIPLE_QUESTION_ALT: 37,                   // Uses template_31_reading_multiple_question.js
   READING_DROPLIST: 51,                                // template_51_reading_droplist.js
   READING_DROPLIST_NO_IMAGE: 59,                       // template_59_reading_droplist_no_image.js

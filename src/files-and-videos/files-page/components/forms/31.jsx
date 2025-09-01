@@ -22,6 +22,36 @@ const ReadingMultipleQuestionForm = ({ quizData, setQuizData }) => {
       </Form.Group>
 
       <Form.Group>
+        <Form.Label>Images</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={3}
+          value={quizData.images || ''}
+          onChange={(e) => {
+            console.log('Images field changed:', e.target.value);
+            setQuizData(prev => {
+              const newData = {
+                ...prev,
+                images: e.target.value
+              };
+              console.log('Updated quizData:', newData);
+              return newData;
+            });
+          }}
+          placeholder="Enter image URLs separated by commas or semicolons. Leave empty if no images needed."
+        />
+        <Form.Text>
+          Enter image URLs separated by commas (,) or semicolons (;).<br/>
+          Images will be displayed vertically above the reading text.<br/>
+          Example:<br/>
+          "image1.jpg, image2.jpg, image3.jpg"<br/>
+          or<br/>
+          "image1.jpg; image2.jpg; image3.jpg"<br/>
+          Leave empty if no images are needed for this quiz.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
         <Form.Label>Questions</Form.Label>
         <Form.Control
           as="textarea"
@@ -129,6 +159,7 @@ const ReadingMultipleQuestionForm = ({ quizData, setQuizData }) => {
 ReadingMultipleQuestionForm.propTypes = {
   quizData: PropTypes.shape({
     paragraphText: PropTypes.string,
+    images: PropTypes.string,
     questionText: PropTypes.string,
     blankOptions: PropTypes.string,
     scriptText: PropTypes.string,

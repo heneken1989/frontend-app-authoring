@@ -185,6 +185,8 @@ const shouldShowAudioField = (problemTypeId) => ![
   TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9, // Add ID15 to the list
   TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10, // Add ID16 to the list
   TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11, // Add ID17 to the list
+  TEMPLATE_IDS.ID19_GRAMMAR_DROPDOWN,
+  
 ].includes(problemTypeId);
 
 const shouldShowImageField = (problemTypeId) => ![
@@ -193,7 +195,6 @@ const shouldShowImageField = (problemTypeId) => ![
   TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT,
   TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT,
   TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT,
-  TEMPLATE_IDS.READING_MULTIPLE_QUESTION,
   TEMPLATE_IDS.READING_SAME_31,
   TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS,
   TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE,
@@ -212,6 +213,8 @@ const shouldShowImageField = (problemTypeId) => ![
   TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9, // Add ID15 to the list
   TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10, // Add ID16 to the list
   TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11, // Add ID17 to the list
+  TEMPLATE_IDS.ID19_GRAMMAR_DROPDOWN, // Add ID19 to the list
+  TEMPLATE_IDS.ID34_READING_MULTIPLE_QUESTION,
 ].includes(problemTypeId);
 
 // QuizModal Component
@@ -268,6 +271,7 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               <option value={TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT}>{TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT} - Grammar Single Select Quiz</option>
               <option value={TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT}>{TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT} - Grammar Single Select Quiz (Alternative)</option>
               <option value={TEMPLATE_IDS.DRAG_DROP_OLD}>{TEMPLATE_IDS.DRAG_DROP_OLD} - Drag and Drop Quiz</option>
+              <option value={TEMPLATE_IDS.ID25_DRAG_DROP}>{TEMPLATE_IDS.ID25_DRAG_DROP} - Drag and Drop Quiz</option>
               <option value={TEMPLATE_IDS.LISTEN_SINGLE_CHOICE}>{TEMPLATE_IDS.LISTEN_SINGLE_CHOICE} - Listen and Choose Quiz ID39</option>
               <option value={TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE}>{TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE} - Listen and Choose Quiz (No Image)</option>
               <option value={TEMPLATE_IDS.HIGHLIGHT_JAPANESE}>{TEMPLATE_IDS.HIGHLIGHT_JAPANESE} - Highlight Word Quiz (Japanese)</option>
@@ -289,6 +293,7 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               <option value={TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE}>{TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE} - Vocabulary Single Choice Quiz</option>
               <option value={TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1}>{TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1} - Vocabulary Single Choice Quiz 1</option>
               <option value={TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2}>{TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2} - Vocabulary Single Choice Quiz 2</option>
+              <option value={TEMPLATE_IDS.ID6_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID6_GRAMMAR_DROPDOWN} - Vocabulary Single Choice Quiz 3</option>
               <option value={TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3}>{TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3} - Vocabulary Single Choice Quiz 3</option>
               <option value={TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4}>{TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4} - Vocabulary Single Choice Quiz 4</option>
               <option value={TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5}>{TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5} - Vocabulary Single Choice Quiz 5</option>
@@ -299,11 +304,20 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               <option value={TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9}>{TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9} - Vocabulary Single Choice Quiz 9</option>
               <option value={TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10}>{TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10} - Vocabulary Single Choice Quiz 10</option>
               <option value={TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11}>{TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11} - Vocabulary Single Choice Quiz 11</option>
+              <option value={TEMPLATE_IDS.ID19_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID19_GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
+              <option value={TEMPLATE_IDS.ID21_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID21_GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
+              <option value={TEMPLATE_IDS.ID23_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID23_GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
+              <option value={TEMPLATE_IDS.ID24_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID24_GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
+              <option value={TEMPLATE_IDS.ID26_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID26_GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
+              <option value={TEMPLATE_IDS.ID27_GRAMMAR_SENTENCE_REARRANGEMENT}>{TEMPLATE_IDS.ID27_GRAMMAR_SENTENCE_REARRANGEMENT} - Grammar Sentence Rearrangement Quiz</option>
+              <option value={TEMPLATE_IDS.ID30_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID30_GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
+              <option value={TEMPLATE_IDS.ID34_READING_MULTIPLE_QUESTION}>{TEMPLATE_IDS.ID34_READING_MULTIPLE_QUESTION} - Reading Multiple Question</option>
               <option value={TEMPLATE_IDS.ID43_LISTEN_FILL_BLANK_2}>{TEMPLATE_IDS.ID43_LISTEN_FILL_BLANK_2} - Listen and Fill in the Blank Quiz 2</option>
               <option value={TEMPLATE_IDS.ID44_LISTEN_SINGLE_CHOICE_NO_IMAGE}>{TEMPLATE_IDS.ID44_LISTEN_SINGLE_CHOICE_NO_IMAGE} - Listen and Choose Quiz (No Image)</option>
               <option value={TEMPLATE_IDS.ID42_LISTEN_FILL_BLANK}>{TEMPLATE_IDS.ID42_LISTEN_FILL_BLANK} - Listen and Fill in the Blank Quiz</option>
               <option value={TEMPLATE_IDS.ID45_LISTEN_HIGHTLIGHT}>{TEMPLATE_IDS.ID45_LISTEN_HIGHTLIGHT} - Highlight Word Quiz (Japanese) 2</option>
               <option value={TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE}>{TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE} - Listen and Choose Quiz (No Image)</option>
+              <option value={TEMPLATE_IDS.ID62_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID62_GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
               <option value={TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER}>{TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER} - Listen and Image Select Multiple Answer</option>
             </Form.Control>
             <Form.Text>
@@ -662,6 +676,13 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.DRAG_DROP_OLD: // Drag and Drop Quiz (ID 20)
       const dragDropWords = quizData.wordBank.split(',').map(word => word.trim());
       return getDragDropQuizTemplate(quizData.paragraphText, dragDropWords, quizData.instructions, quizData.instructorContent || '');
+    
+
+    case TEMPLATE_IDS.ID25_DRAG_DROP: // Drag and Drop Quiz (ID 20)
+      const dragDropWords1 = quizData.wordBank.split(',').map(word => word.trim());
+      return getDragDropQuizTemplate(quizData.paragraphText, dragDropWords1, quizData.instructions, quizData.instructorContent || '');
+
+
 
     case TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP: // Drag and Drop Quiz (ID 12)
       const vocabDragDropWords = quizData.wordBank.split(',').map(word => word.trim());
@@ -891,9 +912,116 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.answerContent || ''
       );
 
+    case TEMPLATE_IDS.ID19_GRAMMAR_DROPDOWN:
+      return getGrammarDropdownTemplate(
+        quizData.paragraphText,
+        quizData.optionsForBlanks || '',
+        quizData.audioFile || '',
+        quizData.startTime || 0,
+        quizData.endTime || 0,
+        quizData.instructions || '',
+        quizData.scriptText || '',
+        quizData.imageFile || '',
+        quizData.answerContent || ''
+      );
+
+    case TEMPLATE_IDS.ID6_GRAMMAR_DROPDOWN:
+        return getGrammarDropdownTemplate(
+          quizData.paragraphText,
+          quizData.optionsForBlanks || '',
+          quizData.audioFile || '',
+          quizData.startTime || 0,
+          quizData.endTime || 0,
+          quizData.instructions || '',
+          quizData.scriptText || '',
+          quizData.imageFile || '',
+          quizData.answerContent || ''
+        );
+    
+    case TEMPLATE_IDS.ID21_GRAMMAR_DROPDOWN:
+          return getGrammarDropdownTemplate(
+            quizData.paragraphText,
+            quizData.optionsForBlanks || '',
+            quizData.audioFile || '',
+            quizData.startTime || 0,
+            quizData.endTime || 0,
+            quizData.instructions || '',
+            quizData.scriptText || '',
+            quizData.imageFile || '',
+            quizData.answerContent || ''
+          );
+
+    case TEMPLATE_IDS.ID23_GRAMMAR_DROPDOWN:
+            return getGrammarDropdownTemplate(
+              quizData.paragraphText,
+              quizData.optionsForBlanks || '',
+              quizData.audioFile || '',
+              quizData.startTime || 0,
+              quizData.endTime || 0,
+              quizData.instructions || '',
+              quizData.scriptText || '',
+              quizData.imageFile || '',
+              quizData.answerContent || ''
+            );
+
+    case TEMPLATE_IDS.ID24_GRAMMAR_DROPDOWN:
+              return getGrammarDropdownTemplate(
+                quizData.paragraphText,
+                quizData.optionsForBlanks || '',
+                quizData.audioFile || '',
+                quizData.startTime || 0,
+                quizData.endTime || 0,
+                quizData.instructions || '',
+                quizData.scriptText || '',
+                quizData.imageFile || '',
+                quizData.answerContent || ''
+              );
+    case TEMPLATE_IDS.ID62_GRAMMAR_DROPDOWN:
+                return getGrammarDropdownTemplate(
+                  quizData.paragraphText,
+                  quizData.optionsForBlanks || '',
+                  quizData.audioFile || '',
+                  quizData.startTime || 0,
+                  quizData.endTime || 0,
+                  quizData.instructions || '',
+                  quizData.scriptText || '',
+                  quizData.imageFile || '',
+                  quizData.answerContent || ''
+                );
+
+    case TEMPLATE_IDS.ID26_GRAMMAR_DROPDOWN:
+                  return getGrammarDropdownTemplate(
+                    quizData.paragraphText,
+                    quizData.optionsForBlanks || '',
+                    quizData.audioFile || '',
+                    quizData.startTime || 0,
+                    quizData.endTime || 0,
+                    quizData.instructions || '',
+                    quizData.scriptText || '',
+                    quizData.imageFile || '',
+                    quizData.answerContent || ''
+                  );
+
+    case TEMPLATE_IDS.ID30_GRAMMAR_DROPDOWN:
+                    return getGrammarDropdownTemplate(
+                      quizData.paragraphText,
+                      quizData.optionsForBlanks || '',
+                      quizData.audioFile || '',
+                      quizData.startTime || 0,
+                      quizData.endTime || 0,
+                      quizData.instructions || '',
+                      quizData.scriptText || '',
+                      quizData.imageFile || '',
+                      quizData.answerContent || ''
+                    );
+
     case TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT:
       const sentenceWords = quizData.wordBank.split(',').map(word => word.trim());
       return getGrammarSentenceRearrangementTemplate(sentenceWords);
+
+    case TEMPLATE_IDS.ID27_GRAMMAR_SENTENCE_REARRANGEMENT:
+        const sentenceWords1 = quizData.wordBank.split(',').map(word => word.trim());
+        return getGrammarSentenceRearrangementTemplate(sentenceWords1);
 
     case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT:
       return getGrammarSingleSelectTemplate(
@@ -912,29 +1040,39 @@ const generateQuizTemplate = (templateId, quizData) => {
       );
 
     case TEMPLATE_IDS.READING_MULTIPLE_QUESTION:
-      console.log('Creating Reading Multiple Question Quiz');
       quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
       return getReadingMultipleQuestionTemplate(
         quizData.paragraphText || '',
         quizData.questionText || '',
         quizData.blankOptions || '',
         quizData.instructions,
-        quizData.scriptText || ''
+        quizData.scriptText || '',
+        quizData.images || ''
       );
 
+      case TEMPLATE_IDS.ID34_READING_MULTIPLE_QUESTION:
+        quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
+        return getReadingMultipleQuestionTemplate(
+          quizData.paragraphText || '',
+          quizData.questionText || '',
+          quizData.blankOptions || '',
+          quizData.instructions,
+          quizData.scriptText || '',
+          quizData.images || ''
+        );
+
     case TEMPLATE_IDS.READING_MULTIPLE_QUESTION_ALT:
-      console.log('Creating Reading Multiple Question Quiz (Alternative)');
       quizData.instructions = quizData.instructions || '次の文章を読んで、質問に答えてください。';
       return getReadingMultipleQuestionTemplate(
         quizData.paragraphText || '',
         quizData.questionText || '',
         quizData.blankOptions || '',
         quizData.instructions,
-        quizData.scriptText || ''
+        quizData.scriptText || '',
+        quizData.images || ''
       );
 
     case TEMPLATE_IDS.READING_SAME_31:
-      console.log('Creating Reading Same as 31 Quiz');
       quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
       return getReadingMultipleQuestionTemplate32(
         quizData.paragraphText || '',
@@ -945,14 +1083,14 @@ const generateQuizTemplate = (templateId, quizData) => {
       );
 
     case TEMPLATE_IDS.READING_MULTIPLE_QUESTION_CONVERSATION:
-      console.log('Creating Reading Multiple Question (Conversation) Quiz');
       quizData.instructions = quizData.instructions || 'つぎのぶんしょうを読(よ)んで、質問(しつもん)にこたえてください。答(こた)えは、１・２・３・４からいちばん いいものを一(ひと)つ えらんでください。';
       return getReadingMultipleQuestionTemplate(
         quizData.paragraphText || '',
         quizData.questionText || '',
         quizData.blankOptions || '',
         quizData.instructions,
-        quizData.scriptText || ''
+        quizData.scriptText || '',
+        quizData.images || ''
       );
 
     case TEMPLATE_IDS.READING_DROPLIST:
@@ -1388,6 +1526,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           instructions: String(quiz.instructions || '音声を聞いて、正しい答えを選んでください。'),
           audioFile: String(quiz.audioFile || '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3'),
           imageFile: String(quiz.imageFile || '/asset-v1:Manabi+N51+2026+type@asset+block/1.png'),
+          images: String(quiz.images || ''), // Add mapping for images column
           startTime: parseFloat(quiz.startTime) || 0,
           endTime: parseFloat(quiz.endTime) || 0,
           timeLimit: parseInt(quiz.timeLimit) || 60, // Default to 60 seconds
@@ -1530,7 +1669,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               <br />
               <strong>Required columns:</strong> problemTypeId, unitTitle, paragraphText, blankOptions
               <br />
-              <strong>Optional columns:</strong> scriptText, instructions, audioFile, imageFile, startTime, endTime, timeLimit, published
+              <strong>Optional columns:</strong> scriptText, instructions, audioFile, imageFile, images, startTime, endTime, timeLimit, published
               <br />
               <strong>Time Range columns:</strong> 
               <br />
@@ -1647,6 +1786,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
     instructions: '',
     audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
     imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
+    images: '',
     startTime: 0,
     endTime: 0,
     questionText: '',
@@ -1681,6 +1821,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
       instructions: '',
       audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
       imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
+      images: '',
       startTime: 0,
       endTime: 0,
       questionText: '',
@@ -1830,6 +1971,7 @@ A:そうですか。`,
           optionsForBlanks: quizData.optionsForBlanks,
           scriptText: quizData.scriptText,
           imageFile: quizData.imageFile,
+          images: quizData.images,
           answerContent: quizData.answerContent,
           questionText: quizData.questionText,
           words: quizData.words,

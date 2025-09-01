@@ -24,6 +24,7 @@ const FORM_COMPONENTS = {
   4: Form28,   // Vocabulary Single Choice Quiz 1 (uses Form28)
   5: Form28, 
   7: Form28,  // Vocabulary Single Choice Quiz 2 (uses Form28)
+  6: Form18,
   8: Form28,  // Vocabulary Single Choice Quiz 2 (uses Form28)
   9: Form28,  // Vocabulary Single Choice Quiz 2 (uses Form28)
   10: Form28,  // Vocabulary Single Choice Quiz 2 (uses Form28)
@@ -34,13 +35,22 @@ const FORM_COMPONENTS = {
   16: Form28,
   17: Form28,
   18: Form18,   // Grammar Dropdown Quiz
+  19: Form18,
   20: Form20,   // Drag and Drop Quiz
+  21: Form18,
   22: Form22,   // Grammar Sentence Rearrangement Quiz
+  23: Form18,
+  24: Form18,
+  25: Form20,
+  26: Form18,
+  27: Form22,
   28: Form28,   // Grammar Single Select Quiz
   29: Form28,   // Grammar Single Select Quiz (Alternative)
+  30: Form18,   // Reading Multiple Question
   31: Form31,   // Reading Multiple Question
-  32: Form32,   // Reading Same as 31
+  32: Form32,   // Reading Same as 31ß
   33: Form33,   // Reading Select Quiz
+  34: Form31,   // Reading Multiple Question
   36: Form33,   // Reading Select Quiz 1 (uses same form as 33)
   37: Form31,   // Reading Multiple Question (uses same form as 31)
   38: Form33,   // Reading Select Quiz 2 (uses same form as 33)
@@ -55,6 +65,7 @@ const FORM_COMPONENTS = {
   47: Form39,   // Listen and Choose Quiz (No Image) - uses same form as ID 40
   51: Form51,   // Reading Droplist
   59: Form59,   // Reading Droplist No Image
+  62: Form18,
   63: Form63,   // Listen and Image Select Multiple Answer
   64: Form63,   // Listen and Image Select Multiple Answer (uses same form as ID 63)
   65: Form65,   // Listen and Image Select Multiple Answer (MultiOptions)

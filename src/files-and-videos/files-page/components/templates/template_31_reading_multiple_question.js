@@ -30,12 +30,13 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         .left-container {
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            overflow-y: hidden;
             overflow-x: hidden;
             padding: 0;
             margin: 0;
             background-color: #fff;
             width: 100%;
+            height: 100%;
         }
         .right-container {
             display: flex;
@@ -54,10 +55,45 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             font-weight: bold;
             font-style: italic;
             margin: 0;
-            padding: 0;
+            padding: 10px;
             background-color: #fff;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            flex-shrink: 0;
+        }
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex-grow: 1;
+            padding: 10px;
+            background-color: #fff;
+        }
+        .images-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            width: 100%;
+            overflow-x: hidden;
+            min-height: 300px;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .image-item {
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .image-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .reading-text {
             font-size: 1.1rem;
@@ -69,10 +105,8 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            flex-grow: 1;
             width: 100%;
             max-width: 100%;
-            overflow-x: hidden;
         }
         .questions-container {
             display: flex;
@@ -298,7 +332,13 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             <div class="instructions" id="quiz-instructions">
                 {{INSTRUCTIONS}}
             </div>
-            <div class="reading-text">{{READING_TEXT}}</div>
+            <div class="content-container">
+                <div class="images-container">
+                    <!-- Images will be inserted here -->
+                    {{IMAGES}}
+                </div>
+                <div class="reading-text">{{READING_TEXT}}</div>
+            </div>
         </div>
         
         <div class="right-container">
@@ -467,11 +507,28 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
 </body>
 </html>`;
 
-export const getReadingMultipleQuestionTemplate = (readingText, questionText, blankOptions, instructions = '以下の文章を読んで、質問に答えてください。', explanationText = '') => {
+export const getReadingMultipleQuestionTemplate = (readingText, questionText, blankOptions, instructions = '以下の文章を読んで、質問に答えてください。', explanationText = '', images = []) => {
     // Split questions, options and explanations by semicolons
     const questions = questionText.split(';').map(q => q.trim()).filter(q => q);
     const optionsList = blankOptions.split(';').map(o => o.trim()).filter(o => o);
     const explanations = explanationText.split(';').map(e => e.trim()).filter(e => e);
+
+    // Process images - support both single image string and array of images
+    let imagesHtml = '';
+    let hasImages = false;
+    
+    if (images) {
+        // If images is a string, split by comma or semicolon
+        const imageArray = Array.isArray(images) ? images : images.split(/[,;]/).map(img => img.trim()).filter(img => img);
+        
+        // Only generate HTML if we have valid image paths
+        if (imageArray.length > 0) {
+            imagesHtml = imageArray.map((imagePath) => {
+                return '<div class="image-item"><img src="' + imagePath + '" alt="Reading Image" /></div>';
+            }).join('');
+            hasImages = true;
+        }
+    }
 
     // Generate questions HTML and data
     const questionsHtml = questions.map((questionText, index) => {
@@ -514,12 +571,20 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
                '</div>';
     }).join('');
     
-    const template = readingMultipleQuestionTemplate
+    let template = readingMultipleQuestionTemplate
         .replace('{{READING_TEXT}}', readingText)
         .replace('{{QUESTIONS}}', questionsHtml)
         .replace('{{QUESTIONS_DATA}}', JSON.stringify(questionsData))
         .replace('{{INSTRUCTIONS}}', instructions)
         .replace('{{EXPLANATION_TEXT}}', processedExplanationText || '');
+
+    // Handle images conditionally - hide container if no images
+    if (hasImages) {
+        template = template.replace('{{IMAGES}}', imagesHtml);
+    } else {
+        // Remove the entire images-container when no images
+        template = template.replace(/<div class="images-container">[\s\S]*?{{IMAGES}}[\s\S]*?<\/div>/g, '');
+    }
 
     return template;
 }; 

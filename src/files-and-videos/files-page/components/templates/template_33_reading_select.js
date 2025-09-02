@@ -72,7 +72,9 @@ export const readingSelectTemplate = `<!DOCTYPE html>
             margin-bottom: 15px;
             width: 100%;
             overflow-x: hidden;
+            overflow-y: auto;
             min-height: 300px;
+            max-height: 400px;
             border: 1px dashed #ccc;
             padding: 10px;
             background-color: #f9f9f9;

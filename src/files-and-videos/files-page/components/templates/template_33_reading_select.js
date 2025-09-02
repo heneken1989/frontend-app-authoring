@@ -65,17 +65,30 @@ export const readingSelectTemplate = `<!DOCTYPE html>
             width: 4px;
             background-color: #0075b4;
         }
-        .image-container {
+        .images-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
             width: 100%;
+            overflow-x: hidden;
+            min-height: 300px;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .image-item {
+            width: 100%;
+            max-width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
         }
-        .quiz-image {
+        .image-item img {
             max-width: 100%;
-            max-height: 300px;
-            object-fit: contain;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .question-text {
             font-size: 0.8rem;
@@ -304,11 +317,10 @@ export const readingSelectTemplate = `<!DOCTYPE html>
         <div class="main-content">
             <div class="left-section">
                 <div class="content-wrapper">
-                    {{#if IMAGE_FILE}}
-                    <div class="image-container">
-                        <img src="{{IMAGE_FILE}}" alt="Quiz illustration" class="quiz-image">
+                    <div class="images-container">
+                        <!-- Images will be inserted here -->
+                        {{IMAGES}}
                     </div>
-                    {{/if}}
                     <div class="paragraph-text">{{PARAGRAPH_TEXT}}</div>
                 </div>
             </div>
@@ -531,7 +543,7 @@ export const readingSelectTemplate = `<!DOCTYPE html>
 </body>
 </html>`;
 
-export const getReadingSelectTemplate = (paragraphText, optionsString, instructions = '文章を読んで、正しい答えを選んでください。', scriptText = '', imageFile = '', questionText = '') => {
+export const getReadingSelectTemplate = (paragraphText, optionsString, instructions = '文章を読んで、正しい答えを選んでください。', scriptText = '', images = '', questionText = '') => {
     // Split the options string and trim each option
     const options = optionsString.split(',').map(opt => opt.trim());
     
@@ -547,14 +559,38 @@ export const getReadingSelectTemplate = (paragraphText, optionsString, instructi
     // Process script text to highlight quoted text in red
     const processedScriptText = scriptText.replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
     
-    return readingSelectTemplate
+    // Process images - support both single image string and array of images
+    let imagesHtml = '';
+    let hasImages = false;
+    
+    if (images) {
+        // If images is a string, split by comma or semicolon
+        const imageArray = Array.isArray(images) ? images : images.split(/[,;]/).map(img => img.trim()).filter(img => img);
+        
+        // Only generate HTML if we have valid image paths
+        if (imageArray.length > 0) {
+            imagesHtml = imageArray.map((imagePath) => {
+                return '<div class="image-item"><img src="' + imagePath + '" alt="Reading Image" /></div>';
+            }).join('');
+            hasImages = true;
+        }
+    }
+    
+    let template = readingSelectTemplate
         .replace('{{PARAGRAPH_TEXT}}', paragraphText)
         .replace('{{QUESTION_TEXT}}', questionText)
         .replace('{{OPTIONS}}', optionsHtml)
         .replace('{{CORRECT_ANSWER}}', correctAnswer)
         .replace('{{INSTRUCTIONS}}', instructions)
-        .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
-        .replace('{{#if IMAGE_FILE}}', imageFile ? '' : '<!--')
-        .replace('{{/if}}', imageFile ? '' : '-->')
-        .replace('{{IMAGE_FILE}}', imageFile || '');
+        .replace('{{SCRIPT_TEXT}}', processedScriptText || '');
+
+    // Handle images conditionally - hide container if no images
+    if (hasImages) {
+        template = template.replace('{{IMAGES}}', imagesHtml);
+    } else {
+        // Remove the entire images-container when no images
+        template = template.replace(/<div class="images-container">[\s\S]*?{{IMAGES}}[\s\S]*?<\/div>/g, '');
+    }
+
+    return template;
 }; 

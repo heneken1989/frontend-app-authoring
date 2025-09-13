@@ -491,7 +491,8 @@ export const listenFillInBlankTemplate = `<!DOCTYPE html>
                                 if (isCorrect) {
                                     paragraphHtml += '<span class="correct-answer">' + userAnswer + '</span>';
                                 } else {
-                                    paragraphHtml += '<span class="wrong-answer">' + userAnswer + '</span>';
+                                    paragraphHtml += '<span class="wrong-answer">' + userAnswer + '</span> ' +
+                                                     '<span class="correct-answer">' + (correctAnswer || '') + '</span>';
                                 }
                             } else {
                                 // If no answer selected, show empty space
@@ -875,6 +876,15 @@ export const listenFillInBlankTemplate = `<!DOCTYPE html>
                 channel.bind('getState', getState);
                 channel.bind('setState', setState);
             }
+            
+            // Listen for problem.submit messages with action 'save'
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'problem.submit' && event.data.action === 'save') {
+                    // Save current state when navigating away
+                    const result = calculateResults();
+                    console.log('Saving state before navigation:', result);
+                }
+            });
         })();
     </script>
 </body>

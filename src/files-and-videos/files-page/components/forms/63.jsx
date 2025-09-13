@@ -82,8 +82,10 @@ const ListenImageSelectMultipleAnswerForm = ({ quizData, setQuizData }) => {
             setQuizData(prev => ({
               ...prev,
               blankOptions: e.target.value,
-              // Also update correctAnswers to match the first value of blank options if correctAnswers is empty
-              correctAnswers: prev.correctAnswers || e.target.value.split(',')[0]?.trim() || ''
+              // If correctAnswers is empty, default it to the full blankOptions sequence (per-index mapping)
+              correctAnswers: (prev.correctAnswers && prev.correctAnswers.trim().length)
+                ? prev.correctAnswers
+                : (e.target.value || '')
             }));
           }}
           placeholder="O,O,X,O,X,X,X"

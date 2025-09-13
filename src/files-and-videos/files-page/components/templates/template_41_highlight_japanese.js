@@ -1087,6 +1087,15 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 channel.bind('getState', getState);
                 channel.bind('setState', setState);
             }
+            
+            // Listen for problem.submit messages with action 'save'
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'problem.submit' && event.data.action === 'save') {
+                    // Save current state when navigating away
+                    const result = grade();
+                    console.log('Saving state before navigation:', result);
+                }
+            });
             renderParagraph();
             setupAudioPlayer();
         })();

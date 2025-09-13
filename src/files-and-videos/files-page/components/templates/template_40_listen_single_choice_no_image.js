@@ -166,9 +166,10 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             background-color: #e0ffff;
             border-radius: 4px;
             position: relative;
-            cursor: pointer;
+            cursor: default;
             width: 100%;
             margin-right: 0;
+            pointer-events: none; /* Disable all pointer interactions */
         }
         .progress-bar {
             height: 8px;
@@ -428,7 +429,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     </div>
                 </div>
                 <div class="options-container" id="options-container">
-                    <div class="select-answer-header">Please Select Answer</div>
+                    <div class="select-answer-header">回答を選択してください</div>
                     {{OPTIONS}}
                 </div>
                 <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
@@ -457,6 +458,22 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 attempts: 0,
                 showAnswer: false
             };
+            
+            // Helper function to get cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
 
             const correctAnswer = '{{CORRECT_ANSWER}}';
             let selectedOption = null;
@@ -618,20 +635,8 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     }
                 }
                 
-                // Click on progress bar to seek
-                progressContainer.addEventListener('click', (e) => {
-                    const clickPosition = (e.offsetX / progressContainer.offsetWidth);
-                    const durationRelative = (endTime > 0 ? endTime : audioElement.duration) - startTime;
-                    const seekTime = startTime + (clickPosition * durationRelative);
-                    
-                    // Ensure we stay within bounds
-                    audioElement.currentTime = Math.min(
-                        endTime > 0 ? endTime : audioElement.duration,
-                        Math.max(startTime, seekTime)
-                    );
-                    
-                    updateProgress();
-                });
+                // Disable seeking by click; make progress bar non-interactive
+                progressContainer.style.pointerEvents = 'none';
                 
                 // Update progress during playback
                 audioElement.addEventListener('timeupdate', updateProgress);
@@ -713,6 +718,8 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             const audioPlayer = setupAudioPlayer();
 
             function getGrade() {
+                console.log('🎯 getGrade() called - Processing quiz submission');
+                
                 const answerContainer = document.getElementById('answer-paragraph-container');
                 const showFlag = document.getElementById('showAnswerFlag');
                 const audioElement = document.getElementById('audio-player');
@@ -730,6 +737,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     // Reset to start time and play with delay
                     audioElement.currentTime = startTime;
                     audioPlayer.startWithDelay();
+                    console.log('📱 Hiding answer container, resetting audio');
                 } else {
                     // Show answers
                     const result = calculateResults();
@@ -740,13 +748,115 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     
                     // Pause the audio
                     audioElement.pause();
+                    console.log('📱 Showing answer container, pausing audio');
                 }
 
                 const result = calculateResults();
-                return JSON.stringify({
+                console.log('📊 Quiz results:', result);
+                
+                // ✅ CALL COMPLETION API (NON-BLOCKING)
+                setTimeout(() => {
+                    updateCompletionStatus(result);
+                }, 100);
+                
+                // ✅ RETURN DATA TO EDX (PREVENT RELOAD)
+                const returnValue = {
                     edxResult: None,
                     edxScore: result.rawScore,
                     edxMessage: result.message
+                };
+                console.log('🔄 Returning to EdX:', returnValue);
+                
+                return JSON.stringify(returnValue);
+            }
+            
+            function updateCompletionStatus(result) {
+                console.log('🚀 Starting completion API call...');
+                
+                // Get CSRF token
+                let csrfToken = '';
+                try {
+                    const tokenSources = [
+                        () => document.querySelector('[name=csrfmiddlewaretoken]')?.value,
+                        () => window.parent?.document?.querySelector('[name=csrfmiddlewaretoken]')?.value,
+                        () => getCookie('csrftoken'),
+                        () => document.querySelector('meta[name=csrf-token]')?.getAttribute('content'),
+                        () => window.parent?.document?.querySelector('meta[name=csrf-token]')?.getAttribute('content')
+                    ];
+                    
+                    for (let getToken of tokenSources) {
+                        try {
+                            const token = getToken();
+                            if (token) {
+                                csrfToken = token;
+                                console.log('🔑 Found CSRF token:', token.substring(0, 8) + '...');
+                                break;
+                            }
+                        } catch (e) {}
+                    }
+                    
+                    if (!csrfToken) {
+                        console.log('⚠️ No CSRF token found - using fallback');
+                        csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
+                    }
+                } catch (e) {
+                    console.log('❌ CSRF token search failed:', e.message);
+                    csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
+                }
+                
+                // Get block ID from parent URL
+                let blockId = 'block-v1:Manabi+N51+2026+type@vertical+block@aea91ffdf79346a2b9d03f6c570ad186';
+                try {
+                    if (window.parent && window.parent.location) {
+                        const parentUrl = window.parent.location.href;
+                        const blockMatch = parentUrl.match(/block-v1:([^\/\?\&]+)/);
+                        if (blockMatch) {
+                            blockId = blockMatch[0];
+                            console.log('🎯 Found block ID from parent:', blockId);
+                        }
+                    }
+                } catch (e) {
+                    console.log('⚠️ Cannot access parent URL, using fallback block ID');
+                }
+                
+                // Always mark as complete when user submits
+                const completionStatus = 1.0;
+                
+                console.log('📡 Calling completion API with:', {
+                    block_key: blockId,
+                    completion: completionStatus,
+                    score: result.rawScore,
+                    note: 'COMPLETE'
+                });
+                
+                // ✅ CALL COMPLETION API
+                fetch('/courseware/mark_block_completion/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        'block_key': blockId,
+                        'completion': completionStatus
+                    })
+                })
+                .then(response => {
+                    console.log('📈 API Response status:', response.status);
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                })
+                .then(data => {
+                    console.log('✅ COMPLETION API SUCCESS:', data);
+                    if (data.saved_to_blockcompletion) {
+                        console.log('🎉 Progress page will update with new completion!');
+                    }
+                })
+                .catch(error => {
+                    console.log('❌ Completion API Error:', error.message);
                 });
             }
 
@@ -821,6 +931,15 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 channel.bind('getState', getState);
                 channel.bind('setState', setState);
             }
+            
+            // Listen for problem.submit messages with action 'save'
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'problem.submit' && event.data.action === 'save') {
+                    // Save current state when navigating away
+                    const result = calculateResults();
+                    console.log('Saving state before navigation:', result);
+                }
+            });
         })();
     </script>
 </body>

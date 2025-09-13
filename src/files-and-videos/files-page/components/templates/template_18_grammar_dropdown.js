@@ -138,6 +138,22 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         var state = { answer: '', score: 0, attempts: 0, showAnswer: false };
         const correctAnswers = JSON.parse('{{CORRECT_ANSWERS}}');
         let selectedAnswers = new Array(correctAnswers.length).fill('');
+        
+        // Helper function to get cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
         function calculateResults() {
             const totalQuestions = document.querySelectorAll('.answer-select').length;
             let correctCount = 0;
@@ -204,22 +220,139 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             });
         });
         function getGrade() {
+            console.log('🎯 getGrade() called - Processing quiz submission');
+            
             const answerContainer = document.getElementById('answer-paragraph-container');
             const showFlag = document.getElementById('showAnswerFlag');
             const isVisible = answerContainer.style.display === 'block';
+            
             if (isVisible) {
                 answerContainer.style.display = 'none';
                 showFlag.value = 'false';
                 state.showAnswer = false;
+                console.log('📱 Hiding answer container');
             } else {
                 const result = calculateResults();
                 updateDisplay(result);
                 answerContainer.style.display = 'block';
                 showFlag.value = 'true';
                 state.showAnswer = true;
+                console.log('📱 Showing answer container');
             }
+            
             const result = calculateResults();
-            return JSON.stringify({ edxResult: None, edxScore: result.rawScore, edxMessage: result.message });
+            console.log('📊 Quiz results:', result);
+            
+            // ✅ CALL COMPLETION API (NON-BLOCKING)
+            setTimeout(() => {
+                updateCompletionStatus(result);
+            }, 100);
+            
+            // ✅ RETURN DATA TO EDX (PREVENT RELOAD)
+            const returnValue = { 
+                edxResult: None,  // null = no page reload 
+                edxScore: result.rawScore, 
+                edxMessage: result.message 
+            };
+            console.log('🔄 Returning to EdX:', returnValue);
+            
+            return JSON.stringify(returnValue);
+        }
+        
+        function updateCompletionStatus(result) {
+            console.log('🚀 Starting completion API call...');
+            
+            // Get CSRF token
+            let csrfToken = '';
+            try {
+                // Try multiple sources for CSRF token
+                const tokenSources = [
+                    () => document.querySelector('[name=csrfmiddlewaretoken]')?.value,
+                    () => window.parent?.document?.querySelector('[name=csrfmiddlewaretoken]')?.value,
+                    () => getCookie('csrftoken'),
+                    () => document.querySelector('meta[name=csrf-token]')?.getAttribute('content'),
+                    () => window.parent?.document?.querySelector('meta[name=csrf-token]')?.getAttribute('content')
+                ];
+                
+                for (let getToken of tokenSources) {
+                    try {
+                        const token = getToken();
+                        if (token) {
+                            csrfToken = token;
+                            console.log('🔑 Found CSRF token:', token.substring(0, 8) + '...');
+                            break;
+                        }
+                    } catch (e) {
+                        // Continue to next source
+                    }
+                }
+                
+                if (!csrfToken) {
+                    console.log('⚠️ No CSRF token found - using fallback');
+                    csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf'; // Your working token
+                }
+            } catch (e) {
+                console.log('❌ CSRF token search failed:', e.message);
+                csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf'; // Fallback
+            }
+            
+            // Get block ID from parent URL
+            let blockId = 'block-v1:Manabi+N51+2026+type@vertical+block@aea91ffdf79346a2b9d03f6c570ad186'; // Your working block
+            try {
+                if (window.parent && window.parent.location) {
+                    const parentUrl = window.parent.location.href;
+                    const blockMatch = parentUrl.match(/block-v1:([^\/\?\&]+)/);
+                    if (blockMatch) {
+                        blockId = blockMatch[0];
+                        console.log('🎯 Found block ID from parent:', blockId);
+                    }
+                }
+            } catch (e) {
+                console.log('⚠️ Cannot access parent URL, using fallback block ID');
+            }
+            
+            // ✅ DETERMINE COMPLETION STATUS
+            // Always mark as complete when user submits (regardless of score)
+            const completionStatus = 1.0;  // Always complete when submitted
+            
+            console.log('📡 Calling completion API with:', {
+                block_key: blockId,
+                completion: completionStatus,
+                score: result.rawScore,
+                note: completionStatus === 1.0 ? 'COMPLETE' : 'INCOMPLETE'
+            });
+            
+            // ✅ CALL YOUR WORKING COMPLETION API
+            fetch('/courseware/mark_block_completion/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    'block_key': blockId,
+                    'completion': completionStatus  // Always 0.0 or 1.0, not raw score
+                })
+            })
+            .then(response => {
+                console.log('📈 API Response status:', response.status);
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('HTTP ' + response.status);
+                }
+            })
+            .then(data => {
+                console.log('✅ COMPLETION API SUCCESS:', data);
+                if (data.saved_to_blockcompletion) {
+                    console.log('🎉 Progress page will update with new completion!');
+                } else {
+                    console.log('⚠️ Completion saved but may not affect progress page');
+                }
+            })
+            .catch(error => {
+                console.log('❌ Completion API Error:', error.message);
+            });
         }
         function getState() {
             return JSON.stringify({ answer: state.answer, attempts: state.attempts, score: state.score, showAnswer: state.showAnswer });

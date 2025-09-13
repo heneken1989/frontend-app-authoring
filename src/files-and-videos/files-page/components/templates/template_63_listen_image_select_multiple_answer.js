@@ -10,13 +10,12 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
     // Parse the blank options for dropdowns - these are the options for all dropdowns
     let optionsArray = [];
     if (blankOptions && blankOptions.trim()) {
-        // Remove duplicates and sort alphabetically
-        optionsArray = [...new Set(blankOptions.split(',')
+        // Preserve original order from input, do not sort/dedupe to keep per-index mapping
+        optionsArray = blankOptions.split(',')
             .map(option => option.trim())
-            .filter(option => option))]
-            .sort((a, b) => a.localeCompare(b, 'ja')); // Use Japanese locale for sorting
+            .filter(option => option);
     } else {
-        // Default options if none provided, already sorted
+        // Default options if none provided
         optionsArray = ['O', 'X'];
     }
     
@@ -28,8 +27,8 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
     } else if (Array.isArray(correctAnswers)) {
         correctAnswersArray = correctAnswers;
     } else {
-        // Default to the first option for all answers if no correct answers provided
-        correctAnswersArray = new Array(7).fill(optionsArray[0]);
+        // Leave empty so each blank falls back to its per-index option
+        correctAnswersArray = [];
     }
     
     // Process the question text (only for display, not for answers)
@@ -51,8 +50,8 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
             
             // Replace each placeholder in the line with a dropdown
             while ((placeholderMatch = placeholderRegex.exec(line)) !== null) {
-                // Get the correct answer for this dropdown (use the index if available, otherwise default to first option)
-                const correctAnswer = correctAnswersArray[answerDropdownIndex] || optionsArray[0];
+                // Determine correct answer purely from options order by index (cycle)
+                const correctAnswer = optionsArray[(answerDropdownIndex) % Math.max(1, optionsArray.length)] || '';
                 
                 // Create dropdown options from the options array
                 const optionsHtml = optionsArray.map(option => {
@@ -790,6 +789,15 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             channel.bind('getState', getState);
             channel.bind('setState', setState);
         }
+        
+        // Listen for problem.submit messages with action 'save'
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'problem.submit' && event.data.action === 'save') {
+                // Save current state when navigating away
+                const result = calculateResults();
+                console.log('Saving state before navigation:', result);
+            }
+        });
 
         // Audio player functionality
         function setupAudioPlayer() {

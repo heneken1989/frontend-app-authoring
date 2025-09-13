@@ -322,8 +322,14 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                 note: completionStatus === 1.0 ? 'COMPLETE' : 'INCOMPLETE'
             });
             
-            // ✅ CALL YOUR WORKING COMPLETION API
-            fetch('/courseware/mark_block_completion/', {
+            // ✅ CALL YOUR WORKING COMPLETION API with dynamic LMS URL
+            const lmsBaseUrl = (window.location.hostname === 'localhost' || window.location.hostname.includes('local.openedx.io')) 
+                ? 'http://local.openedx.io:8000' 
+                : 'https://lms.nihongodrill.com';
+            const apiUrl = lmsBaseUrl + '/courseware/mark_block_completion/';
+            console.log('🔗 Quiz API URL: ' + apiUrl);
+            
+            fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

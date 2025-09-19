@@ -1,4 +1,4 @@
-export const grammarSingleSelectTemplate = `<!DOCTYPE html>
+export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
 <html>
 <head>
     <title>Grammar Single Select Quiz</title>
@@ -56,9 +56,9 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
         }
         .options-container {
             margin: 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
             padding: 0;
             background: transparent;
             max-width: 600px;
@@ -69,48 +69,87 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
             -moz-appearance: none;
             max-width: 100%;
             padding: 12px 16px;
-            border: 1px solid #ddd;
+            border: none;
             outline: none;
-            background: #f5f5f5;
+            background: transparent;
             font-size: 1.1rem;
             cursor: pointer;
-            text-align: center;
+            text-align: left;
             line-height: 1.4;
             min-height: 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             position: relative;
-            color: #666;
+            color: #333;
             font-weight: normal;
             border-radius: 4px;
             transition: all 0.3s ease;
+            gap: 12px;
         }
         .option-button::before {
-            display: none;
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-radius: 3px;
+            background: white;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
         }
         .option-button:hover:not(.selected):not(.correct):not(.incorrect) {
-            background-color: #e8e8e8;
-            border-color: #ccc;
+            background-color: #f8f9fa;
+        }
+        .option-button:hover:not(.selected):not(.correct):not(.incorrect)::before {
+            border-color: #999;
         }
         .option-button.selected {
-            background: linear-gradient(90deg, #4A90E2 0%, #7ED321 100%);
-            border: 1px solid #4A90E2;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: transparent;
+            border: none;
+            color: #333;
         }
-        .option-button.selected::after {
-            display: none;
+        .option-button.selected::before {
+            background: #f44336;
+            border-color: #f44336;
+            content: '✓';
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
         }
         .option-button.correct {
+            background: transparent;
+            border: none;
+            color: #333;
+        }
+        .option-button.correct::before {
             background: #4caf50;
-            border: 1px solid #2e7d32;
+            border-color: #4caf50;
+            content: '✓';
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
         }
         .option-button.incorrect {
+            background: transparent;
+            border: none;
+            color: #333;
+        }
+        .option-button.incorrect::before {
             background: #f44336;
-            border: 1px solid #d32f2f;
+            border-color: #f44336;
+            content: '✓';
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
         }
         .answer-feedback {
             margin-top: 0.5rem;
@@ -162,7 +201,6 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
         }
         @media (max-width: 1024px) {
             .options-container {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
                 max-width: 500px;
             }
         }
@@ -182,7 +220,6 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
             .options-container {
                 width: 100%;
                 max-width: 100%;
-                grid-template-columns: 1fr;
             }
             .option-button {
                 width: 100%;
@@ -192,7 +229,6 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
         
         @media (max-width: 480px) {
             .options-container {
-                grid-template-columns: 1fr;
                 gap: 6px;
             }
             .option-button {
@@ -401,9 +437,6 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
                     // Update display with answer
                     const result = calculateResults();
                     updateDisplay(result);
-                    
-                    // Trigger external popup
-                    triggerExternalToggle(result, options, questionText, correctAnswer);
                 } catch (error) {
                     console.error('Error in getGrade:', error);
                 }
@@ -463,69 +496,6 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
                 console.log('🔄 Quiz reset completed via problem.check message');
             }
             
-            // Function to trigger external iframe toggle
-            function triggerExternalToggle(result, options, questionText, correctAnswer) {
-                try {
-                    // Check if popup is already open
-                    const existingPopup = document.getElementById('quiz-test-popup');
-                    const isPopupOpen = !!existingPopup;
-                    
-                    if (isPopupOpen) {
-                        // Close existing popup
-                        existingPopup.remove();
-                        
-                        // Send close message to parent
-                        if (window.parent && window.parent !== window) {
-                            window.parent.postMessage({
-                                type: 'QUIZ_POPUP_CLOSE',
-                                data: { action: 'close' }
-                            }, '*');
-                        }
-                        
-                        // Call parent close function if available
-                        if (window.parent && window.parent.closeQuizPopup) {
-                            window.parent.closeQuizPopup();
-                        }
-                        
-                        return;
-                    }
-                    
-                    // Send data to problem.html, let it forward to parent
-                    try {
-                        const messageData = {
-                            selectedOption: selectedOption,
-                            isCorrect: result.isCorrect,
-                            score: result.rawScore,
-                            message: result.message,
-                            timestamp: new Date().toISOString(),
-                            options: options ? options.map(opt => ({
-                                id: opt.id,
-                                text: opt.text,
-                                isSelected: opt.id === selectedOption,
-                                isCorrect: opt.id === correctAnswer
-                            })) : [],
-                            correctAnswer: correctAnswer,
-                            questionText: questionText
-                        };
-                        
-                        // Send to problem.html (parent iframe)
-                        window.parent.postMessage({
-                            type: 'quiz.data.ready',
-                            quizData: messageData,
-                            templateConfig: {
-                                showPopup: false, // This template doesn't need external popup
-                                templateType: 'grammar_single_select'
-                            }
-                        }, '*');
-
-                    } catch (error) {
-                        console.error('Error sending to problem.html:', error);
-                    }
-                    
-                } catch (error) {
-                    console.error('Error triggering external toggle:', error);
-                }
-            }
             
 
             function updateCompletionStatus(result) {
@@ -684,7 +654,7 @@ function convertFurigana(text) {
     return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
 }
 
-export const getGrammarSingleSelectTemplate = (questionText, optionsString, instructions = '正しい文を選んでください。', explanationText = '') => {
+export const getGrammarSingleSelectTemplate7 = (questionText, optionsString, instructions = '正しい文を選んでください。', explanationText = '') => {
   // Process questionText to underline text in quotes and convert furigana
   const processedQuestionText = questionText
     .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>')
@@ -706,10 +676,10 @@ export const getGrammarSingleSelectTemplate = (questionText, optionsString, inst
     })
     .join('');
 
-  return grammarSingleSelectTemplate
+  return grammarSingleSelectTemplate7
     .replace('{{INSTRUCTIONS}}', instructions)
     .replace('{{QUESTION_TEXT}}', processedQuestionText)
     .replace('{{OPTIONS}}', optionsHtml)
     .replace('{{EXPLANATION_TEXT}}', explanationText)
     .replace('{{CORRECT_ANSWER}}', correctAnswer); // Add this line
-}; 
+};

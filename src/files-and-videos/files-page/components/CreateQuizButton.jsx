@@ -13,6 +13,7 @@ import {
   getGrammarDropdownTemplate,
   getGrammarSentenceRearrangementTemplate,
   getGrammarSingleSelectTemplate,
+  getGrammarSingleSelectTemplate7,
   getReadingMultipleQuestionTemplate,
   getReadingMultipleQuestionTemplate32,
   getReadingDroplistTemplate,
@@ -1168,7 +1169,7 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3:
-        return getGrammarSingleSelectTemplate(
+        return getGrammarSingleSelectTemplate7(
           quizData.paragraphText || '',
           quizData.blankOptions || '',
           quizData.instructions || '_______　の文と　だいたい　同じ　いみの　文が　あります。１～４から　１つ　えらんで　ください。',
@@ -1231,14 +1232,14 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10:
-      return getGrammarSingleSelectTemplate(
+      return getGrammarSingleSelectTemplate7(
         quizData.paragraphText || '',
         quizData.blankOptions || '',
         quizData.instructions || '（ー）に　何を　入れますか。1～4から　１つ　えらんで　ください。',
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11:
-      return getGrammarSingleSelectTemplate(
+      return getGrammarSingleSelectTemplate7(
         quizData.paragraphText || '',
         quizData.blankOptions || '',
         quizData.instructions || '_______　のぶんと　だいたい　同じ　いみの　ぶんは　どれですか。',

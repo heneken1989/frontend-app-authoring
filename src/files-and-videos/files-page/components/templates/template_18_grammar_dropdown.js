@@ -45,8 +45,8 @@ export const getGrammarDropdownTemplate = (questionText, optionsForBlanks, audio
                 const sortedOptions = [...options].sort((a, b) => a.localeCompare(b, 'ja'));
                 
                 const optionsHtml = sortedOptions.map(option => `<option value="${option}">${option}</option>`).join('');
-                const dropdown = `<select class="answer-select" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}" style="width: auto; min-width: 60px;">
-                        <option value="" selected>Select</option>
+                const dropdown = `<select class="answer-select" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}" style="width: auto; min-width: 60px;" required>
+                        <option value="" selected disabled></option>
                         ${optionsHtml}
                     </select>`;
                 answerDropdownIndex++;
@@ -87,19 +87,16 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         .select-container { margin: 0; display: flex; flex-direction: column; gap: 8px; padding: 0; background: white; }
         .select-answer-header { font-size: 1rem; color: #333; margin: 0; font-weight: bold; }
         .answer-select { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 0.9rem; font-weight: 400; line-height: 1.3; text-align: left; width: auto; min-width: 60px; border: 1px solid #666; border-radius: 4px; background-color: white; color: #333; cursor: pointer; display: inline-block; padding: 2px 4px; }
+        .answer-select:invalid { color: transparent; }
+        .answer-select option:first-child { color: transparent; }
         .answer-select:focus { outline: none; border-color: #0075b4; }
         .answer-select option { padding: 4px; font-size: 0.85rem; }
-        .answer-select.correct { border-color: #2e7d32; background-color: #ecf3ec; }
-        .answer-select.incorrect { border-color: #b40000; background-color: #f9ecec; }
-        .correct-answer { color: #2e7d32; font-weight: bold; padding: 2px 8px; border-radius: 3px; background-color: #ecf3ec; }
-        .wrong-answer { color: #b40000; font-weight: bold; text-decoration: line-through; padding: 2px 8px; border-radius: 3px; background-color: #f9ecec; }
-        .answer-paragraph-container { position: fixed; bottom: 0; left: 0; right: 0; margin: 0; background-color: rgba(99, 97, 97, 0.95); border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e0e0e0; display: none; z-index: 2; transition: transform 0.3s ease; max-height: 460px; overflow-y: auto; }
-        .answer-paragraph-inner { max-width: 90%; margin: 0 auto; background: #fff; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: stretch; max-height: 400px; overflow-y: auto; }
-        .transcript-section { margin-bottom: 1.5rem; background-color: #fff; border-radius: 4px; border: 1px solid #e0e0e0; overflow-y: auto; }
-        .transcript-title { font-weight: bold; margin-bottom: 1rem; color: #333; font-size: 1.2rem; text-align: center; }
-        .transcript-text { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin-bottom: 1rem; white-space: pre-wrap; }
-        .score-display { font-weight: bold; margin-bottom: 1rem; color: #333; }
-        .answer-paragraph { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin: 0; background-color: white; box-shadow: none; border-radius: 3px; display: block; border: 1px solid #e0e0e0; overflow-y: auto; max-height: 200px; }
+        .answer-select.correct { border-color: #4caf50; background-color: #4caf50; color: #000; font-weight: bold; }
+        .answer-select.incorrect { border-color: #f44336; background-color: #f44336; color: #fff; font-weight: bold; }
+        .correct-answer { color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #4caf50; display: inline-block; margin: 2px; }
+        .wrong-answer { color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #f44336; display: inline-block; margin: 2px; }
+        .answer-comparison { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+        .answer-replacement { display: inline-block; }
         .script-highlight { color: #b40000; font-weight: normal; }
         .no-answer { color: #666; border-bottom: 2px solid #666; padding: 0 4px; margin: 0 2px; }
         .answer-item { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin-bottom: 10px; color: #333; }
@@ -117,20 +114,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                 <div class="select-container">
                     <div class="answers-list">{{ANSWERS_LIST}}</div>
                 </div>
-                <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
             </form>
-        </div>
-        <div class="answer-paragraph-container" id="answer-paragraph-container" style="display: none;">
-            <div class="answer-paragraph-inner">
-                <div class="transcript-section">
-                    <div class="transcript-title">スクリプト</div>
-                    <div id="transcript-paragraph" class="transcript-text">{{SCRIPT_TEXT}}</div>
-                </div>
-                <div class="your-answer-section">
-                    <div class="score-display" id="score-display"></div>
-                    <div id="answer-paragraph" class="answer-paragraph"></div>
-                </div>
-            </div>
         </div>
     </div>
     <script>
@@ -138,6 +122,13 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         var state = { answer: '', score: 0, attempts: 0, showAnswer: false };
         const correctAnswers = JSON.parse('{{CORRECT_ANSWERS}}');
         let selectedAnswers = new Array(correctAnswers.length).fill('');
+        let originalDropdowns = []; // Store original dropdowns for restoration
+        
+        // Configuration for this template
+        const templateConfig = {
+            showPopup: false,  // This template does not need external popup
+            noToggle: true     // This template does not need toggle functionality
+        };
         
         // Helper function to get cookies
         function getCookie(name) {
@@ -174,42 +165,36 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             return { rawScore, message, answers, correctCount, totalQuestions };
         }
         function updateDisplay(result) {
-            const answerParagraph = document.getElementById('answer-paragraph');
-            const answerContainer = document.getElementById('answer-paragraph-container');
-            const scoreDisplay = document.getElementById('score-display');
-            scoreDisplay.textContent = result.message;
-            let answerHtml = '';
-            document.querySelectorAll('.answer-select').forEach((select, index) => {
-                const number = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'][index];
-                const userAnswer = selectedAnswers[index];
-                const correctAnswer = select.getAttribute('data-correct');
-                const isCorrect = correctAnswer === userAnswer;
-                select.classList.remove('correct', 'incorrect');
-                if (state.showAnswer) {
-                    select.classList.add(isCorrect ? 'correct' : 'incorrect');
-                    select.disabled = true;
-                } else {
-                    select.disabled = false;
-                }
-                answerHtml += '<div class="answer-item-result">' + number + ' ';
-                if (userAnswer) {
-                    if (isCorrect) {
-                        answerHtml += '<span class="correct-answer">' + userAnswer + '</span> ✓';
-                    } else {
-                        answerHtml += '<span class="wrong-answer">' + userAnswer + '</span> → ' + '<span class="correct-answer">' + correctAnswer + '</span> ✗';
-                    }
-                } else {
-                    answerHtml += '<span class="no-answer">未回答</span> → ' + '<span class="correct-answer">' + correctAnswer + '</span>';
-                }
-                answerHtml += '</div>';
-            });
-            answerParagraph.innerHTML = answerHtml;
             if (state.showAnswer) {
-                answerContainer.style.display = 'block';
-            } else {
-                answerContainer.style.display = 'none';
+                // Replace dropdowns with text display in the answers list
+                document.querySelectorAll('.answer-select').forEach((select, index) => {
+                    const userAnswer = selectedAnswers[index];
+                    const correctAnswer = select.getAttribute('data-correct');
+                    const isCorrect = correctAnswer === userAnswer;
+                    
+                    const replacementSpan = document.createElement('span');
+                    replacementSpan.className = 'answer-replacement';
+                    
+                    if (userAnswer) {
+                        if (isCorrect) {
+                            replacementSpan.innerHTML = '<span class="correct-answer">' + userAnswer + '</span>';
+                        } else {
+                            replacementSpan.innerHTML = '<span class="wrong-answer">' + userAnswer + '</span> <span class="correct-answer">' + correctAnswer + '</span>';
+                        }
+                    } else {
+                        replacementSpan.innerHTML = '<span class="wrong-answer">未回答</span> <span class="correct-answer">' + correctAnswer + '</span>';
+                    }
+                    
+                    // Replace the dropdown with the text display
+                    select.parentNode.replaceChild(replacementSpan, select);
+                });
             }
         }
+        // Store original dropdowns immediately when page loads
+        document.querySelectorAll('.answer-select').forEach(select => {
+            originalDropdowns.push(select.cloneNode(true));
+        });
+        
         document.querySelectorAll('.answer-select').forEach((select, index) => {
             select.addEventListener('change', function() {
                 selectedAnswers[index] = this.value;
@@ -219,44 +204,116 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                 }
             });
         });
+        
+        // Listen for messages from parent (Check button)
+        window.addEventListener('message', function(event) {
+            console.log('🔄 Received message:', event.data);
+            
+            // Handle JSChannel messages (from EdX)
+            if (event.data && event.data.method === 'JSInput::getGrade') {
+                console.log('🔄 Processing JSChannel getGrade - showing answers');
+                getGrade();
+                return;
+            }
+            
+            // Process postMessage from parent window or problem.html
+            if (event.source !== window.parent && event.source !== window) {
+                return;
+            }
+            
+            console.log('🔄 Received postMessage from parent:', event.data);
+            console.log('🔄 Message type:', event.data?.type);
+            
+            if (event.data && event.data.type === 'problem.check') {
+                console.log('🔄 Processing problem.check - resetting quiz');
+                // Reset quiz state
+                resetQuiz();
+            }
+            
+            if (event.data && event.data.type === 'problem.submit') {
+                console.log('🔄 Processing problem.submit - action:', event.data.action);
+                
+                if (event.data.action === 'check') {
+                    console.log('🔄 Processing problem.submit with action=check - showing answers');
+                    // Trigger quiz submission when Check button is clicked
+                    getGrade();
+                } else if (event.data.action === 'reset') {
+                    console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
+                    // Reset quiz when reset action is received
+                    resetQuiz();
+                }
+            }
+        });
+        
+        function resetQuiz() {
+            console.log('🔄 Starting reset process...');
+            
+            // Restore original dropdowns
+            document.querySelectorAll('.answer-replacement').forEach((replacement, index) => {
+                if (originalDropdowns[index]) {
+                    const restoredDropdown = originalDropdowns[index].cloneNode(true);
+                    restoredDropdown.value = '';
+                    replacement.parentNode.replaceChild(restoredDropdown, replacement);
+                }
+            });
+            
+            // Clear selected answers
+            selectedAnswers = new Array(correctAnswers.length).fill('');
+            
+            // Reset state completely
+            state.answer = '';
+            state.score = 0;
+            state.showAnswer = false;
+            
+            // Re-attach event listeners
+            document.querySelectorAll('.answer-select').forEach((select, index) => {
+                select.addEventListener('change', function() {
+                    selectedAnswers[index] = this.value;
+                    if (state.showAnswer) {
+                        const result = calculateResults();
+                        updateDisplay(result);
+                    }
+                });
+            });
+            
+            console.log('🔄 Quiz reset completed via problem.check message');
+        }
         function getGrade() {
             console.log('🎯 getGrade() called - Processing quiz submission');
-            
-            const answerContainer = document.getElementById('answer-paragraph-container');
-            const showFlag = document.getElementById('showAnswerFlag');
-            const isVisible = answerContainer.style.display === 'block';
-            
-            if (isVisible) {
-                answerContainer.style.display = 'none';
-                showFlag.value = 'false';
-                state.showAnswer = false;
-                console.log('📱 Hiding answer container');
-            } else {
-                const result = calculateResults();
-                updateDisplay(result);
-                answerContainer.style.display = 'block';
-                showFlag.value = 'true';
-                state.showAnswer = true;
-                console.log('📱 Showing answer container');
-            }
             
             const result = calculateResults();
             console.log('📊 Quiz results:', result);
             
-            // ✅ CALL COMPLETION API (NON-BLOCKING)
+            // Always show answer when submitted
+            state.showAnswer = true;
+            updateDisplay(result);
+            
+            // Call completion API (non-blocking)
             setTimeout(() => {
-                updateCompletionStatus(result);
+                try {
+                    updateCompletionStatus(result);
+                } catch (error) {
+                    console.error('Error in updateCompletionStatus:', error);
+                }
             }, 100);
             
-            // ✅ RETURN DATA TO EDX (PREVENT RELOAD)
-            const returnValue = { 
-                edxResult: None,  // null = no page reload 
-                edxScore: result.rawScore, 
-                edxMessage: result.message 
-            };
-            console.log('🔄 Returning to EdX:', returnValue);
-            
-            return JSON.stringify(returnValue);
+            // Return data to EdX (prevent reload)
+            try {
+                const returnValue = {
+                    edxResult: None,
+                    edxScore: result.rawScore,
+                    edxMessage: result.message
+                };
+                
+                return JSON.stringify(returnValue);
+            } catch (error) {
+                console.error('Error in return value:', error);
+                return JSON.stringify({
+                    edxResult: None,
+                    edxScore: 0,
+                    edxMessage: 'Error occurred'
+                });
+            }
         }
         
         function updateCompletionStatus(result) {
@@ -379,8 +436,6 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                         });
                         const result = calculateResults();
                         updateDisplay(result);
-                        document.getElementById('answer-paragraph-container').style.display = state.showAnswer ? 'block' : 'none';
-                        document.getElementById('showAnswerFlag').value = state.showAnswer ? 'true' : 'false';
                     } catch (e) { console.error('Error parsing answers:', e); }
                 }
             } catch (e) { console.error('Error setting state:', e); }

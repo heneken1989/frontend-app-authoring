@@ -6,6 +6,7 @@ import { getListenWithImageMultipleDifferentBlankOptionsTemplate } from './templ
 import { getGrammarDropdownTemplate } from './template_18_grammar_dropdown';
 import { getGrammarSentenceRearrangementTemplate } from './template_22_grammar_sentence_rearrangement';
 import { getGrammarSingleSelectTemplate } from './template_28_grammar_single_select';
+import { getGrammarSingleSelectTemplate7 } from './template_7_grammar_single_select';
 import { getReadingMultipleQuestionTemplate } from './template_31_reading_multiple_question';
 import { getReadingMultipleQuestionTemplate as getReadingMultipleQuestionTemplate32 } from './template_32_reading_multiple_question';
 import { getReadingDroplistTemplate } from './template_51_reading_droplist';
@@ -146,6 +147,7 @@ export {
   getGrammarDropdownTemplate,
   getGrammarSentenceRearrangementTemplate,
   getGrammarSingleSelectTemplate,
+  getGrammarSingleSelectTemplate7,
   getReadingMultipleQuestionTemplate,
   getReadingMultipleQuestionTemplate32,
   getReadingDroplistTemplate,

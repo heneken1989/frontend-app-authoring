@@ -1,3 +1,8 @@
+// Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+function convertFurigana(text) {
+    return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+}
+
 export const getFillInBlankTemplate = (questionText, correctAnswers, instructions = 'Fill in the blanks with the correct answers.') => {
     // Log the incoming parameters to help debug
     console.log('getFillInBlankTemplate called with:', {
@@ -19,8 +24,11 @@ export const getFillInBlankTemplate = (questionText, correctAnswers, instruction
         return `<input type="text" id="${blankId}" class="blank-input" placeholder="Type your answer">`;
     });
 
+    // Convert furigana format and process blanks
+    const furiganaProcessedParagraph = convertFurigana(processedParagraph);
+
     let template = fillInBlankTemplate
-        .replace('{{PARAGRAPH_TEXT}}', processedParagraph)
+        .replace('{{PARAGRAPH_TEXT}}', furiganaProcessedParagraph)
         .replace('{{CORRECT_ANSWERS}}', JSON.stringify(blanks))
         .replace('{{INSTRUCTIONS}}', instructions);
     
@@ -53,6 +61,16 @@ export const fillInBlankTemplate = `<!DOCTYPE html>
             margin-bottom: 1rem;
             border-left: 4px solid #0075b4;
             font-style: italic;
+        }
+        
+        /* Furigana styling */
+        ruby {
+            font-size: 1em;
+        }
+        
+        rt {
+            font-size: 0.6em;
+            color: #666;
         }
         .paragraph {
             background-color: #f8f8f8;

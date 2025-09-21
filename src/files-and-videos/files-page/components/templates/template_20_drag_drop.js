@@ -593,8 +593,10 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                                     ' <span class="quiz-word correct">' + correctAnswer + '</span>';
                             }
                         } else {
-                            // User didn't answer - show only correct answer
-                            answerContainer.innerHTML = '<span class="quiz-word correct">' + correctAnswer + '</span>';
+                            // User didn't answer - show red box with * and correct answer
+                            answerContainer.innerHTML = 
+                                '<span class="quiz-word incorrect">*</span>' + 
+                                ' <span class="quiz-word correct">' + correctAnswer + '</span>';
                         }
                         
                         // Add answer container to replacement

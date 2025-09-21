@@ -87,7 +87,7 @@ export const TEMPLATE_IDS = {
   VOCAB_MATCHING: 2,                                    // template_2_vocab_matching.js
   ID3_VOCAB_SINGLE_CHOICE: 3,                          // Uses template_28_grammar_single_select.js
   ID4_VOCAB_SINGLE_SELECT_1: 4,                        // Uses template_28_grammar_single_select.js
-  ID5_VOCAB_SINGLE_SELECT_2: 5,                        // Uses template_28_grammar_single_select.js
+  ID5_VOCAB_SINGLE_SELECT_2: 5,                        // Uses template_18_grammar_dropdown.js
   ID6_GRAMMAR_DROPDOWN: 6,                        // Uses template_28_grammar_single_select.js
   ID7_VOCAB_SINGLE_SELECT_3: 7,   
   ID8_VOCAB_SINGLE_SELECT_4: 8,  

@@ -85,6 +85,65 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             border-color: #b40000;
             background-color: #f9ecec;
         }
+        .blank.show-feedback {
+            position: relative;
+            display: inline-block;
+            margin: 0 0.3rem;
+            vertical-align: middle;
+        }
+        .blank.show-feedback .answer-container {
+            display: flex;
+            gap: 0.3rem;
+            align-items: center;
+            min-width: 120px;
+        }
+        .blank.show-feedback .quiz-word {
+            display: inline-block;
+            margin: 0 0.02em;
+            padding: 0.3rem 0.6rem;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            text-align: center;
+            min-width: 60px;
+        }
+        .blank.show-feedback .quiz-word.correct {
+            background: #2e7d32;
+            color: #fff;
+        }
+        .blank.show-feedback .quiz-word.incorrect {
+            background: #b40000;
+            color: #fff;
+        }
+        .feedback-replacement {
+            display: inline-block;
+            margin: 0 0.3rem;
+            vertical-align: middle;
+        }
+        .feedback-replacement .answer-container {
+            display: flex;
+            gap: 0.3rem;
+            align-items: center;
+            min-width: 120px;
+        }
+        .feedback-replacement .quiz-word {
+            display: inline-block;
+            margin: 0 0.02em;
+            padding: 0.3rem 0.6rem;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.75rem;
+            text-align: center;
+            min-width: 60px;
+        }
+        .feedback-replacement .quiz-word.correct {
+            background: #2e7d32;
+            color: #fff;
+        }
+        .feedback-replacement .quiz-word.incorrect {
+            background: #b40000;
+            color: #fff;
+        }
         .buttons {
             margin: 1rem 0;
         }
@@ -488,14 +547,6 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             }
 
             function updateDisplay(result) {
-                const answerParagraph = document.getElementById('answer-paragraph');
-                const answerContainer = document.getElementById('answer-paragraph-container');
-                
-                // Show score feedback
-                const feedbackDiv = document.getElementById('feedback');
-                feedbackDiv.textContent = result.message;
-                feedbackDiv.className = result.rawScore === 1 ? 'answer-feedback success' : 'answer-feedback';
-                
                 try {
                     console.log('Starting updateDisplay with result:', JSON.stringify(result));
                     
@@ -503,96 +554,11 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                     const quizForm = document.getElementById('quizForm');
                     console.log('Quiz form found:', quizForm ? 'yes' : 'no');
                     
-                    // Log the full HTML structure of the quiz form
-                    console.log('Quiz form HTML structure:', quizForm.outerHTML);
+                    // Get all blanks in the original form
+                    const blanks = quizForm.querySelectorAll('.blank');
+                    console.log('Total blanks found:', blanks.length);
                     
-                    // Log all blanks in the original quiz form
-                    const originalBlanks = quizForm.querySelectorAll('.blank');
-                    console.log('Blanks in original quiz form:', originalBlanks.length);
-                    originalBlanks.forEach((blank, i) => {
-                        console.log('Original blank ' + i + ':', blank.id, blank.outerHTML);
-                    });
-                    
-                    // Create a direct clone of the entire form
-                    const answerFormClone = quizForm.cloneNode(true);
-                    console.log('Clone created successfully');
-                    
-                    // Remove the word bank from the clone
-                    const wordBank = answerFormClone.querySelector('.word-bank');
-                    if (wordBank) {
-                        wordBank.remove();
-                        console.log('Word bank removed from clone');
-                    }
-                    
-                    // Find all blanks in the cloned form
-                    const blanks = answerFormClone.querySelectorAll('.blank');
-                    console.log('Total blanks found in clone:', blanks.length);
-                    
-                    // Check if the number of blanks matches the total questions
-                    if (blanks.length !== result.totalQuestions) {
-                        console.warn('Mismatch between blanks (' + blanks.length + ') and total questions (' + result.totalQuestions + ')');
-                        console.log('Correct answers:', JSON.stringify(correctAnswers));
-                        
-                        // Create a container for additional answers
-                        const additionalAnswers = document.createElement('div');
-                        additionalAnswers.className = 'additional-answers';
-                        additionalAnswers.style.marginTop = '1rem';
-                        additionalAnswers.style.padding = '1rem';
-                        additionalAnswers.style.backgroundColor = '#f8f8f8';
-                        additionalAnswers.style.borderRadius = '4px';
-                        
-                        // Add a heading
-                        const heading = document.createElement('h3');
-                        heading.textContent = 'Additional Answers:';
-                        heading.style.marginTop = '0';
-                        additionalAnswers.appendChild(heading);
-                        
-                        // Process each answer that doesn't have a corresponding blank
-                        let missingAnswersFound = false;
-                        for (let blankId in correctAnswers) {
-                            // Check if this blank exists in the form
-                            const blankExists = Array.from(blanks).some(blank => blank.id === blankId);
-                            
-                            if (!blankExists) {
-                                missingAnswersFound = true;
-                                const userAnswer = state.answers[blankId];
-                                const correctAnswer = correctAnswers[blankId];
-                                
-                                // Create an answer item
-                                const answerItem = document.createElement('div');
-                                answerItem.style.marginBottom = '0.5rem';
-                                
-                                if (userAnswer) {
-                                    if (userAnswer === correctAnswer) {
-                                        // User answered correctly
-                                        answerItem.innerHTML = 
-                                            '<strong>' + blankId + ':</strong> ' +
-                                            '<span class="quiz-word correct">' + userAnswer + '</span>';
-                                    } else {
-                                        // User answered incorrectly
-                                        answerItem.innerHTML = 
-                                            '<strong>' + blankId + ':</strong> ' +
-                                            '<span class="quiz-word incorrect">' + userAnswer + '</span>' + 
-                                            ' <span class="quiz-word correct">' + correctAnswer + '</span>';
-                                    }
-                                } else {
-                                    // User didn't answer
-                                    answerItem.innerHTML = 
-                                        '<strong>' + blankId + ':</strong> ' +
-                                        '<span class="quiz-word correct">' + correctAnswer + '</span>';
-                                }
-                                
-                                additionalAnswers.appendChild(answerItem);
-                            }
-                        }
-                        
-                        // Only add the additional answers section if we found missing answers
-                        if (missingAnswersFound) {
-                            answerFormClone.appendChild(additionalAnswers);
-                        }
-                    }
-                    
-                    // Process each blank
+                    // Process each blank to show feedback directly
                     blanks.forEach((blank, index) => {
                         const blankId = blank.id;
                         console.log('Processing blank', index, 'with ID:', blankId);
@@ -607,43 +573,38 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         
                         console.log('User answer:', userAnswer, 'Correct answer:', correctAnswer);
                         
-                        // Create a replacement span
-                        const answerSpan = document.createElement('span');
-                        answerSpan.className = 'answer-blank';
+                        // Create new replacement element
+                        const replacement = document.createElement('span');
+                        replacement.className = 'feedback-replacement';
+                        replacement.setAttribute('data-blank-id', blankId);
+                        
+                        // Create answer container
+                        const answerContainer = document.createElement('div');
+                        answerContainer.className = 'answer-container';
                         
                         if (userAnswer) {
                             if (userAnswer === correctAnswer) {
-                                // User answered correctly
-                                answerSpan.innerHTML = '<span class="quiz-word correct">' + userAnswer + '</span>';
+                                // User answered correctly - only show user answer (green)
+                                answerContainer.innerHTML = '<span class="quiz-word correct">' + userAnswer + '</span>';
                             } else {
-                                // User answered incorrectly
-                                answerSpan.innerHTML = 
+                                // User answered incorrectly - show both answers
+                                answerContainer.innerHTML = 
                                     '<span class="quiz-word incorrect">' + userAnswer + '</span>' + 
                                     ' <span class="quiz-word correct">' + correctAnswer + '</span>';
                             }
                         } else {
-                            // User didn't answer
-                            answerSpan.innerHTML = '<span class="quiz-word correct">' + correctAnswer + '</span>';
+                            // User didn't answer - show only correct answer
+                            answerContainer.innerHTML = '<span class="quiz-word correct">' + correctAnswer + '</span>';
                         }
                         
-                        // Replace the blank with our styled answer
-                        blank.parentNode.replaceChild(answerSpan, blank);
-                        console.log('Replaced blank with answer span');
+                        // Add answer container to replacement
+                        replacement.appendChild(answerContainer);
+                        
+                        // Replace the entire blank element with the new replacement
+                        blank.parentNode.replaceChild(replacement, blank);
+                        
+                        console.log('Replaced blank with feedback replacement');
                     });
-                    
-                    // Clear the answer paragraph and add our processed clone
-                    answerParagraph.innerHTML = '';
-                    answerParagraph.appendChild(answerFormClone);
-                    console.log('Added processed clone to answer paragraph');
-                    
-                    console.log('Final answer paragraph HTML:', answerParagraph.innerHTML);
-                    
-                    // Update visibility
-                    if (state.showAnswer) {
-                        answerContainer.style.display = 'block';
-                    } else {
-                        answerContainer.style.display = 'none';
-                    }
                     
                     console.log('updateDisplay completed successfully');
                 } catch (error) {
@@ -654,31 +615,18 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             function getGrade() {
                 console.log('🎯 getGrade() called - Processing quiz submission');
                 
-                // Toggle the answer paragraph visibility
-                const answerContainer = document.getElementById('answer-paragraph-container');
+                // Always show feedback when submitted
                 const showFlag = document.getElementById('showAnswerFlag');
-
-                const isVisible = answerContainer.style.display === 'block';
-
-                if (isVisible) {
-                    // Hide it
-                    answerContainer.style.display = 'none';
-                    showFlag.value = 'false';
-                    state.showAnswer = false;
-                    console.log('📱 Hiding answer container');
-                } else {
-                    // Show it with updated results
-                    const result = calculateResults();
-                    updateDisplay(result);
-                    answerContainer.style.display = 'block';
-                    showFlag.value = 'true';
-                    state.showAnswer = true;
-                    console.log('📱 Showing answer container');
-                }
-
-                // Return grade info to EdX
+                
+                // Calculate results
                 const result = calculateResults();
                 console.log('📊 Quiz results:', result);
+                
+                // Always show feedback when submitted
+                state.showAnswer = true;
+                updateDisplay(result);
+                showFlag.value = 'true';
+                console.log('📱 Showing feedback');
                 
                 // ✅ CALL COMPLETION API (NON-BLOCKING)
                 setTimeout(() => {
@@ -795,6 +743,69 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                 });
             }
 
+            function resetQuiz() {
+                console.log('🔄 Resetting quiz to initial state');
+                
+                // Clear all answers
+                state.answers = {};
+                state.score = 0;
+                state.attempts = 0;
+                state.showAnswer = false;
+                
+                // Hide answer paragraph container if visible
+                const answerContainer = document.getElementById('answer-paragraph-container');
+                if (answerContainer) {
+                    answerContainer.style.display = 'none';
+                }
+                
+                // Reset show answer flag
+                const showFlag = document.getElementById('showAnswerFlag');
+                if (showFlag) {
+                    showFlag.value = 'false';
+                }
+                
+                // Get the quiz form
+                const quizForm = document.getElementById('quizForm');
+                if (!quizForm) {
+                    console.error('Quiz form not found for reset');
+                    return;
+                }
+                
+                // Remove all feedback replacements
+                const feedbackReplacements = document.querySelectorAll('.feedback-replacement');
+                feedbackReplacements.forEach(replacement => {
+                    const parent = replacement.parentNode;
+                    const blankId = replacement.getAttribute('data-blank-id');
+                    
+                    // Create new blank element
+                    const newBlank = document.createElement('span');
+                    newBlank.className = 'blank';
+                    newBlank.id = blankId;
+                    newBlank.textContent = '';
+                    
+                    // Replace the feedback replacement with the original blank
+                    parent.replaceChild(newBlank, replacement);
+                });
+                
+                // Clear all existing blanks
+                const existingBlanks = quizForm.querySelectorAll('.blank');
+                existingBlanks.forEach(blank => {
+                    blank.textContent = '';
+                    blank.classList.remove('filled', 'incorrect', 'show-feedback', 'correct', 'wrong');
+                });
+                
+                // Show all words in word bank
+                const draggableWords = document.querySelectorAll('.draggable-word');
+                draggableWords.forEach(word => {
+                    word.style.display = '';
+                });
+                
+                // Re-initialize drag and drop
+                initializeDragAndDrop();
+                
+                console.log('✅ Quiz reset completed');
+            }
+
             function setState(stateStr) {
                 try {
                     let newState;
@@ -837,12 +848,39 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         // Calculate results
                         const result = calculateResults();
                         
-                        // Update answer paragraph content
-                        updateDisplay(result);
+                        // Update feedback display
+                        if (state.showAnswer) {
+                            updateDisplay(result);
+                        } else {
+                            // Hide feedback - restore original blanks
+                            const feedbackReplacements = document.querySelectorAll('.feedback-replacement');
+                            feedbackReplacements.forEach(replacement => {
+                                const parent = replacement.parentNode;
+                                const blankId = replacement.getAttribute('data-blank-id');
+                                
+                                // Create new blank element
+                                const newBlank = document.createElement('span');
+                                newBlank.className = 'blank';
+                                newBlank.id = blankId;
+                                
+                                // Restore original blank appearance
+                                const userAnswer = state.answers[blankId];
+                                if (userAnswer) {
+                                    newBlank.textContent = userAnswer;
+                                    newBlank.classList.add('filled');
+                                } else {
+                                    newBlank.textContent = '';
+                                    newBlank.classList.remove('filled');
+                                }
+                                
+                                // Replace the feedback replacement with the original blank
+                                parent.replaceChild(newBlank, replacement);
+                            });
+                            
+                            // Re-initialize drag and drop for restored blanks
+                            initializeDragAndDrop();
+                        }
                         
-                        // Set visibility based on state
-                        const answerContainer = document.getElementById('answer-paragraph-container');
-                        answerContainer.style.display = state.showAnswer ? 'block' : 'none';
                         document.getElementById('showAnswerFlag').value = state.showAnswer ? 'true' : 'false';
                     }
                 } catch (e) {
@@ -967,7 +1005,54 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                 channel.bind('getGrade', getGrade);
                 channel.bind('getState', getState);
                 channel.bind('setState', setState);
+                channel.bind('reset', resetQuiz);
             }
+            
+            // Listen for messages from parent (Check button)
+            window.addEventListener('message', function(event) {
+                console.log('🔄 Received message:', event.data);
+                
+                // Handle JSChannel messages (from EdX)
+                if (event.data && event.data.method === 'JSInput::getGrade') {
+                    console.log('🔄 Processing JSChannel getGrade - showing answers');
+                    getGrade();
+                    return;
+                }
+                
+                // Process postMessage from parent window or problem.html
+                if (event.source !== window.parent && event.source !== window) {
+                    return;
+                }
+                
+                console.log('🔄 Received postMessage from parent:', event.data);
+                console.log('🔄 Message type:', event.data?.type);
+                
+                if (event.data && event.data.type === 'problem.check') {
+                    console.log('🔄 Processing problem.check - resetting quiz');
+                    // Reset quiz state
+                    resetQuiz();
+                }
+                
+                if (event.data && event.data.type === 'problem.submit') {
+                    console.log('🔄 Processing problem.submit - action:', event.data.action);
+                    
+                    if (event.data.action === 'check') {
+                        console.log('🔄 Processing problem.submit with action=check - showing answers');
+                        // Trigger quiz submission when Check button is clicked
+                        getGrade();
+                    } else if (event.data.action === 'reset') {
+                        console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
+                        // Reset quiz when reset action is received
+                        resetQuiz();
+                    }
+                }
+                
+                // Legacy support for simple reset message
+                if (event.data && event.data.type === 'reset') {
+                    console.log('🔄 Received reset message from parent window');
+                    resetQuiz();
+                }
+            });
         })();
     </script>
 </body>

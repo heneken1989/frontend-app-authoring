@@ -174,7 +174,6 @@ const shouldShowAudioField = (problemTypeId) => ![
   TEMPLATE_IDS.VOCAB_MATCHING,
   TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE, // Add ID3 to the list
   TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1, // Add ID4 to the list
-  TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2, // Add ID5 to the list
   TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3, // Add ID7 to the list
   TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4, // Add ID8 to the list
   TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5, // Add ID9 to the list
@@ -202,7 +201,6 @@ const shouldShowImageField = (problemTypeId) => ![
   TEMPLATE_IDS.READING_DROPLIST_NO_IMAGE,
   TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE, // Add ID3 to the list
   TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1, // Add ID4 to the list
-  TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2, // Add ID5 to the list
   TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3,
   TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4,
   TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5,
@@ -660,11 +658,16 @@ const generateQuizTemplate = (templateId, quizData) => {
       );
 
     case TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2:
-      return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
-        quizData.blankOptions || '',
-        quizData.instructions || '正しい　ほうを　えらんでください。',
-        quizData.scriptText || ''
+      return getGrammarDropdownTemplate(
+        quizData.paragraphText,
+        quizData.optionsForBlanks || '',
+        quizData.audioFile || '',
+        quizData.startTime || 0,
+        quizData.endTime || 0,
+        quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
+        quizData.scriptText || '',
+        quizData.imageFile || '',
+        quizData.answerContent || ''
       );
 
     case TEMPLATE_IDS.FILL_IN_BLANK:
@@ -1161,13 +1164,7 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.scriptText || ''
       );
 
-    case TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2:
-      return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
-        quizData.blankOptions || '',
-        quizData.instructions || '正しい　ほうを　えらんでください。',
-        quizData.scriptText || ''
-      );
+
     case TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3:
         return getGrammarSingleSelectTemplate7(
           quizData.paragraphText || '',
@@ -1190,12 +1187,17 @@ const generateQuizTemplate = (templateId, quizData) => {
             quizData.scriptText || ''
           );
     case TEMPLATE_IDS.ID10_VOCAB_SINGLE_SELECT_6:
-          return getGrammarSingleSelectTemplate(
-            quizData.paragraphText || '',
-            quizData.blankOptions || '',
-            quizData.instructions || '正しい　ものを　一つ　えらびましょう。',
-            quizData.scriptText || ''
-          );
+      return getGrammarDropdownTemplate(
+        quizData.paragraphText,
+        quizData.optionsForBlanks || '',
+        quizData.audioFile || '',
+        quizData.startTime || 0,
+        quizData.endTime || 0,
+        quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
+        quizData.scriptText || '',
+        quizData.imageFile || '',
+        quizData.answerContent || ''
+      );
     case TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP:
       const vocabDragDropWords2 = quizData.wordBank.split(',').map(word => word.trim());
       const cleanParagraph = (quizData.paragraphText || '')

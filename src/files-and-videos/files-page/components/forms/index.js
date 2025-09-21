@@ -22,7 +22,7 @@ const FORM_COMPONENTS = {
   2: Form2,    // Vocabulary Matching Quiz
   3: Form28,   // Vocabulary Single Choice Quiz (uses Form28)
   4: Form28,   // Vocabulary Single Choice Quiz 1 (uses Form28)
-  5: Form28, 
+  5: Form18, 
   7: Form28,  // Vocabulary Single Choice Quiz 2 (uses Form28)
   6: Form18,
   8: Form28,  // Vocabulary Single Choice Quiz 2 (uses Form28)

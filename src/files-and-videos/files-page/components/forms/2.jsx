@@ -6,23 +6,43 @@ import { getConfig } from '@edx/frontend-platform';
 const VocabMatchingForm = ({ quizData, setQuizData }) => {
   const [newDropZone, setNewDropZone] = useState({ x: '', y: '', answer: '' });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [imageError, setImageError] = useState(null);
   const imageRef = useRef(null);
 
   // Get the full image URL including the base URL
   const getFullImageUrl = (assetUrl) => {
     if (!assetUrl) return '';
     if (assetUrl.startsWith('http')) return assetUrl;
-    return `${getConfig().LMS_BASE_URL}${assetUrl}`;
+    const fullUrl = `${getConfig().LMS_BASE_URL}${assetUrl}`;
+    console.log('Image URL:', assetUrl);
+    console.log('Full URL:', fullUrl);
+    return fullUrl;
   };
 
   // Load image dimensions when image URL changes
   useEffect(() => {
-    if (quizData.imageFile) {
+    // Clear any previous errors when image changes
+    setImageError(null);
+    
+    if (quizData.imageFile && quizData.imageFile.trim()) {
+      console.log('Loading image:', quizData.imageFile);
       const img = new Image();
       img.onload = () => {
+        console.log('Image loaded successfully:', img.width, 'x', img.height);
         setImageSize({ width: img.width, height: img.height });
+        setImageError(null); // Clear any previous errors
+      };
+      img.onerror = (error) => {
+        console.error('Error loading image:', error);
+        console.error('Image URL:', getFullImageUrl(quizData.imageFile));
+        setImageError(`Failed to load image: ${getFullImageUrl(quizData.imageFile)}`);
+        setImageSize({ width: 0, height: 0 });
       };
       img.src = getFullImageUrl(quizData.imageFile);
+    } else {
+      console.log('No image file provided');
+      setImageSize({ width: 0, height: 0 });
+      setImageError(null);
     }
   }, [quizData.imageFile]);
 
@@ -91,42 +111,64 @@ const VocabMatchingForm = ({ quizData, setQuizData }) => {
         </Form.Text>
       </Form.Group>
 
-      {quizData.imageFile && (
+      {quizData.imageFile && quizData.imageFile.trim() && (
         <Card className="mb-4">
-          <Card.Header>Click on the image to set drop zone position</Card.Header>
+          <Card.Header>
+            Click on the image to set drop zone position
+            {imageSize.width > 0 && imageSize.height > 0 && (
+              <span className="text-muted ms-2">
+                ({imageSize.width} x {imageSize.height}px)
+              </span>
+            )}
+          </Card.Header>
           <Card.Body className="p-0 position-relative">
-            <img
-              ref={imageRef}
-              src={getFullImageUrl(quizData.imageFile)}
-              alt="Quiz"
-              style={{ 
-                width: '100%', 
-                height: 'auto', 
-                cursor: 'crosshair'
-              }}
-              onClick={handleImageClick}
-              onError={(e) => {
-                console.error('Error loading image:', e);
-                e.target.style.display = 'none';
-              }}
-            />
-            {/* Overlay existing drop zones */}
-            {quizData.dropZones && JSON.parse(quizData.dropZones).map((zone, index) => (
-              <div
-                key={index}
-                style={{
-                  position: 'absolute',
-                  left: `${(zone.x / imageSize.width) * 100}%`,
-                  top: `${(zone.y / imageSize.height) * 100}%`,
-                  width: '20px',
-                  height: '20px',
-                  backgroundColor: 'rgba(255, 0, 0, 0.5)',
-                  borderRadius: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  pointerEvents: 'none',
-                }}
-              />
-            ))}
+            <div style={{ position: 'relative', minHeight: '200px' }}>
+              {imageError ? (
+                <div className="alert alert-danger m-3">
+                  <strong>Error loading image:</strong><br />
+                  {imageError}<br />
+                  Please check the image URL and try again.
+                </div>
+              ) : (
+                <>
+                  <img
+                    ref={imageRef}
+                    src={getFullImageUrl(quizData.imageFile)}
+                    alt="Quiz"
+                    style={{ 
+                      width: '100%', 
+                      height: 'auto', 
+                      cursor: 'crosshair',
+                      display: 'block'
+                    }}
+                    onClick={handleImageClick}
+                    onError={(e) => {
+                      console.error('Error loading image in display:', e);
+                      console.error('Failed URL:', getFullImageUrl(quizData.imageFile));
+                      setImageError(`Failed to load image: ${getFullImageUrl(quizData.imageFile)}`);
+                    }}
+                  />
+                  {/* Overlay existing drop zones */}
+                  {quizData.dropZones && imageSize.width > 0 && imageSize.height > 0 && 
+                   JSON.parse(quizData.dropZones).map((zone, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        position: 'absolute',
+                        left: `${(zone.x / imageSize.width) * 100}%`,
+                        top: `${(zone.y / imageSize.height) * 100}%`,
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: 'rgba(255, 0, 0, 0.5)',
+                        borderRadius: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
           </Card.Body>
         </Card>
       )}

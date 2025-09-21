@@ -60,6 +60,7 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
             cursor: pointer;
             transition: all 0.3s ease;
             border-radius: 4px;
+            transform: translate(-50%, -50%);
         }
         .drop-zone.dragover {
             background: rgba(0, 117, 180, 0.1);
@@ -99,69 +100,7 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
         .draggable-word.dragging {
             opacity: 0.5;
         }
-        .answer-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            padding: 0.3rem 4rem;
-            background-color: rgba(99, 97, 97, 0.95);
-            border-top: 1px solid #e0e0e0;
-            border-bottom: 1px solid #e0e0e0;
-            display: none;
-            z-index: 2;
-            transition: transform 0.3s ease;
-        }
-        .answer-paragraph-inner {
-            max-width: 90%;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-            padding: 1.5rem 1.2rem 1.2rem 1.2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .score {
-            margin-bottom: 1rem;
-            padding: 0.8rem 1rem;
-            border-radius: 3px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            background: #f9ecec;
-            color: #b40000;
-            border: 1px solid #ebccd1;
-        }
-        .score.perfect {
-            background: #ecf3ec;
-            color: #2e7d32;
-            border: 1px solid #c5e0c5;
-        }
-        .answer-image-container {
-            margin-top: 0;
-            background-color: #ffffff;
-            line-height: 1.6;
-            box-shadow: none;
-            padding: 0;
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-        .answer-image-container img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 0 auto;
-        }
-        .answer-image-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-        .answer-zone {
+        .feedback-zone {
             position: absolute;
             width: 100px;
             height: 40px;
@@ -170,26 +109,26 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
             justify-content: center;
             font-size: 14px;
             border-radius: 4px;
-            margin: 0 0.2rem;
             padding: 0.5rem 0.8rem;
             font-weight: bold;
+            border: 2px solid;
+            transform: translate(-50%, -50%);
         }
-        .answer-zone.correct {
+        .feedback-zone.correct {
             background: #ecf3ec;
             color: #2e7d32;
-            border: 1px solid #c5e0c5;
+            border-color: #c5e0c5;
         }
-        .answer-zone.incorrect {
+        .feedback-zone.incorrect {
             background: #f9ecec;
             color: #b40000;
-            border: 1px solid #ebccd1;
+            border-color: #ebccd1;
         }
-        .answer-zone .wrong-answer {
+        .feedback-zone .wrong-answer {
             color: #b40000;
-            text-decoration: line-through;
             margin-right: 0.5rem;
         }
-        .answer-zone .correct-answer {
+        .feedback-zone .correct-answer {
             color: #2e7d32;
         }
     </style>
@@ -213,22 +152,6 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
                 ${words.map(word => `
                     <div class="draggable-word" draggable="true">${word}</div>
                 `).join('')}
-            </div>
-        </div>
-        <div class="answer-container">
-            <div class="answer-paragraph-inner">
-                <div class="score"></div>
-                <div class="answer-image-container">
-                    <div class="answer-image-wrapper">
-                        <img src="${imageFile}" alt="Answer" class="quiz-image">
-                        ${dropZones.map((zone, index) => `
-                            <div class="answer-zone"
-                                 style="left: ${zone.x}px; top: ${zone.y}px;">
-                                ${zone.answer}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -424,47 +347,58 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
         }
 
         function showResults(result) {
-            const answerContainer = document.querySelector('.answer-container');
-            const scoreElement = answerContainer.querySelector('.score');
-
-            // Display score
-            scoreElement.textContent = result.message;
-            scoreElement.className = 'score ' + (result.rawScore === 1 ? 'perfect' : '');
-
-            // Show answer container with slide up animation
-            answerContainer.style.display = 'block';
+            const imageContainer = document.querySelector('.image-container');
             
-            // Update answer zones in the answer container
-            const answerZones = answerContainer.querySelectorAll('.answer-zone');
-            answerZones.forEach((zone, index) => {
+            // Create feedback zones on the original image
+            const zones = document.querySelectorAll('.drop-zone');
+            zones.forEach((zone, index) => {
                 const zoneId = \`zone\${index}\`;
                 const userAnswer = state.answers[zoneId];
                 const correctAnswer = correctAnswers[zoneId];
                 
-                zone.classList.remove('correct', 'incorrect');
+                // Hide the original drop zone
+                zone.style.display = 'none';
+                
+                // Create feedback zone
+                const feedbackZone = document.createElement('div');
+                feedbackZone.className = 'feedback-zone';
+                feedbackZone.id = \`feedback-zone-\${index}\`;
+                feedbackZone.style.left = zone.style.left;
+                feedbackZone.style.top = zone.style.top;
                 
                 if (userAnswer === correctAnswer) {
-                    zone.classList.add('correct');
-                    zone.innerHTML = \`<span class="correct-answer">\${correctAnswer}</span>\`;
+                    feedbackZone.classList.add('correct');
+                    feedbackZone.innerHTML = \`<span class="correct-answer">\${correctAnswer}</span>\`;
                 } else {
-                    zone.classList.add('incorrect');
+                    feedbackZone.classList.add('incorrect');
                     if (userAnswer) {
                         // Show wrong answer and correct answer separately
-                        zone.innerHTML = \`
+                        feedbackZone.innerHTML = \`
                             <span class="wrong-answer">\${userAnswer}</span>
                             <span class="correct-answer">\${correctAnswer}</span>
                         \`;
                     } else {
-                        zone.innerHTML = \`<span class="correct-answer">\${correctAnswer}</span>\`;
+                        feedbackZone.innerHTML = \`<span class="correct-answer">\${correctAnswer}</span>\`;
                     }
                 }
+                
+                // Add feedback zone to image container
+                imageContainer.appendChild(feedbackZone);
             });
         }
 
         function resetQuiz() {
+            console.log('🔄 Resetting quiz to initial state');
+            
             const zones = document.querySelectorAll('.drop-zone');
             const words = document.querySelectorAll('.draggable-word');
-            const answerContainer = document.querySelector('.answer-container');
+            const imageContainer = document.querySelector('.image-container');
+
+            // Clear all answers
+            state.answers = {};
+            state.score = 0;
+            state.attempts = 0;
+            state.showAnswer = false;
 
             // Reset zones
             zones.forEach(zone => {
@@ -472,42 +406,39 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
                     returnWordToBank(zone.textContent);
                 }
                 zone.textContent = '';
-                zone.classList.remove('correct', 'incorrect');
+                zone.classList.remove('correct', 'incorrect', 'dragover');
+                zone.style.display = ''; // Show original zones
+            });
+
+            // Remove all feedback zones
+            const feedbackZones = document.querySelectorAll('.feedback-zone');
+            feedbackZones.forEach(zone => {
+                zone.remove();
             });
 
             // Reset word bank
             words.forEach(word => {
                 word.style.display = '';
+                word.classList.remove('dragging');
             });
 
-            // Hide answer container
-            answerContainer.style.display = 'none';
-
-            // Reset state
-            state.answers = {};
-            state.showAnswer = false;
+            // Re-initialize drag and drop
+            initDragAndDrop();
+            
+            console.log('✅ Quiz reset completed');
         }
 
         function getGrade() {
             console.log('🎯 getGrade() called - Processing quiz submission');
             
+            // Always show feedback when submitted
             const result = calculateResults();
-            const answerContainer = document.querySelector('.answer-container');
-            const isVisible = answerContainer.style.display === 'block';
-
-            if (isVisible) {
-                // Hide answer container
-                answerContainer.style.display = 'none';
-                state.showAnswer = false;
-                console.log('📱 Hiding answer container');
-            } else {
-                // Show answer container with results
-                showResults(result);
-                state.showAnswer = true;
-                console.log('📱 Showing answer container');
-            }
-            
             console.log('📊 Quiz results:', result);
+            
+            // Always show feedback when submitted
+            state.showAnswer = true;
+            showResults(result);
+            console.log('📱 Showing feedback on original image');
             
             // ✅ CALL COMPLETION API (NON-BLOCKING)
             setTimeout(() => {
@@ -516,7 +447,7 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
             
             // ✅ RETURN DATA TO EDX (PREVENT RELOAD)
             const returnValue = {
-                edxResult: None,
+                edxResult: None,  // Keep it null to avoid EdX refresh
                 edxScore: result.rawScore,
                 edxMessage: result.message
             };
@@ -621,7 +552,18 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
 
         function setState(stateStr) {
             try {
-                const newState = JSON.parse(stateStr);
+                let newState;
+                
+                // Check if stateStr is already an object or a string
+                if (typeof stateStr === 'string') {
+                    newState = JSON.parse(stateStr);
+                } else if (typeof stateStr === 'object') {
+                    newState = stateStr;
+                } else {
+                    console.error('Invalid state format:', stateStr);
+                    return;
+                }
+                
                 state = {
                     answers: newState.answers || {},
                     score: newState.score || 0,
@@ -632,6 +574,18 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
                 if (state.showAnswer) {
                     const result = calculateResults();
                     showResults(result);
+                } else {
+                    // Hide feedback if not showing
+                    const feedbackZones = document.querySelectorAll('.feedback-zone');
+                    const zones = document.querySelectorAll('.drop-zone');
+                    
+                    feedbackZones.forEach(zone => {
+                        zone.remove();
+                    });
+                    
+                    zones.forEach(zone => {
+                        zone.style.display = '';
+                    });
                 }
 
                 // Restore answers
@@ -672,7 +626,54 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
             channel.bind('getGrade', getGrade);
             channel.bind('getState', getState);
             channel.bind('setState', setState);
+            channel.bind('reset', resetQuiz);
         }
+        
+        // Listen for messages from parent (Check button)
+        window.addEventListener('message', function(event) {
+            console.log('🔄 Received message:', event.data);
+            
+            // Handle JSChannel messages (from EdX)
+            if (event.data && event.data.method === 'JSInput::getGrade') {
+                console.log('🔄 Processing JSChannel getGrade - showing answers');
+                getGrade();
+                return;
+            }
+            
+            // Process postMessage from parent window or problem.html
+            if (event.source !== window.parent && event.source !== window) {
+                return;
+            }
+            
+            console.log('🔄 Received postMessage from parent:', event.data);
+            console.log('🔄 Message type:', event.data?.type);
+            
+            if (event.data && event.data.type === 'problem.check') {
+                console.log('🔄 Processing problem.check - resetting quiz');
+                // Reset quiz state
+                resetQuiz();
+            }
+            
+            if (event.data && event.data.type === 'problem.submit') {
+                console.log('🔄 Processing problem.submit - action:', event.data.action);
+                
+                if (event.data.action === 'check') {
+                    console.log('🔄 Processing problem.submit with action=check - showing answers');
+                    // Trigger quiz submission when Check button is clicked
+                    getGrade();
+                } else if (event.data.action === 'reset') {
+                    console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
+                    // Reset quiz when reset action is received
+                    resetQuiz();
+                }
+            }
+            
+            // Legacy support for simple reset message
+            if (event.data && event.data.type === 'reset') {
+                console.log('🔄 Received reset message from parent window');
+                resetQuiz();
+            }
+        });
     </script>
 </body>
 </html>

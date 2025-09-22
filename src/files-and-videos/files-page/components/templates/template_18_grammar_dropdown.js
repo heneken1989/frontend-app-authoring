@@ -244,11 +244,42 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         .instructions:before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #0075b4; }
         .select-container { margin: 0; display: flex; flex-direction: column; gap: 8px; padding: 0; background: white; }
         .select-answer-header { font-size: 1rem; color: #333; margin: 0; font-weight: bold; }
-        .answer-select { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 0.9rem; font-weight: 400; line-height: 1.3; text-align: left; width: auto; min-width: 60px; border: 1px solid #666; border-radius: 4px; background-color: white; color: #333; cursor: pointer; display: inline-block; padding: 2px 4px; }
-        .answer-select:invalid { color: transparent; }
-        .answer-select option:first-child { color: transparent; }
-        .answer-select:focus { outline: none; border-color: #0075b4; }
-        .answer-select option { padding: 4px; font-size: 0.85rem; }
+        .answer-select { 
+            font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            font-size: 0.9rem; 
+            font-weight: 400; 
+            line-height: 1.3; 
+            text-align: left; 
+            width: auto; 
+            min-width: 60px; 
+            border: 1px solid #666; 
+            border-radius: 4px; 
+            background-color: white; 
+            color: #333; 
+            cursor: pointer; 
+            display: inline-block; 
+            padding: 4px 8px; 
+            transition: all 0.3s ease;
+        }
+        .answer-select:hover {
+            background-color: #0075b4;
+            border-color: #0075b4;
+            color: white;
+        }
+        .answer-select:invalid { color: #999; }
+        .answer-select option:first-child { color: #999; }
+        .answer-select:focus { 
+            outline: none; 
+            border-color: #0075b4; 
+            background-color: #0075b4;
+            color: white;
+        }
+        .answer-select option { 
+            padding: 4px; 
+            font-size: 0.85rem; 
+            color: #333 !important; 
+            background-color: white !important;
+        }
         .answer-select.correct { border-color: #4caf50; background-color: #4caf50; color: #000; font-weight: bold; }
         .answer-select.incorrect { border-color: #f44336; background-color: #f44336; color: #fff; font-weight: bold; }
         .correct-answer { color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #4caf50; display: inline-block; margin: 2px; }

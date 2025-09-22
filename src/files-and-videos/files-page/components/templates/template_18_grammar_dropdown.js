@@ -1,73 +1,231 @@
-export const getGrammarDropdownTemplate = (questionText, optionsForBlanks, audioFile, startTime = 0, endTime = 0, instructions = '正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '') => {
+// Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+function convertFurigana(text) {
+    // First convert Japanese parentheses: 毎日（まいにち） -> <ruby>毎日<rt>まいにち</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)（([^）]+)）/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    });
+    // Then convert regular parentheses: 車(くるま) -> <ruby>車<rt>くるま</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)\(([^)]+)\)/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    });
+    return text;
+}
+
+// Browser compatibility check function
+function isBrowserSupported() {
+    try {
+        // Check for basic ES5 support
+        if (typeof Array.prototype.map === 'undefined') return false;
+        if (typeof Array.prototype.filter === 'undefined') return false;
+        if (typeof Array.prototype.forEach === 'undefined') return false;
+        
+        // Check for DOM support
+        if (!document.createElement) return false;
+        if (!document.getElementById) return false;
+        
+        // Check for classList support (IE9+)
+        var testDiv = document.createElement('div');
+        if (!('classList' in testDiv)) return false;
+        
+        // Check for addEventListener support (IE9+)
+        if (!testDiv.addEventListener) return false;
+        
+        // Check for querySelector support (IE8+)
+        if (!document.querySelector) return false;
+        
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// HTML escape function for older browsers
+function escapeHtml(text) {
+    if (typeof text !== 'string') return '';
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Polyfill for Array.filter for very old browsers
+if (!Array.prototype.filter) {
+    Array.prototype.filter = function(fun) {
+        var len = this.length;
+        var res = [];
+        var thisp = arguments[1];
+        for (var i = 0; i < len; i++) {
+            if (i in this) {
+                var val = this[i];
+                if (fun.call(thisp, val, i, this)) {
+                    res.push(val);
+                }
+            }
+        }
+        return res;
+    };
+}
+
+// Polyfill for Array.map for very old browsers
+if (!Array.prototype.map) {
+    Array.prototype.map = function(fun) {
+        var len = this.length;
+        var res = new Array(len);
+        var thisp = arguments[1];
+        for (var i = 0; i < len; i++) {
+            if (i in this) {
+                res[i] = fun.call(thisp, this[i], i, this);
+            }
+        }
+        return res;
+    };
+}
+
+export const getGrammarDropdownTemplate = function(questionText, optionsForBlanks, audioFile, startTime, endTime, instructions, scriptText, imageFile, answerContent) {
+    // Set default values for older browsers
+    startTime = startTime || 0;
+    endTime = endTime || 0;
+    instructions = instructions || '正しい答えを選んでください。';
+    scriptText = scriptText || '';
+    imageFile = imageFile || '';
+    answerContent = answerContent || '';
+    
+    // Browser compatibility check
+    if (!isBrowserSupported()) {
+        console.error('Browser không được hỗ trợ. Vui lòng cập nhật trình duyệt.');
+        return '<div style="color: red; padding: 20px; text-align: center;">Browser không được hỗ trợ. Vui lòng cập nhật trình duyệt lên phiên bản mới hơn.</div>';
+    }
+    
     // Parse the options for each blank
-    let blanksOptionsArray = [];
+    var blanksOptionsArray = [];
     if (optionsForBlanks && optionsForBlanks.trim()) {
         // If there's no semicolon, use first N words as correct answers in order, rest as wrong options
-        if (!optionsForBlanks.includes(';')) {
-            const allOptions = optionsForBlanks.split(',').map(o => o.trim()).filter(Boolean);
+        if (optionsForBlanks.indexOf(';') === -1) {
+            var allOptions = optionsForBlanks.split(',');
+            for (var i = 0; i < allOptions.length; i++) {
+                allOptions[i] = allOptions[i].trim();
+            }
+            allOptions = allOptions.filter(function(opt) { return opt; });
+            
             // Count number of blanks in answerContent
-            const blankCount = (answerContent.match(/（ー）/g) || []).length;
+            var blankMatches = answerContent.match(/（ー）/g);
+            var blankCount = blankMatches ? blankMatches.length : 0;
             
             // Take first N words as correct answers (N = number of blanks)
-            const correctAnswers = allOptions.slice(0, blankCount);
+            var correctAnswers = allOptions.slice(0, blankCount);
             // All words can be options (including correct answers)
             // For each blank, create options array with its correct answer first
-            blanksOptionsArray = correctAnswers.map((correctAnswer, index) => {
+            blanksOptionsArray = [];
+            for (var j = 0; j < correctAnswers.length; j++) {
+                var correctAnswer = correctAnswers[j];
                 // Get all options except the current correct answer
-                const otherOptions = allOptions.filter(opt => opt !== correctAnswer);
+                var otherOptions = [];
+                for (var k = 0; k < allOptions.length; k++) {
+                    if (allOptions[k] !== correctAnswer) {
+                        otherOptions.push(allOptions[k]);
+                    }
+                }
                 // Put correct answer first, followed by all other options
-                return [correctAnswer, ...otherOptions];
-            });
+                var optionsForThisBlank = [correctAnswer];
+                for (var l = 0; l < otherOptions.length; l++) {
+                    optionsForThisBlank.push(otherOptions[l]);
+                }
+                blanksOptionsArray.push(optionsForThisBlank);
+            }
         } else {
             // Original behavior: split by semicolon for different options per blank
-            blanksOptionsArray = optionsForBlanks.split(';').map(opt =>
-                opt.split(',').map(o => o.trim()).filter(Boolean)
-            );
+            var semicolonSplit = optionsForBlanks.split(';');
+            blanksOptionsArray = [];
+            for (var m = 0; m < semicolonSplit.length; m++) {
+                var commaSplit = semicolonSplit[m].split(',');
+                var trimmedOptions = [];
+                for (var n = 0; n < commaSplit.length; n++) {
+                    var trimmed = commaSplit[n].trim();
+                    if (trimmed) {
+                        trimmedOptions.push(trimmed);
+                    }
+                }
+                blanksOptionsArray.push(trimmedOptions);
+            }
         }
     }
 
     // Process answer content to replace placeholders with dropdowns
-    let answersList = '';
-    let answerDropdownIndex = 0;
+    var answersList = '';
+    var answerDropdownIndex = 0;
     
     if (answerContent && answerContent.trim()) {
-        const answerLines = answerContent.split('\n').map(line => line.trim()).filter(line => line);
-        const processedAnswerLines = answerLines.map((line, lineIndex) => {
-            let processedLine = line;
+        var answerLines = answerContent.split('\n');
+        for (var i = 0; i < answerLines.length; i++) {
+            answerLines[i] = answerLines[i].trim();
+        }
+        answerLines = answerLines.filter(function(line) { return line; });
+        
+        var processedAnswerLines = [];
+        for (var j = 0; j < answerLines.length; j++) {
+            var line = answerLines[j];
+            var processedLine = line;
             
             // Process all placeholders in this line
-            processedLine = processedLine.replace(/（ー）/g, () => {
+            processedLine = processedLine.replace(/（ー）/g, function() {
                 // Get options for this blank
-                const options = blanksOptionsArray[answerDropdownIndex] || [];
-                const correctAnswer = options[0] || '';
+                var options = blanksOptionsArray[answerDropdownIndex] || [];
+                var correctAnswer = options[0] || '';
                 
                 // Sort options alphabetically while keeping the correct answer reference
-                const sortedOptions = [...options].sort((a, b) => a.localeCompare(b, 'ja'));
+                var sortedOptions = [];
+                for (var k = 0; k < options.length; k++) {
+                    sortedOptions.push(options[k]);
+                }
+                sortedOptions.sort(function(a, b) {
+                    try {
+                        return a.localeCompare(b, 'ja');
+                    } catch (e) {
+                        return a.localeCompare(b);
+                    }
+                });
                 
-                const optionsHtml = sortedOptions.map(option => `<option value="${option}">${option}</option>`).join('');
-                const dropdown = `<select class="answer-select" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}" style="width: auto; min-width: 60px;" required>
-                        <option value="" selected disabled></option>
-                        ${optionsHtml}
-                    </select>`;
+                var optionsHtml = '';
+                for (var l = 0; l < sortedOptions.length; l++) {
+                    var option = sortedOptions[l];
+                    optionsHtml += '<option value="' + escapeHtml(option) + '">' + escapeHtml(option) + '</option>';
+                }
+                var dropdown = '<select class="answer-select" data-blank-number="' + (answerDropdownIndex + 1) + '" data-correct="' + escapeHtml(correctAnswer) + '" style="width: auto; min-width: 60px;" required>' +
+                        '<option value="" selected disabled></option>' +
+                        optionsHtml +
+                    '</select>';
                 answerDropdownIndex++;
                 return dropdown;
             });
             
-            return processedLine;
-        });
-        answersList = processedAnswerLines.map(line => `<div class="answer-item">${line}</div>`).join('\n');
+            processedAnswerLines.push(processedLine);
+        }
+        
+        var answerItems = [];
+        for (var m = 0; m < processedAnswerLines.length; m++) {
+            answerItems.push('<div class="answer-item">' + processedAnswerLines[m] + '</div>');
+        }
+        answersList = answerItems.join('\n');
     }
 
-    // Process script text to highlight quoted text in red
-    const processedScriptText = scriptText.replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
+    // Process script text to highlight quoted text in red and convert furigana
+    var processedScriptText = scriptText
+        .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
+    processedScriptText = convertFurigana(processedScriptText);
+    
+    // Process answers list to convert furigana
+    var processedAnswersList = convertFurigana(answersList);
     
     // Build correct answers array for grading
-    const correctAnswersArray = blanksOptionsArray.map(opts => opts[0] || '');
+    var correctAnswersArray = [];
+    for (var n = 0; n < blanksOptionsArray.length; n++) {
+        var opts = blanksOptionsArray[n];
+        correctAnswersArray.push(opts[0] || '');
+    }
 
-    let template = grammarDropdownTemplate
-        .replace(/{{ANSWERS_LIST}}/g, answersList)
-        .replace('{{INSTRUCTIONS}}', instructions)
-        .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
+    var template = grammarDropdownTemplate
+        .replace(/{{ANSWERS_LIST}}/g, processedAnswersList)
+        .replace('{{INSTRUCTIONS}}', convertFurigana(instructions))
+        .replace('{{SCRIPT_TEXT}}', convertFurigana(processedScriptText || ''))
         .replace('{{CORRECT_ANSWERS}}', JSON.stringify(correctAnswersArray));
 
     return template;
@@ -101,6 +259,13 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         .no-answer { color: #666; border-bottom: 2px solid #666; padding: 0 4px; margin: 0 2px; }
         .answer-item { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin-bottom: 10px; color: #333; }
         .answers-list { padding: 5px; background: white; border-radius: 2px; margin: 5px 0; }
+        /* Furigana (Ruby) styling */
+        ruby { font-size: 0.8em; }
+        rt { font-size: 0.7em; color: #666; }
+        .instructions ruby { font-size: 0.85em; }
+        .instructions rt { font-size: 0.7em; color: #666; }
+        .answers-list ruby { font-size: 0.85em; }
+        .answers-list rt { font-size: 0.7em; color: #666; }
         @media (max-width: 768px) { .container { padding: 15px; gap: 15px; } .content-wrapper { gap: 15px; } }
     </style>
 </head>
@@ -120,23 +285,26 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
     <script>
     (function() {
         var state = { answer: '', score: 0, attempts: 0, showAnswer: false };
-        const correctAnswers = JSON.parse('{{CORRECT_ANSWERS}}');
-        let selectedAnswers = new Array(correctAnswers.length).fill('');
-        let originalDropdowns = []; // Store original dropdowns for restoration
+        var correctAnswers = JSON.parse('{{CORRECT_ANSWERS}}');
+        var selectedAnswers = [];
+        for (var i = 0; i < correctAnswers.length; i++) {
+            selectedAnswers.push('');
+        }
+        var originalDropdowns = []; // Store original dropdowns for restoration
         
         // Configuration for this template
-        const templateConfig = {
+        var templateConfig = {
             showPopup: false,  // This template does not need external popup
             noToggle: true     // This template does not need toggle functionality
         };
         
         // Helper function to get cookies
         function getCookie(name) {
-            let cookieValue = null;
+            var cookieValue = null;
             if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
                     if (cookie.substring(0, name.length + 1) === (name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                         break;
@@ -146,33 +314,37 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             return cookieValue;
         }
         function calculateResults() {
-            const totalQuestions = document.querySelectorAll('.answer-select').length;
-            let correctCount = 0;
-            const answers = {};
-            document.querySelectorAll('.answer-select').forEach((select, index) => {
-                const userAnswer = select.value.trim();
-                const correctAnswer = select.getAttribute('data-correct');
-                selectedAnswers[index] = userAnswer;
-                const isCorrect = correctAnswer === userAnswer;
+            var totalQuestions = document.querySelectorAll('.answer-select').length;
+            var correctCount = 0;
+            var answers = {};
+            var selects = document.querySelectorAll('.answer-select');
+            for (var i = 0; i < selects.length; i++) {
+                var select = selects[i];
+                var userAnswer = select.value.trim();
+                var correctAnswer = select.getAttribute('data-correct');
+                selectedAnswers[i] = userAnswer;
+                var isCorrect = correctAnswer === userAnswer;
                 if (isCorrect) correctCount++;
-                answers[index] = userAnswer;
-            });
-            const rawScore = totalQuestions > 0 ? correctCount / totalQuestions : 0;
-            const message = correctCount === totalQuestions ? '正解です！' : '不正解です。';
+                answers[i] = userAnswer;
+            }
+            var rawScore = totalQuestions > 0 ? correctCount / totalQuestions : 0;
+            var message = correctCount === totalQuestions ? '正解です！' : '不正解です。';
             state.answer = JSON.stringify(answers);
             state.score = rawScore;
             state.attempts += 1;
-            return { rawScore, message, answers, correctCount, totalQuestions };
+            return { rawScore: rawScore, message: message, answers: answers, correctCount: correctCount, totalQuestions: totalQuestions };
         }
         function updateDisplay(result) {
             if (state.showAnswer) {
                 // Replace dropdowns with text display in the answers list
-                document.querySelectorAll('.answer-select').forEach((select, index) => {
-                    const userAnswer = selectedAnswers[index];
-                    const correctAnswer = select.getAttribute('data-correct');
-                    const isCorrect = correctAnswer === userAnswer;
+                var selects = document.querySelectorAll('.answer-select');
+                for (var i = 0; i < selects.length; i++) {
+                    var select = selects[i];
+                    var userAnswer = selectedAnswers[i];
+                    var correctAnswer = select.getAttribute('data-correct');
+                    var isCorrect = correctAnswer === userAnswer;
                     
-                    const replacementSpan = document.createElement('span');
+                    var replacementSpan = document.createElement('span');
                     replacementSpan.className = 'answer-replacement';
                     
                     if (userAnswer) {
@@ -187,23 +359,28 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     
                     // Replace the dropdown with the text display
                     select.parentNode.replaceChild(replacementSpan, select);
-                });
+                }
             }
         }
         // Store original dropdowns immediately when page loads
-        document.querySelectorAll('.answer-select').forEach(select => {
-            originalDropdowns.push(select.cloneNode(true));
-        });
+        var initialSelects = document.querySelectorAll('.answer-select');
+        for (var i = 0; i < initialSelects.length; i++) {
+            originalDropdowns.push(initialSelects[i].cloneNode(true));
+        }
         
-        document.querySelectorAll('.answer-select').forEach((select, index) => {
-            select.addEventListener('change', function() {
-                selectedAnswers[index] = this.value;
-                if (state.showAnswer) {
-                    const result = calculateResults();
-                    updateDisplay(result);
-                }
-            });
-        });
+        var selects = document.querySelectorAll('.answer-select');
+        for (var j = 0; j < selects.length; j++) {
+            var select = selects[j];
+            select.addEventListener('change', function(index) {
+                return function() {
+                    selectedAnswers[index] = this.value;
+                    if (state.showAnswer) {
+                        var result = calculateResults();
+                        updateDisplay(result);
+                    }
+                };
+            }(j));
+        }
         
         // Listen for messages from parent (Check button)
         window.addEventListener('message', function(event) {
@@ -249,16 +426,21 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             console.log('🔄 Starting reset process...');
             
             // Restore original dropdowns
-            document.querySelectorAll('.answer-replacement').forEach((replacement, index) => {
-                if (originalDropdowns[index]) {
-                    const restoredDropdown = originalDropdowns[index].cloneNode(true);
+            var replacements = document.querySelectorAll('.answer-replacement');
+            for (var i = 0; i < replacements.length; i++) {
+                var replacement = replacements[i];
+                if (originalDropdowns[i]) {
+                    var restoredDropdown = originalDropdowns[i].cloneNode(true);
                     restoredDropdown.value = '';
                     replacement.parentNode.replaceChild(restoredDropdown, replacement);
                 }
-            });
+            }
             
             // Clear selected answers
-            selectedAnswers = new Array(correctAnswers.length).fill('');
+            selectedAnswers = [];
+            for (var j = 0; j < correctAnswers.length; j++) {
+                selectedAnswers.push('');
+            }
             
             // Reset state completely
             state.answer = '';
@@ -266,22 +448,26 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             state.showAnswer = false;
             
             // Re-attach event listeners
-            document.querySelectorAll('.answer-select').forEach((select, index) => {
-                select.addEventListener('change', function() {
-                    selectedAnswers[index] = this.value;
-                    if (state.showAnswer) {
-                        const result = calculateResults();
-                        updateDisplay(result);
-                    }
-                });
-            });
+            var newSelects = document.querySelectorAll('.answer-select');
+            for (var k = 0; k < newSelects.length; k++) {
+                var select = newSelects[k];
+                select.addEventListener('change', function(index) {
+                    return function() {
+                        selectedAnswers[index] = this.value;
+                        if (state.showAnswer) {
+                            var result = calculateResults();
+                            updateDisplay(result);
+                        }
+                    };
+                }(k));
+            }
             
             console.log('🔄 Quiz reset completed via problem.check message');
         }
         function getGrade() {
             console.log('🎯 getGrade() called - Processing quiz submission');
             
-            const result = calculateResults();
+            var result = calculateResults();
             console.log('📊 Quiz results:', result);
             
             // Always show answer when submitted
@@ -289,7 +475,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             updateDisplay(result);
             
             // Call completion API (non-blocking)
-            setTimeout(() => {
+            setTimeout(function() {
                 try {
                     updateCompletionStatus(result);
                 } catch (error) {
@@ -299,7 +485,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             
             // Return data to EdX (prevent reload)
             try {
-                const returnValue = {
+                var returnValue = {
                     edxResult: None,
                     edxScore: result.rawScore,
                     edxMessage: result.message
@@ -320,20 +506,36 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             console.log('🚀 Starting completion API call...');
             
             // Get CSRF token
-            let csrfToken = '';
+            var csrfToken = '';
             try {
                 // Try multiple sources for CSRF token
-                const tokenSources = [
-                    () => document.querySelector('[name=csrfmiddlewaretoken]')?.value,
-                    () => window.parent?.document?.querySelector('[name=csrfmiddlewaretoken]')?.value,
-                    () => getCookie('csrftoken'),
-                    () => document.querySelector('meta[name=csrf-token]')?.getAttribute('content'),
-                    () => window.parent?.document?.querySelector('meta[name=csrf-token]')?.getAttribute('content')
+                var tokenSources = [
+                    function() { 
+                        var el = document.querySelector('[name=csrfmiddlewaretoken]');
+                        return el ? el.value : null;
+                    },
+                    function() { 
+                        try {
+                            var el = window.parent.document.querySelector('[name=csrfmiddlewaretoken]');
+                            return el ? el.value : null;
+                        } catch (e) { return null; }
+                    },
+                    function() { return getCookie('csrftoken'); },
+                    function() { 
+                        var el = document.querySelector('meta[name=csrf-token]');
+                        return el ? el.getAttribute('content') : null;
+                    },
+                    function() { 
+                        try {
+                            var el = window.parent.document.querySelector('meta[name=csrf-token]');
+                            return el ? el.getAttribute('content') : null;
+                        } catch (e) { return null; }
+                    }
                 ];
                 
-                for (let getToken of tokenSources) {
+                for (var i = 0; i < tokenSources.length; i++) {
                     try {
-                        const token = getToken();
+                        var token = tokenSources[i]();
                         if (token) {
                             csrfToken = token;
                             console.log('🔑 Found CSRF token:', token.substring(0, 8) + '...');
@@ -354,11 +556,11 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             }
             
             // Get block ID from parent URL
-            let blockId = 'block-v1:Manabi+N51+2026+type@vertical+block@aea91ffdf79346a2b9d03f6c570ad186'; // Your working block
+            var blockId = 'block-v1:Manabi+N51+2026+type@vertical+block@aea91ffdf79346a2b9d03f6c570ad186'; // Your working block
             try {
                 if (window.parent && window.parent.location) {
-                    const parentUrl = window.parent.location.href;
-                    const blockMatch = parentUrl.match(/block-v1:([^\/\?\&]+)/);
+                    var parentUrl = window.parent.location.href;
+                    var blockMatch = parentUrl.match(/block-v1:([^\/\?\&]+)/);
                     if (blockMatch) {
                         blockId = blockMatch[0];
                         console.log('🎯 Found block ID from parent:', blockId);
@@ -370,7 +572,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             
             // ✅ DETERMINE COMPLETION STATUS
             // Always mark as complete when user submits (regardless of score)
-            const completionStatus = 1.0;  // Always complete when submitted
+            var completionStatus = 1.0;  // Always complete when submitted
             
             console.log('📡 Calling completion API with:', {
                 block_key: blockId,
@@ -380,61 +582,66 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             });
             
             // ✅ CALL YOUR WORKING COMPLETION API with dynamic LMS URL
-            const lmsBaseUrl = (window.location.hostname === 'localhost' || window.location.hostname.includes('local.openedx.io')) 
+            var lmsBaseUrl = (window.location.hostname === 'localhost' || window.location.hostname.indexOf('local.openedx.io') !== -1) 
                 ? 'http://local.openedx.io:8000' 
                 : 'https://lms.nihongodrill.com';
-            const apiUrl = lmsBaseUrl + '/courseware/mark_block_completion/';
+            var apiUrl = lmsBaseUrl + '/courseware/mark_block_completion/';
             console.log('🔗 Quiz API URL: ' + apiUrl);
             
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify({
-                    'block_key': blockId,
-                    'completion': completionStatus  // Always 0.0 or 1.0, not raw score
-                })
-            })
-            .then(response => {
-                console.log('📈 API Response status:', response.status);
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('HTTP ' + response.status);
+            // Use XMLHttpRequest for older browsers instead of fetch
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', apiUrl, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    console.log('📈 API Response status:', xhr.status);
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            console.log('✅ COMPLETION API SUCCESS:', data);
+                            if (data.saved_to_blockcompletion) {
+                                console.log('🎉 Progress page will update with new completion!');
+                            } else {
+                                console.log('⚠️ Completion saved but may not affect progress page');
+                            }
+                        } catch (e) {
+                            console.log('❌ Error parsing API response:', e.message);
+                        }
+                    } else {
+                        console.log('❌ Completion API Error: HTTP ' + xhr.status);
+                    }
                 }
-            })
-            .then(data => {
-                console.log('✅ COMPLETION API SUCCESS:', data);
-                if (data.saved_to_blockcompletion) {
-                    console.log('🎉 Progress page will update with new completion!');
-                } else {
-                    console.log('⚠️ Completion saved but may not affect progress page');
-                }
-            })
-            .catch(error => {
-                console.log('❌ Completion API Error:', error.message);
-            });
+            };
+            
+            xhr.send(JSON.stringify({
+                'block_key': blockId,
+                'completion': completionStatus  // Always 0.0 or 1.0, not raw score
+            }));
         }
         function getState() {
             return JSON.stringify({ answer: state.answer, attempts: state.attempts, score: state.score, showAnswer: state.showAnswer });
         }
         function setState(stateStr) {
             try {
-                const newState = JSON.parse(stateStr);
+                var newState = JSON.parse(stateStr);
                 state = { answer: newState.answer || '', attempts: newState.attempts || 0, score: newState.score || 0, showAnswer: newState.showAnswer || false };
                 if (state.answer) {
                     try {
-                        const answers = JSON.parse(state.answer);
-                        Object.entries(answers).forEach(([index, value]) => {
-                            selectedAnswers[index] = value;
-                            const select = document.querySelectorAll('.answer-select')[index];
-                            if (select) {
-                                select.value = value;
+                        var answers = JSON.parse(state.answer);
+                        for (var key in answers) {
+                            if (answers.hasOwnProperty(key)) {
+                                var index = parseInt(key);
+                                var value = answers[key];
+                                selectedAnswers[index] = value;
+                                var selects = document.querySelectorAll('.answer-select');
+                                if (selects[index]) {
+                                    selects[index].value = value;
+                                }
                             }
-                        });
-                        const result = calculateResults();
+                        }
+                        var result = calculateResults();
                         updateDisplay(result);
                     } catch (e) { console.error('Error parsing answers:', e); }
                 }

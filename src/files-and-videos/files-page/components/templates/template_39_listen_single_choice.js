@@ -1,3 +1,8 @@
+// Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+function convertFurigana(text) {
+    return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+}
+
 export const listenSingleChoiceTemplate = `<!DOCTYPE html>
 <html>
 <head>
@@ -1087,11 +1092,13 @@ export const getListenSingleChoiceTemplate = (questionText, optionsString, audio
     
     // Generate options HTML - directly use the options without adding empty choice
     const optionsHtml = sortedOptions.map(option => 
-        '<button type="button" class="option-button" data-value="' + option + '">' + option + '</button>'
+        '<button type="button" class="option-button" data-value="' + option + '">' + convertFurigana(option) + '</button>'
     ).join('');
     
-    // Process script text to highlight quoted text in red
-    const processedScriptText = scriptText.replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
+    // Process script text to highlight quoted text in red and convert furigana
+    const processedScriptText = scriptText
+        .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>')
+        .replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
     
     // Add time display to the audio player
     const timeDisplay = `
@@ -1108,13 +1115,13 @@ export const getListenSingleChoiceTemplate = (questionText, optionsString, audio
     }
     
     return listenSingleChoiceTemplate
-        .replace('{{QUESTION_TEXT}}', questionText)
+        .replace('{{QUESTION_TEXT}}', convertFurigana(questionText))
         .replace('{{OPTIONS}}', optionsHtml)
         .replace('{{CORRECT_ANSWER}}', correctAnswer)
         .replace('{{AUDIO_FILE}}', audioFile || '')
         .replace('{{START_TIME}}', startTime || 0)
         .replace('{{END_TIME}}', endTime || 0)
-        .replace('{{INSTRUCTIONS}}', instructions)
+        .replace('{{INSTRUCTIONS}}', convertFurigana(instructions))
         .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
         .replace('{{#if IMAGE_FILE}}', imageFile ? '' : '<!--')
         .replace('{{/if}}', imageFile ? '' : '-->')

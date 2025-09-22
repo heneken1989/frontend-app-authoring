@@ -1,5 +1,10 @@
 import { TEMPLATE_IDS } from './templateUtils';
 
+// Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+function convertFurigana(text) {
+    return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+}
+
 // Template ID: TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT
 export const getGrammarSentenceRearrangementTemplate = (words) => {
     const blanks = words.map((_, index) => 
@@ -14,13 +19,13 @@ export const getGrammarSentenceRearrangementTemplate = (words) => {
     }
 
     const wordBankHTML = shuffledWords.map(word => 
-        `<div class="draggable-word" draggable="true">${word}</div>`
+        `<div class="draggable-word" draggable="true">${convertFurigana(word)}</div>`
     ).join('');
 
     return grammarSentenceRearrangementTemplate
         .replace('{{PARAGRAPH_TEXT}}', blanks)
         .replace('{{WORD_BANK}}', wordBankHTML)
-        .replace('{{CORRECT_SENTENCE}}', words.join(' '));
+        .replace('{{CORRECT_SENTENCE}}', convertFurigana(words.join(' ')));
 };
 
 const processSentenceRearrangement = (words) => {
@@ -34,7 +39,7 @@ const processSentenceRearrangement = (words) => {
 
     // Create word bank HTML with shuffled words
     const wordBankHTML = shuffledWords.map(word => 
-        `<div class="draggable-word" draggable="true">${word}</div>`
+        `<div class="draggable-word" draggable="true">${convertFurigana(word)}</div>`
     ).join('');
 
     return {

@@ -413,7 +413,7 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
             // Remove all feedback zones
             const feedbackZones = document.querySelectorAll('.feedback-zone');
             feedbackZones.forEach(zone => {
-                zone.remove();
+                zone.remove(); 
             });
 
             // Reset word bank

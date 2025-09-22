@@ -237,6 +237,23 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
     <title>Grammar Dropdown Quiz</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
+        /* CSS Reset for cross-browser compatibility */
+        * { box-sizing: border-box; }
+        select, option { 
+            margin: 0; 
+            padding: 0; 
+            border: 0; 
+            font-size: 100%; 
+            font: inherit; 
+            vertical-align: baseline; 
+            background: transparent; 
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            -ms-appearance: none;
+        }
+        select:focus { outline: none; }
+        
         body { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin: 0; padding: 0; color: #414141; height: auto; position: relative; overflow-y: auto; background-color: white; max-height: 700px; }
         .container { position: relative; height: auto; display: flex; flex-direction: column; gap: 20px; background-color: white; max-height: 700px; overflow-y: auto; padding: 20px; }
         .content-wrapper { background: white; padding: 0; display: flex; flex-direction: column; gap: 20px; }
@@ -245,21 +262,29 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         .select-container { margin: 0; display: flex; flex-direction: column; gap: 8px; padding: 0; background: white; }
         .select-answer-header { font-size: 1rem; color: #333; margin: 0; font-weight: bold; }
         .answer-select { 
-            font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; 
-            font-size: 0.9rem; 
-            font-weight: 400; 
-            line-height: 1.3; 
-            text-align: left; 
-            width: auto; 
-            min-width: 60px; 
-            border: 1px solid #666; 
-            border-radius: 4px; 
-            background-color: white; 
-            color: #333; 
-            cursor: pointer; 
-            display: inline-block; 
-            padding: 4px 8px; 
-            transition: all 0.3s ease;
+            font-family: Roboto, 'Helvetica Neue', Arial, sans-serif !important; 
+            font-size: 0.9rem !important; 
+            font-weight: 400 !important; 
+            line-height: 1.3 !important; 
+            text-align: left !important; 
+            width: auto !important; 
+            min-width: 60px !important; 
+            border: 1px solid #666 !important; 
+            border-radius: 4px !important; 
+            background-color: white !important; 
+            background-image: none !important;
+            color: #333 !important; 
+            cursor: pointer !important; 
+            display: inline-block !important; 
+            padding: 4px 8px !important; 
+            transition: all 0.3s ease !important;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            -ms-appearance: none !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            outline: none !important;
         }
         .answer-select:hover {
             background-color: #0075b4;
@@ -275,10 +300,22 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             color: white;
         }
         .answer-select option { 
-            padding: 4px; 
+            padding: 8px 12px; 
             font-size: 0.85rem; 
-            color: #333 !important; 
-            background-color: white !important;
+            color: white !important; 
+            background-color: #666 !important;
+        }
+        .answer-select option:hover {
+            background-color: #0075b4 !important;
+            color: white !important;
+        }
+        .answer-select option:checked {
+            background-color: #0075b4 !important;
+            color: white !important;
+        }
+        .answer-select option:first-child {
+            color: #ccc !important;
+            background-color: #666 !important;
         }
         .answer-select.correct { border-color: #4caf50; background-color: #4caf50; color: #000; font-weight: bold; }
         .answer-select.incorrect { border-color: #f44336; background-color: #f44336; color: #fff; font-weight: bold; }

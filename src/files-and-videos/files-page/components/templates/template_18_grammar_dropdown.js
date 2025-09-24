@@ -187,12 +187,13 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
                 var optionsHtml = '';
                 for (var l = 0; l < sortedOptions.length; l++) {
                     var option = sortedOptions[l];
-                    optionsHtml += '<option value="' + escapeHtml(option) + '">' + escapeHtml(option) + '</option>';
+                    var processedOption = convertFurigana(escapeHtml(option));
+                    optionsHtml += '<div class="dropdown-option" data-value="' + escapeHtml(option) + '">' + processedOption + '</div>';
                 }
-                var dropdown = '<select class="answer-select" data-blank-number="' + (answerDropdownIndex + 1) + '" data-correct="' + escapeHtml(correctAnswer) + '" style="width: auto; min-width: 60px;" required>' +
-                        '<option value="" selected disabled></option>' +
-                        optionsHtml +
-                    '</select>';
+                var dropdown = '<div class="custom-dropdown" data-blank-number="' + (answerDropdownIndex + 1) + '" data-correct="' + escapeHtml(correctAnswer) + '">' +
+                        '<div class="dropdown-button" data-value=""></div>' +
+                        '<div class="dropdown-options">' + optionsHtml + '</div>' +
+                    '</div>';
                 answerDropdownIndex++;
                 return dropdown;
             });
@@ -235,6 +236,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
 <html>
 <head>
     <title>Grammar Dropdown Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kyokashotai&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         /* CSS Reset for cross-browser compatibility */
@@ -254,37 +256,93 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         }
         select:focus { outline: none; }
         
-        body { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin: 0; padding: 0; color: #414141; height: auto; position: relative; overflow-y: auto; background-color: white; max-height: 700px; }
-        .container { position: relative; height: auto; display: flex; flex-direction: column; gap: 20px; background-color: white; max-height: 700px; overflow-y: auto; padding: 20px; }
+        body { font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin: 0; padding: 0; color: #414141; height: auto; position: relative; background-color: white; }
+        .container { position: relative; height: auto; display: flex; flex-direction: column; gap: 20px; background-color: white; padding: 20px; }
         .content-wrapper { background: white; padding: 0; display: flex; flex-direction: column; gap: 20px; }
-        .instructions { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; background-color: white; color: #333; font-style: italic; margin: 0; position: relative; padding-left: 20px; }
+        .instructions { font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; background-color: white; color: #333; font-style: italic; margin: 0; position: relative; padding-left: 20px; }
         .instructions:before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #0075b4; }
         .select-container { margin: 0; display: flex; flex-direction: column; gap: 8px; padding: 0; background: white; }
         .select-answer-header { font-size: 1rem; color: #333; margin: 0; font-weight: bold; }
-        .answer-select { 
-            font-family: Roboto, 'Helvetica Neue', Arial, sans-serif !important; 
-            font-size: 0.9rem !important; 
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+            min-width: 120px;
+            width: 200px;
+            z-index: 1;
+            margin: 0 10px;
+        }
+        .dropdown-button {
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
+            font-size: 1rem !important; 
             font-weight: 400 !important; 
-            line-height: 1.3 !important; 
-            text-align: left !important; 
-            width: auto !important; 
-            min-width: 60px !important; 
+            line-height: 1.5 !important; 
+            text-align: center !important; 
+            width: 100% !important; 
+            min-width: 120px !important; 
+            min-height: 40px !important;
             border: 1px solid #666 !important; 
             border-radius: 4px !important; 
             background-color: white !important; 
-            background-image: none !important;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 12px center !important;
+            background-size: 18px !important;
             color: #333 !important; 
             cursor: pointer !important; 
-            display: inline-block !important; 
-            padding: 4px 8px !important; 
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 8px 40px 8px 12px !important; 
             transition: all 0.3s ease !important;
-            appearance: none !important;
-            -webkit-appearance: none !important;
-            -moz-appearance: none !important;
-            -ms-appearance: none !important;
             box-sizing: border-box !important;
             margin: 0 !important;
             outline: none !important;
+        }
+        .dropdown-button:hover {
+            background-color: #0075b4;
+            border-color: #0075b4;
+            color: white;
+        }
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #666;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .dropdown-options.show {
+            display: block;
+        }
+        .dropdown-option {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            color: #333;
+            font-size: 1rem;
+            line-height: 1.5;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+        .dropdown-option:hover {
+            background-color: #f5f5f5;
+        }
+        .dropdown-option:last-child {
+            border-bottom: none;
+        }
+        /* Furigana styling for dropdown */
+        .dropdown-button ruby, .dropdown-option ruby {
+            font-size: 0.8em;
+        }
+        .dropdown-button rt, .dropdown-option rt {
+            font-size: 0.7em;
+            color: #666;
         }
         .answer-select:hover {
             background-color: #0075b4;
@@ -319,13 +377,27 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         }
         .answer-select.correct { border-color: #4caf50; background-color: #4caf50; color: #000; font-weight: bold; }
         .answer-select.incorrect { border-color: #f44336; background-color: #f44336; color: #fff; font-weight: bold; }
-        .correct-answer { color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #4caf50; display: inline-block; margin: 2px; }
+        .correct-answer { color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #4caf50; display: inline-block; margin: 2px; }
+        .correct-answer rt { color: #fff !important; }
         .wrong-answer { color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #f44336; display: inline-block; margin: 2px; }
+        .wrong-answer rt { color: #fff !important; }
         .answer-comparison { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
         .answer-replacement { display: inline-block; }
         .script-highlight { color: #b40000; font-weight: normal; }
         .no-answer { color: #666; border-bottom: 2px solid #666; padding: 0 4px; margin: 0 2px; }
-        .answer-item { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin-bottom: 10px; color: #333; }
+        .answer-item { 
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            font-size: 1rem; 
+            font-weight: 400; 
+            line-height: 1.5; 
+            text-align: left; 
+            margin-bottom: 10px; 
+            color: #333; 
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
         .answers-list { padding: 5px; background: white; border-radius: 2px; margin: 5px 0; }
         /* Furigana (Ruby) styling */
         ruby { font-size: 0.8em; }
@@ -382,14 +454,15 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             return cookieValue;
         }
         function calculateResults() {
-            var totalQuestions = document.querySelectorAll('.answer-select').length;
+            var totalQuestions = document.querySelectorAll('.custom-dropdown').length;
             var correctCount = 0;
             var answers = {};
-            var selects = document.querySelectorAll('.answer-select');
-            for (var i = 0; i < selects.length; i++) {
-                var select = selects[i];
-                var userAnswer = select.value.trim();
-                var correctAnswer = select.getAttribute('data-correct');
+            var dropdowns = document.querySelectorAll('.custom-dropdown');
+            for (var i = 0; i < dropdowns.length; i++) {
+                var dropdown = dropdowns[i];
+                var button = dropdown.querySelector('.dropdown-button');
+                var userAnswer = button.getAttribute('data-value') || '';
+                var correctAnswer = dropdown.getAttribute('data-correct');
                 selectedAnswers[i] = userAnswer;
                 var isCorrect = correctAnswer === userAnswer;
                 if (isCorrect) correctCount++;
@@ -405,11 +478,11 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         function updateDisplay(result) {
             if (state.showAnswer) {
                 // Replace dropdowns with text display in the answers list
-                var selects = document.querySelectorAll('.answer-select');
-                for (var i = 0; i < selects.length; i++) {
-                    var select = selects[i];
+                var dropdowns = document.querySelectorAll('.custom-dropdown');
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var dropdown = dropdowns[i];
                     var userAnswer = selectedAnswers[i];
-                    var correctAnswer = select.getAttribute('data-correct');
+                    var correctAnswer = dropdown.getAttribute('data-correct');
                     var isCorrect = correctAnswer === userAnswer;
                     
                     var replacementSpan = document.createElement('span');
@@ -426,29 +499,72 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     }
                     
                     // Replace the dropdown with the text display
-                    select.parentNode.replaceChild(replacementSpan, select);
+                    dropdown.parentNode.replaceChild(replacementSpan, dropdown);
                 }
             }
         }
         // Store original dropdowns immediately when page loads
-        var initialSelects = document.querySelectorAll('.answer-select');
-        for (var i = 0; i < initialSelects.length; i++) {
-            originalDropdowns.push(initialSelects[i].cloneNode(true));
+        var initialDropdowns = document.querySelectorAll('.custom-dropdown');
+        for (var i = 0; i < initialDropdowns.length; i++) {
+            originalDropdowns.push(initialDropdowns[i].cloneNode(true));
         }
         
-        var selects = document.querySelectorAll('.answer-select');
-        for (var j = 0; j < selects.length; j++) {
-            var select = selects[j];
-            select.addEventListener('change', function(index) {
-                return function() {
-                    selectedAnswers[index] = this.value;
+        // Handle custom dropdowns
+        var dropdowns = document.querySelectorAll('.custom-dropdown');
+        for (var j = 0; j < dropdowns.length; j++) {
+            var dropdown = dropdowns[j];
+            var button = dropdown.querySelector('.dropdown-button');
+            var options = dropdown.querySelectorAll('.dropdown-option');
+            var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
+            
+            // Toggle dropdown
+            button.addEventListener('click', function() {
+                var isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show');
+                // Close all other dropdowns
+                document.querySelectorAll('.dropdown-options').forEach(function(opt) {
+                    opt.classList.remove('show');
+                });
+                // Toggle current dropdown
+                if (!isOpen) {
+                    this.parentNode.querySelector('.dropdown-options').classList.add('show');
+                }
+            });
+            
+            // Handle option selection
+            for (var k = 0; k < options.length; k++) {
+                options[k].addEventListener('click', function() {
+                    var selectedValue = this.getAttribute('data-value');
+                    var selectedText = this.innerHTML;
+                    var dropdown = this.parentNode.parentNode;
+                    var button = dropdown.querySelector('.dropdown-button');
+                    
+                    // Update button text
+                    button.innerHTML = selectedText;
+                    button.setAttribute('data-value', selectedValue);
+                    
+                    // Close dropdown
+                    this.parentNode.classList.remove('show');
+                    
+                    // Update selected answers
+                    var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
+                    selectedAnswers[blankNumber] = selectedValue;
+                    
                     if (state.showAnswer) {
                         var result = calculateResults();
                         updateDisplay(result);
                     }
-                };
-            }(j));
+                });
+            }
         }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-dropdown')) {
+                document.querySelectorAll('.dropdown-options').forEach(function(opt) {
+                    opt.classList.remove('show');
+                });
+            }
+        });
         
         // Listen for messages from parent (Check button)
         window.addEventListener('message', function(event) {
@@ -499,7 +615,11 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                 var replacement = replacements[i];
                 if (originalDropdowns[i]) {
                     var restoredDropdown = originalDropdowns[i].cloneNode(true);
-                    restoredDropdown.value = '';
+                    var button = restoredDropdown.querySelector('.dropdown-button');
+                    if (button) {
+                        button.setAttribute('data-value', '');
+                        button.innerHTML = '';
+                    }
                     replacement.parentNode.replaceChild(restoredDropdown, replacement);
                 }
             }
@@ -515,19 +635,52 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             state.score = 0;
             state.showAnswer = false;
             
-            // Re-attach event listeners
-            var newSelects = document.querySelectorAll('.answer-select');
-            for (var k = 0; k < newSelects.length; k++) {
-                var select = newSelects[k];
-                select.addEventListener('change', function(index) {
-                    return function() {
-                        selectedAnswers[index] = this.value;
+            // Re-attach event listeners for custom dropdowns
+            var newDropdowns = document.querySelectorAll('.custom-dropdown');
+            for (var k = 0; k < newDropdowns.length; k++) {
+                var dropdown = newDropdowns[k];
+                var button = dropdown.querySelector('.dropdown-button');
+                var options = dropdown.querySelectorAll('.dropdown-option');
+                var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
+                
+                // Toggle dropdown
+                button.addEventListener('click', function() {
+                    var isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show');
+                    // Close all other dropdowns
+                    document.querySelectorAll('.dropdown-options').forEach(function(opt) {
+                        opt.classList.remove('show');
+                    });
+                    // Toggle current dropdown
+                    if (!isOpen) {
+                        this.parentNode.querySelector('.dropdown-options').classList.add('show');
+                    }
+                });
+                
+                // Handle option selection
+                for (var l = 0; l < options.length; l++) {
+                    options[l].addEventListener('click', function() {
+                        var selectedValue = this.getAttribute('data-value');
+                        var selectedText = this.innerHTML;
+                        var dropdown = this.parentNode.parentNode;
+                        var button = dropdown.querySelector('.dropdown-button');
+                        
+                        // Update button text
+                        button.innerHTML = selectedText;
+                        button.setAttribute('data-value', selectedValue);
+                        
+                        // Close dropdown
+                        this.parentNode.classList.remove('show');
+                        
+                        // Update selected answers
+                        var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
+                        selectedAnswers[blankNumber] = selectedValue;
+                        
                         if (state.showAnswer) {
                             var result = calculateResults();
                             updateDisplay(result);
                         }
-                    };
-                }(k));
+                    });
+                }
             }
             
             console.log('🔄 Quiz reset completed via problem.check message');

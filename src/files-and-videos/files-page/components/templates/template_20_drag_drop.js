@@ -1,14 +1,30 @@
 import { TEMPLATE_IDS } from './templateUtils';
 
-// Template ID: TEMPLATE_IDS.DRAG_DROP
-export const dragDropQuizTemplate = `<!DOCTYPE html>
+// Function to generate drag drop quiz template
+export const getDragDropQuizTemplate = function(paragraphText, wordBank, instructions = '単語を正しい場所にドラッグしてください。') {
+    const result = dragDropQuizTemplateString
+        .replace('{{PARAGRAPH_TEXT}}', paragraphText)
+        .replace('{{WORD_BANK}}', wordBank)
+        .replace('{{INSTRUCTIONS}}', instructions);
+    
+    return result;
+};
+
+// Template string with placeholders for furigana processing
+const dragDropQuizTemplateString = `<!DOCTYPE html>
 <html>
 <head>
     <title>Drag and Drop Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kyokashotai&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"></script>
     <style>
+        /* CSS Reset for cross-browser compatibility */
+        * { 
+            box-sizing: border-box; 
+        }
+        
         body {
-            font-family: 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             line-height: 1.8;
@@ -61,29 +77,47 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
         }
         .blank {
             display: inline-block;
-            min-width: 120px;
-            height: 45px;
-            border: 2px dashed #0075b4;
+            min-width: 200px;
+            height: 40px;
+            border: 1px solid #ccc;
             border-radius: 4px;
             margin: 0 0.5rem;
             vertical-align: middle;
             background-color: white;
             text-align: center;
-            line-height: 45px;
-            font-size: 0.8rem;
+            line-height: 40px;
+            font-size: 0.9rem;
+            position: relative;
         }
         .blank.dragover {
-            background-color: #e6f3f8;
+            background-color: #f0f8ff;
+            border-color: #0075b4;
             border-style: solid;
         }
         .blank.filled {
             border-style: solid;
-            border-color: #2e7d32;
-            background-color: #ecf3ec;
+            border-color: #ccc;
+            background-color: white;
+            color: #000;
         }
         .blank.incorrect {
-            border-color: #b40000;
-            background-color: #f9ecec;
+            border-color: #b40000 !important;
+            background-color: #f9ecec !important;
+        }
+        
+        /* Universal incorrect styling for cross-browser compatibility */
+        .incorrect, 
+        .quiz-word.incorrect,
+        .feedback-replacement .quiz-word.incorrect,
+        .blank.show-feedback .quiz-word.incorrect {
+            background: #b40000 !important;
+            background-color: #b40000 !important;
+            color: #fff !important;
+            border: none !important;
+            outline: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
         }
         .blank.show-feedback {
             position: relative;
@@ -112,8 +146,14 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             color: #fff;
         }
         .blank.show-feedback .quiz-word.incorrect {
-            background: #b40000;
-            color: #fff;
+            background: #b40000 !important;
+            background-color: #b40000 !important;
+            color: #fff !important;
+            border: none !important;
+            outline: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
         }
         .feedback-replacement {
             display: inline-block;
@@ -141,8 +181,14 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             color: #fff;
         }
         .feedback-replacement .quiz-word.incorrect {
-            background: #b40000;
-            color: #fff;
+            background: #b40000 !important;
+            background-color: #b40000 !important;
+            color: #fff !important;
+            border: none !important;
+            outline: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
         }
         .buttons {
             margin: 1rem 0;
@@ -176,12 +222,13 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             border-radius: 3px;
         }
         .wrong-answer {
-            color: #b40000;
-            text-decoration: line-through;
+            color: #b40000 !important;
             padding: 0.2rem 0.4rem;
-            background-color: #f9ecec;
+            background-color: #f9ecec !important;
             border-radius: 3px;
             margin-right: 0.3rem;
+            border: none !important;
+            outline: none !important;
         }
         .answer-paragraph-container {
             position: fixed;
@@ -214,9 +261,10 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             border-radius: 3px;
             font-weight: bold;
             font-size: 0.8rem;
-            background: #f9ecec;
-            color: #b40000;
-            border: 1px solid #ebccd1;
+            background: #f9ecec !important;
+            background-color: #f9ecec !important;
+            color: #b40000 !important;
+            border: 1px solid #ebccd1 !important;
         }
         .answer-feedback.success {
             background: #ecf3ec;
@@ -248,9 +296,14 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             color: #fff;
         }
         .quiz-word.incorrect {
-            background: #b40000;
-            color: #fff;
-            text-decoration: line-through;
+            background: #b40000 !important;
+            background-color: #b40000 !important;
+            color: #fff !important;
+            border: none !important;
+            outline: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
         }
         .answer-blank {
             display: inline-block;
@@ -325,6 +378,15 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             margin-bottom: 1rem;
             line-height: 1.8;
             font-size: 0.8rem;
+        }
+        
+        /* Furigana styling */
+        ruby { 
+            font-size: 0.85em; 
+        }
+        rt { 
+            font-size: 0.7em; 
+            color: #666; 
         }
     </style>
 </head>
@@ -548,30 +610,22 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
 
             function updateDisplay(result) {
                 try {
-                    console.log('Starting updateDisplay with result:', JSON.stringify(result));
-                    
                     // Get the original quiz form
                     const quizForm = document.getElementById('quizForm');
-                    console.log('Quiz form found:', quizForm ? 'yes' : 'no');
                     
                     // Get all blanks in the original form
                     const blanks = quizForm.querySelectorAll('.blank');
-                    console.log('Total blanks found:', blanks.length);
                     
                     // Process each blank to show feedback directly
                     blanks.forEach((blank, index) => {
                         const blankId = blank.id;
-                        console.log('Processing blank', index, 'with ID:', blankId);
                         
                         if (!blankId) {
-                            console.log('Blank has no ID, skipping');
                             return;
                         }
                         
                         const userAnswer = state.answers[blankId];
                         const correctAnswer = correctAnswers[blankId];
-                        
-                        console.log('User answer:', userAnswer, 'Correct answer:', correctAnswer);
                         
                         // Create new replacement element
                         const replacement = document.createElement('span');
@@ -593,9 +647,9 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                                     ' <span class="quiz-word correct">' + correctAnswer + '</span>';
                             }
                         } else {
-                            // User didn't answer - show red box with * and correct answer
+                            // User didn't answer - show red box with 未回答 and correct answer
                             answerContainer.innerHTML = 
-                                '<span class="quiz-word incorrect">*</span>' + 
+                                '<span class="quiz-word incorrect">未回答</span>' + 
                                 ' <span class="quiz-word correct">' + correctAnswer + '</span>';
                         }
                         
@@ -604,31 +658,23 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         
                         // Replace the entire blank element with the new replacement
                         blank.parentNode.replaceChild(replacement, blank);
-                        
-                        console.log('Replaced blank with feedback replacement');
                     });
-                    
-                    console.log('updateDisplay completed successfully');
                 } catch (error) {
                     console.error('Error in updateDisplay:', error);
                 }
             }
 
             function getGrade() {
-                console.log('🎯 getGrade() called - Processing quiz submission');
-                
                 // Always show feedback when submitted
                 const showFlag = document.getElementById('showAnswerFlag');
                 
                 // Calculate results
                 const result = calculateResults();
-                console.log('📊 Quiz results:', result);
                 
                 // Always show feedback when submitted
                 state.showAnswer = true;
                 updateDisplay(result);
                 showFlag.value = 'true';
-                console.log('📱 Showing feedback');
                 
                 // ✅ CALL COMPLETION API (NON-BLOCKING)
                 setTimeout(() => {
@@ -641,14 +687,11 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                     edxScore: result.rawScore,
                     edxMessage: result.message
                 };
-                console.log('🔄 Returning to EdX:', returnValue);
                 
                 return JSON.stringify(returnValue);
             }
             
             function updateCompletionStatus(result) {
-                console.log('🚀 Starting completion API call...');
-                
                 // Get CSRF token
                 let csrfToken = '';
                 try {
@@ -665,18 +708,15 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                             const token = getToken();
                             if (token) {
                                 csrfToken = token;
-                                console.log('🔑 Found CSRF token:', token.substring(0, 8) + '...');
                                 break;
                             }
                         } catch (e) {}
                     }
                     
                     if (!csrfToken) {
-                        console.log('⚠️ No CSRF token found - using fallback');
                         csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
                     }
                 } catch (e) {
-                    console.log('❌ CSRF token search failed:', e.message);
                     csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
                 }
                 
@@ -688,22 +728,14 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         const blockMatch = parentUrl.match(/block-v1:([^\/\?\&]+)/);
                         if (blockMatch) {
                             blockId = blockMatch[0];
-                            console.log('🎯 Found block ID from parent:', blockId);
                         }
                     }
                 } catch (e) {
-                    console.log('⚠️ Cannot access parent URL, using fallback block ID');
+                    // Use fallback block ID
                 }
                 
                 // Always mark as complete when user submits
                 const completionStatus = 1.0;
-                
-                console.log('📡 Calling completion API with:', {
-                    block_key: blockId,
-                    completion: completionStatus,
-                    score: result.rawScore,
-                    note: 'COMPLETE'
-                });
                 
                 // ✅ CALL COMPLETION API
                 fetch('/courseware/mark_block_completion/', {
@@ -718,7 +750,6 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                     })
                 })
                 .then(response => {
-                    console.log('📈 API Response status:', response.status);
                     if (response.ok) {
                         return response.json();
                     } else {
@@ -726,13 +757,10 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                     }
                 })
                 .then(data => {
-                    console.log('✅ COMPLETION API SUCCESS:', data);
-                    if (data.saved_to_blockcompletion) {
-                        console.log('🎉 Progress page will update with new completion!');
-                    }
+                    // Success
                 })
                 .catch(error => {
-                    console.log('❌ Completion API Error:', error.message);
+                    // Error handling
                 });
             }
 
@@ -746,8 +774,6 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             }
 
             function resetQuiz() {
-                console.log('🔄 Resetting quiz to initial state');
-                
                 // Clear all answers
                 state.answers = {};
                 state.score = 0;
@@ -769,7 +795,6 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                 // Get the quiz form
                 const quizForm = document.getElementById('quizForm');
                 if (!quizForm) {
-                    console.error('Quiz form not found for reset');
                     return;
                 }
                 
@@ -804,8 +829,6 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                 
                 // Re-initialize drag and drop
                 initializeDragAndDrop();
-                
-                console.log('✅ Quiz reset completed');
             }
 
             function setState(stateStr) {
@@ -894,15 +917,12 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             document.addEventListener('DOMContentLoaded', function() {
                 // Render each sentence in a <div> for line breaks and correct drag-drop
                 var para = document.querySelector('.paragraph');
+                
                 if (para) {
-                    console.log('Initializing paragraph structure');
-                    
                     // Get the quiz form directly instead of manipulating the HTML string
                     var quizForm = para.querySelector('#quizForm');
                     
                     if (quizForm) {
-                        console.log('Found quiz form directly');
-                        
                         // Get the content of the form excluding the word bank
                         var wordBank = quizForm.querySelector('.word-bank');
                         var hiddenInput = quizForm.querySelector('input[type="hidden"]');
@@ -917,7 +937,6 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         
                         // Get the form content without word bank and hidden input
                         var formContent = quizForm.innerHTML;
-                        console.log('Form content without word bank:', formContent);
                         
                         // Check if content contains numbered characters (①②③...)
                         var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩]/;
@@ -925,13 +944,11 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         
                         if (numberedPattern.test(formContent)) {
                             // Split by numbered characters
-                            console.log('Found numbered characters, splitting by them');
                             sentences = formContent.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/).filter(function(s) { 
                                 return s.trim(); 
                             });
                         } else {
                             // Fall back to splitting by Japanese period
-                            console.log('No numbered characters found, splitting by Japanese periods');
                             sentences = formContent.split('。').filter(function(s) { 
                                 return s.trim(); 
                             });
@@ -941,8 +958,6 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                             });
                         }
                         
-                        console.log('Split sentences:', sentences.length);
-                        
                         // Wrap each sentence in a div
                         var wrappedContent = sentences.map(function(s) {
                             return '<div>' + s + '</div>';
@@ -951,23 +966,9 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         // Reconstruct the form with the wrapped sentences and the word bank
                         quizForm.innerHTML = wrappedContent + wordBankHTML + hiddenInputHTML;
                         
-                        console.log('Updated form HTML:', quizForm.outerHTML);
-                        
-                        // Log the number of blanks after splitting
-                        var updatedBlanks = quizForm.querySelectorAll('.blank');
-                        console.log('Number of blanks after splitting:', updatedBlanks.length);
                     } else {
-                        console.error('Could not find quiz form');
-                        
                         // Fall back to the original method
                         var original = para.innerHTML;
-                        console.log('Original paragraph HTML:', original);
-                        
-                        // Log the number of blanks in the original HTML
-                        var tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = original;
-                        var originalBlanks = tempDiv.querySelectorAll('.blank');
-                        console.log('Number of blanks in original HTML:', originalBlanks.length);
                         
                         // Check if content contains numbered characters for fallback too
                         var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩]/;
@@ -975,29 +976,24 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                         
                         if (numberedPattern.test(original)) {
                             // Split by numbered characters
-                            console.log('Found numbered characters in fallback, splitting by them');
                             sentences = original.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/).filter(function(s) { 
                                 return s.trim(); 
                             });
                         } else {
                             // Fall back to splitting by Japanese period
-                            console.log('No numbered characters found in fallback, splitting by Japanese periods');
                             sentences = original.split('。').filter(function(s) { 
-                                return s; 
-                            }).map(function(s) { 
-                                return s + '。'; 
+                                return s.trim(); 
+                            });
+                            // Add periods back for non-numbered splitting
+                            sentences = sentences.map(function(s, index) {
+                                return s + (index < sentences.length - 1 || s.trim() ? '。' : '');
                             });
                         }
                         
-                        console.log('Split sentences (fallback):', sentences.length);
-                        
                         para.innerHTML = sentences.map(function(s) { return '<div>' + s + '</div>'; }).join('');
-                        console.log('Updated paragraph HTML (fallback):', para.innerHTML);
                     }
-                    
-                    // Initialize the answer paragraph - but we'll create the content at display time
-                    // to ensure we get the fully processed quiz structure
                 }
+                
                 // Initialize drag-drop
                 initializeDragAndDrop();
             });
@@ -1012,11 +1008,8 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
             
             // Listen for messages from parent (Check button)
             window.addEventListener('message', function(event) {
-                console.log('🔄 Received message:', event.data);
-                
                 // Handle JSChannel messages (from EdX)
                 if (event.data && event.data.method === 'JSInput::getGrade') {
-                    console.log('🔄 Processing JSChannel getGrade - showing answers');
                     getGrade();
                     return;
                 }
@@ -1026,24 +1019,16 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                     return;
                 }
                 
-                console.log('🔄 Received postMessage from parent:', event.data);
-                console.log('🔄 Message type:', event.data?.type);
-                
                 if (event.data && event.data.type === 'problem.check') {
-                    console.log('🔄 Processing problem.check - resetting quiz');
                     // Reset quiz state
                     resetQuiz();
                 }
                 
                 if (event.data && event.data.type === 'problem.submit') {
-                    console.log('🔄 Processing problem.submit - action:', event.data.action);
-                    
                     if (event.data.action === 'check') {
-                        console.log('🔄 Processing problem.submit with action=check - showing answers');
                         // Trigger quiz submission when Check button is clicked
                         getGrade();
                     } else if (event.data.action === 'reset') {
-                        console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
                         // Reset quiz when reset action is received
                         resetQuiz();
                     }
@@ -1051,7 +1036,6 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
                 
                 // Legacy support for simple reset message
                 if (event.data && event.data.type === 'reset') {
-                    console.log('🔄 Received reset message from parent window');
                     resetQuiz();
                 }
             });
@@ -1059,3 +1043,6 @@ export const dragDropQuizTemplate = `<!DOCTYPE html>
     </script>
 </body>
 </html>`; 
+
+// Export the original template for backward compatibility
+export const dragDropQuizTemplate = dragDropQuizTemplateString;

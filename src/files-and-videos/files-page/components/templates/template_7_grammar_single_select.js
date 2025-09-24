@@ -2,11 +2,11 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
 <html>
 <head>
     <title>Grammar Single Select Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kyokashotai&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         body {
-            font-family: 'Kosugi Maru', 'Kyokashotai', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             line-height: 1.6;
@@ -651,14 +651,22 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
 
 // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
 function convertFurigana(text) {
-    return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+    // First convert Japanese parentheses: 毎日（まいにち） -> <ruby>毎日<rt>まいにち</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)（([^）]+)）/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    });
+    // Then convert regular parentheses: 車(くるま) -> <ruby>車<rt>くるま</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)\(([^)]+)\)/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    });
+    return text;
 }
 
 export const getGrammarSingleSelectTemplate7 = (questionText, optionsString, instructions = '正しい文を選んでください。', explanationText = '') => {
   // Process questionText to underline text in quotes and convert furigana
   const processedQuestionText = questionText
-    .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>')
-    .replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+    .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
+  const finalQuestionText = convertFurigana(processedQuestionText);
 
   // Split options string into array and trim each option
   const options = optionsString.split(',').map(option => option.trim());
@@ -670,16 +678,16 @@ export const getGrammarSingleSelectTemplate7 = (questionText, optionsString, ins
     .map(option => {
       // Process each option to underline text in quotes and convert furigana
       const processedOption = option
-        .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>')
-        .replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
-      return `<button type="button" class="option-button" data-value="${option}">${processedOption}</button>`;
+        .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
+      const finalOption = convertFurigana(processedOption);
+      return `<button type="button" class="option-button" data-value="${option}">${finalOption}</button>`;
     })
     .join('');
 
   return grammarSingleSelectTemplate7
-    .replace('{{INSTRUCTIONS}}', instructions)
-    .replace('{{QUESTION_TEXT}}', processedQuestionText)
+    .replace('{{INSTRUCTIONS}}', convertFurigana(instructions))
+    .replace('{{QUESTION_TEXT}}', finalQuestionText)
     .replace('{{OPTIONS}}', optionsHtml)
     .replace('{{EXPLANATION_TEXT}}', explanationText)
-    .replace('{{CORRECT_ANSWER}}', correctAnswer); // Add this line
+    .replace('{{CORRECT_ANSWER}}', correctAnswer);
 };

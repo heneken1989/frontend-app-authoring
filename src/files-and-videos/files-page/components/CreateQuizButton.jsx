@@ -28,13 +28,34 @@ import { addAssetFile } from '../data/thunks';
 import { highlightFillStyleTemplate } from './templates/template_41_highlight_japanese';
 import { getListenSingleChoiceTemplate } from './templates/template_39_listen_single_choice';
 import { getListenSingleChoiceNoImageTemplate } from './templates/template_40_listen_single_choice_no_image';
-import { dragDropQuizTemplate } from './templates/template_20_drag_drop';
 import { getListenImageSelectMultipleAnswerTemplate } from './templates/template_63_listen_image_select_multiple_answer';
 import { getListenImageSelectMultipleAnswerMultiOptionsTemplate } from './templates/template_65_listen_image_select_multiple_answer_multioptions';
 import { getListenWriteAnswerWithImageTemplate } from './templates/template_67_listen_write_answer_with_image';
 import FORM_COMPONENTS, { getFormComponent } from './forms';
 import { getVocabMatchingTemplate } from './templates/template_2_vocab_matching';
 import * as XLSX from 'xlsx'; // Added for Excel parsing
+
+// Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+const convertFurigana = (text) => {
+  if (!text || typeof text !== 'string') return text;
+
+  // Unicode ranges for Japanese characters
+  const jpWord = "[\\u4E00-\\u9FFF\\u3040-\\u309F\\u30A0-\\u30FF\\u30FC\\u3005\\u30FB\\w\\s\\u3000]+";
+
+  // Japanese parentheses: 毎日（まいにち）
+  const reJaParens = new RegExp('(' + jpWord + ')（([^）]+)）', 'g');
+  text = text.replace(reJaParens, function(match, p1, p2) {
+    return '<ruby>' + (p1 || '').trim() + '<rt>' + p2 + '</rt></ruby>';
+  });
+
+  // ASCII parentheses: 車(くるま)
+  const reAsciiParens = new RegExp('(' + jpWord + ')\\(([^)]+)\\)', 'g');
+  text = text.replace(reAsciiParens, function(match, p1, p2) {
+    return '<ruby>' + (p1 || '').trim() + '<rt>' + p2 + '</rt></ruby>';
+  });
+  
+  return text;
+};
 
 // Excel parsing function
 const parseExcelFile = (file) => {
@@ -679,12 +700,16 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.DRAG_DROP_OLD: // Drag and Drop Quiz (ID 20)
       const dragDropWords = quizData.wordBank.split(',').map(word => word.trim());
-      return getDragDropQuizTemplate(quizData.paragraphText, dragDropWords, quizData.instructions, quizData.instructorContent || '');
+      // Apply furigana conversion to paragraphText
+      const processedParagraphText = convertFurigana(quizData.paragraphText);
+      return getDragDropQuizTemplate(processedParagraphText, dragDropWords, quizData.instructions, quizData.instructorContent || '');
     
 
-    case TEMPLATE_IDS.ID25_DRAG_DROP: // Drag and Drop Quiz (ID 20)
+    case TEMPLATE_IDS.ID25_DRAG_DROP: // Drag and Drop Quiz (ID 25)
       const dragDropWords1 = quizData.wordBank.split(',').map(word => word.trim());
-      return getDragDropQuizTemplate(quizData.paragraphText, dragDropWords1, quizData.instructions, quizData.instructorContent || '');
+      // Apply furigana conversion to paragraphText
+      const processedParagraphText1 = convertFurigana(quizData.paragraphText);
+      return getDragDropQuizTemplate(processedParagraphText1, dragDropWords1, quizData.instructions, quizData.instructorContent || '');
 
 
 

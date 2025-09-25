@@ -699,14 +699,14 @@ const generateQuizTemplate = (templateId, quizData) => {
       );
 
     case TEMPLATE_IDS.DRAG_DROP_OLD: // Drag and Drop Quiz (ID 20)
-      const dragDropWords = quizData.wordBank.split(',').map(word => word.trim());
+      const dragDropWords = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
       // Apply furigana conversion to paragraphText
       const processedParagraphText = convertFurigana(quizData.paragraphText);
       return getDragDropQuizTemplate(processedParagraphText, dragDropWords, quizData.instructions, quizData.instructorContent || '');
     
 
     case TEMPLATE_IDS.ID25_DRAG_DROP: // Drag and Drop Quiz (ID 25)
-      const dragDropWords1 = quizData.wordBank.split(',').map(word => word.trim());
+      const dragDropWords1 = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
       // Apply furigana conversion to paragraphText
       const processedParagraphText1 = convertFurigana(quizData.paragraphText);
       return getDragDropQuizTemplate(processedParagraphText1, dragDropWords1, quizData.instructions, quizData.instructorContent || '');
@@ -714,8 +714,10 @@ const generateQuizTemplate = (templateId, quizData) => {
 
 
     case TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP: // Drag and Drop Quiz (ID 12)
-      const vocabDragDropWords = quizData.wordBank.split(',').map(word => word.trim());
-      return getDragDropQuizTemplate(quizData.paragraphText, vocabDragDropWords);
+      const vocabDragDropWords = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
+      // Apply furigana conversion to paragraphText
+      const processedParagraphText12 = convertFurigana(quizData.paragraphText);
+      return getDragDropQuizTemplate(processedParagraphText12, vocabDragDropWords);
 
       case TEMPLATE_IDS.LISTEN_FILL_BLANK: // Listen and Fill in the Blank
         // Parse the options for each blank
@@ -1224,15 +1226,17 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.answerContent || ''
       );
     case TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP:
-      const vocabDragDropWords2 = quizData.wordBank.split(',').map(word => word.trim());
+      const vocabDragDropWords2 = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
       const cleanParagraph = (quizData.paragraphText || '')
         .replace(/([「」])\s*[\r\n]+\s*/g, '$1')
         .replace(/([。！？])\s*[\r\n]+\s*([「」])/g, '$1$2')
         .replace(/([。！？])\s*[\r\n]+\s*(\d|①|②|③|④|⑤|⑥|⑦|⑧|⑨|⑩)/g, '$1\n$2')
         .replace(/[\r\n]+/g, '\n')
         .trim();
+      // Apply furigana conversion to cleanParagraph
+      const processedCleanParagraph = convertFurigana(cleanParagraph);
       return getDragDropQuizTemplate(
-        cleanParagraph,
+        processedCleanParagraph,
         vocabDragDropWords2,
         quizData.instructions || '正しい　ものを　一つ　えらびましょう。',
         quizData.instructorContent || ''

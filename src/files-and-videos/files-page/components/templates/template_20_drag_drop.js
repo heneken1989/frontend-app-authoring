@@ -21,6 +21,37 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         /* CSS Reset for cross-browser compatibility */
         * { 
             box-sizing: border-box; 
+            margin: 0;
+            padding: 0;
+        }
+        
+        *:before,
+        *:after {
+            box-sizing: border-box;
+        }
+        
+        /* Ensure no background colors are inherited */
+        html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, var,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed, 
+        figure, figcaption, footer, header, hgroup, 
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+            background: transparent;
+            background-color: transparent;
         }
         
         body {
@@ -31,22 +62,28 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             color: #414141;
             height: 100%;
             position: relative;
-            font-size: 0.8rem;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
         }
         .container {
             padding: 1rem;
             position: relative;
             height: 100%;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
         }
         .paragraph {
             background-color: #f8f8f8;
             padding: 1.5rem;
             margin-bottom: 1rem;
-            font-size: 0.8rem;
+            font-size: 1.1rem;
             line-height: 2;
             position: relative;
             z-index: 1;
             border-radius: 4px;
+            letter-spacing: 0.05em;
         }
         .word-bank {
             display: flex;
@@ -58,16 +95,17 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             border-radius: 4px;
         }
         .draggable-word {
-            padding: 0.6rem 1.2rem;
+            padding: 0.4rem 0.8rem;
             background-color: #0075b4;
             color: white;
             border-radius: 4px;
             cursor: move;
             user-select: none;
             transition: background-color 0.2s;
-            font-size: 0.8rem;
-            min-width: 80px;
+            font-size: 0.9rem;
+            min-width: 60px;
             text-align: center;
+            letter-spacing: 0.05em;
         }
         .draggable-word:hover {
             background-color: #005a8c;
@@ -77,17 +115,19 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         .blank {
             display: inline-block;
-            min-width: 200px;
-            height: 40px;
+            min-width: 120px;
+            height: 35px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            margin: 0 0.5rem;
+            margin: 0 0.3rem;
             vertical-align: middle;
-            background-color: white;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
             text-align: center;
-            line-height: 40px;
+            line-height: 35px;
             font-size: 0.9rem;
             position: relative;
+            letter-spacing: 0.05em;
         }
         .blank.dragover {
             background-color: #f0f8ff;
@@ -97,11 +137,13 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         .blank.filled {
             border-style: solid;
             border-color: #ccc;
-            background-color: white;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
             color: #000;
         }
         .blank.incorrect {
             border-color: #b40000 !important;
+            background: #f9ecec !important;
             background-color: #f9ecec !important;
         }
         
@@ -127,19 +169,20 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         .blank.show-feedback .answer-container {
             display: flex;
-            gap: 0.3rem;
+            gap: 0.2rem;
             align-items: center;
-            min-width: 120px;
+            min-width: 80px;
         }
         .blank.show-feedback .quiz-word {
             display: inline-block;
             margin: 0 0.02em;
-            padding: 0.3rem 0.6rem;
+            padding: 0.2rem 0.4rem;
             border-radius: 3px;
             font-weight: bold;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-align: center;
-            min-width: 60px;
+            min-width: 50px;
+            letter-spacing: 0.05em;
         }
         .blank.show-feedback .quiz-word.correct {
             background: #2e7d32;
@@ -162,19 +205,20 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         .feedback-replacement .answer-container {
             display: flex;
-            gap: 0.3rem;
+            gap: 0.2rem;
             align-items: center;
-            min-width: 120px;
+            min-width: 80px;
         }
         .feedback-replacement .quiz-word {
             display: inline-block;
             margin: 0 0.02em;
-            padding: 0.3rem 0.6rem;
+            padding: 0.2rem 0.4rem;
             border-radius: 3px;
             font-weight: bold;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-align: center;
-            min-width: 60px;
+            min-width: 50px;
+            letter-spacing: 0.05em;
         }
         .feedback-replacement .quiz-word.correct {
             background: #2e7d32;
@@ -198,7 +242,8 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             padding: 1rem;
             border-radius: 4px;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
         }
         .success {
             background-color: #ecf3ec;
@@ -212,7 +257,8 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         .answer-feedback {
             margin-top: 1rem;
-            font-size: 0.8rem;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
         }
         .correct-answer {
             color: #2e7d32;
@@ -278,8 +324,9 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             box-shadow: none;
             border-radius: 3px;
             padding: 0;
-            font-size: 0.8rem;
+            font-size: 1.1rem;
             display: block;
+            letter-spacing: 0.05em;
         }
         .quiz-word {
             display: inline-block;
@@ -289,7 +336,8 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
             box-sizing: border-box;
-            font-size: 0.8rem;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
         }
         .quiz-word.correct {
             background: #2e7d32;
@@ -307,18 +355,20 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         .answer-blank {
             display: inline-block;
-            margin: 0 0.5rem;
+            margin: 0 0.3rem;
             vertical-align: middle;
-            min-width: 120px;
+            min-width: 80px;
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
         }
         .answer-blank .quiz-word {
-            margin: 0 0.2rem;
-            padding: 0.5rem 0.8rem;
+            margin: 0 0.1rem;
+            padding: 0.3rem 0.5rem;
             border-radius: 4px;
             font-weight: bold;
             font-size: 0.8rem;
+            letter-spacing: 0.05em;
         }
         #answer-paragraph form {
             padding: 0;
@@ -336,12 +386,14 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             font-weight: bold;
             color: #0075b4;
             margin-bottom: 0.5rem;
-            font-size: 0.8rem;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
         }
         .instructor-content {
-            font-size: 0.8rem;
+            font-size: 1.1rem;
             line-height: 1.6;
             color: #333;
+            letter-spacing: 0.05em;
         }
         .instructor-note {
             background-color: #fff3cd;
@@ -354,7 +406,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         .instructions {
             font-family: Roboto, 'Helvetica Neue', Arial, sans-serif;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: 400;
             line-height: 1.5;
             text-align: left;
@@ -364,6 +416,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             margin: 0;
             position: relative;
             padding-left: 20px;
+            letter-spacing: 0.05em;
         }
         .instructions:before {
             content: '';
@@ -377,7 +430,8 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         #answer-paragraph form > div {
             margin-bottom: 1rem;
             line-height: 1.8;
-            font-size: 0.8rem;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
         }
         
         /* Furigana styling */
@@ -387,6 +441,73 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         rt { 
             font-size: 0.7em; 
             color: #666; 
+        }
+        
+        /* Furigana styling for draggable words */
+        .draggable-word ruby { 
+            font-size: 0.85em; 
+        }
+        .draggable-word rt { 
+            font-size: 0.7em; 
+            color: #fff !important; 
+            opacity: 0.9;
+        }
+        
+        /* Ensure furigana in draggable words is white */
+        .draggable-word rt,
+        .draggable-word ruby rt {
+            color: #fff !important;
+            opacity: 0.9 !important;
+        }
+        
+        /* Furigana styling for blank content */
+        .blank ruby { 
+            font-size: 0.85em; 
+        }
+        .blank rt { 
+            font-size: 0.7em; 
+            color: #333 !important; 
+            opacity: 0.8;
+        }
+        
+        /* Furigana styling for incorrect answers (red boxes) */
+        .blank.incorrect ruby { 
+            font-size: 0.85em; 
+        }
+        .blank.incorrect rt { 
+            font-size: 0.7em; 
+            color: #fff !important; 
+            opacity: 0.9;
+        }
+        
+        /* Furigana styling for quiz words in feedback */
+        .quiz-word.incorrect ruby { 
+            font-size: 0.85em; 
+        }
+        .quiz-word.incorrect rt { 
+            font-size: 0.7em; 
+            color: #fff !important; 
+            opacity: 0.9;
+        }
+        
+        /* Furigana styling for correct answers (green boxes) */
+        .blank.correct ruby { 
+            font-size: 0.85em; 
+        }
+        .blank.correct rt { 
+            font-size: 0.7em; 
+            color: #fff !important; 
+            opacity: 0.9;
+        }
+        
+        /* Furigana styling for quiz words correct in feedback */
+        .quiz-word.correct ruby { 
+            font-size: 0.85em; 
+        }
+        .quiz-word.correct rt { 
+            font-size: 0.7em; 
+            color: #fff !important; 
+            opacity: 0.9;
         }
     </style>
 </head>
@@ -484,7 +605,9 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
 
             function handleDragStart(e) {
                 e.target.classList.add('dragging');
+                // Store both textContent and innerHTML for proper handling
                 e.dataTransfer.setData('text/plain', e.target.textContent);
+                e.dataTransfer.setData('text/html', e.target.innerHTML);
                 e.dataTransfer.setData('source', 'word-bank');
             }
 
@@ -498,6 +621,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                     return;
                 }
                 e.dataTransfer.setData('text/plain', e.currentTarget.textContent);
+                e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
                 e.dataTransfer.setData('source', 'blank');
                 e.dataTransfer.setData('blankId', e.currentTarget.id);
                 e.currentTarget.classList.add('dragging');
@@ -522,6 +646,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                 blank.classList.remove('dragover');
 
                 const word = e.dataTransfer.getData('text/plain');
+                const wordHTML = e.dataTransfer.getData('text/html');
                 const source = e.dataTransfer.getData('source');
                 const fromBlankId = e.dataTransfer.getData('blankId');
                 const blankId = blank.id;
@@ -538,21 +663,27 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                 if (source === 'blank' && fromBlankId && fromBlankId !== blankId) {
                     const fromBlank = document.getElementById(fromBlankId);
                     if (fromBlank) {
-                        fromBlank.textContent = '';
+                        fromBlank.innerHTML = '';
                         fromBlank.classList.remove('filled');
                         delete state.answers[fromBlankId];
                     }
                 }
 
-                // Store the answer
-                state.answers[blankId] = word;
+                // Store the answer (use HTML version if available, otherwise text)
+                const answerToStore = wordHTML || word;
+                state.answers[blankId] = answerToStore;
 
-                // Update the blank's appearance
-                blank.textContent = word;
+                // Update the blank's appearance - use innerHTML to preserve furigana
+                blank.innerHTML = answerToStore;
                 blank.classList.add('filled');
 
                 // Hide the dragged word from the word bank if it exists there
-                const draggedWord = Array.from(document.querySelectorAll('.draggable-word')).find(w => w.textContent === word);
+                // Compare using textContent to find the original word without furigana
+                const draggedWord = Array.from(document.querySelectorAll('.draggable-word')).find(w => {
+                    // Extract text content without HTML tags for comparison
+                    const textContent = w.textContent || w.innerText;
+                    return textContent === word || textContent === word.replace(/<[^>]*>/g, '');
+                });
                 if (draggedWord) {
                     draggedWord.style.display = 'none';
                 }
@@ -567,7 +698,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                     // Remove word from blank
                     const fromBlank = document.getElementById(fromBlankId);
                     if (fromBlank) {
-                        fromBlank.textContent = '';
+                        fromBlank.innerHTML = '';
                         fromBlank.classList.remove('filled');
                         delete state.answers[fromBlankId];
                     }
@@ -576,7 +707,11 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             }
 
             function restoreWordToBank(word) {
-                const wordElement = Array.from(document.querySelectorAll('.draggable-word')).find(w => w.textContent === word);
+                // Compare using textContent to find the original word without furigana
+                const wordElement = Array.from(document.querySelectorAll('.draggable-word')).find(w => {
+                    const textContent = w.textContent || w.innerText;
+                    return textContent === word || textContent === word.replace(/<[^>]*>/g, '');
+                });
                 if (wordElement) {
                     wordElement.style.display = '';
                 }
@@ -808,7 +943,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                     const newBlank = document.createElement('span');
                     newBlank.className = 'blank';
                     newBlank.id = blankId;
-                    newBlank.textContent = '';
+                    newBlank.innerHTML = '';
                     
                     // Replace the feedback replacement with the original blank
                     parent.replaceChild(newBlank, replacement);
@@ -817,7 +952,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                 // Clear all existing blanks
                 const existingBlanks = quizForm.querySelectorAll('.blank');
                 existingBlanks.forEach(blank => {
-                    blank.textContent = '';
+                    blank.innerHTML = '';
                     blank.classList.remove('filled', 'incorrect', 'show-feedback', 'correct', 'wrong');
                 });
                 
@@ -852,23 +987,29 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                         showAnswer: newState.showAnswer || false
                     };
                     
-                    // Restore answers if we have saved state
-                    if (state.answers) {
-                        for (let blankId in state.answers) {
-                            const blank = document.getElementById(blankId);
-                            const word = state.answers[blankId];
-                            if (blank && word) {
-                                blank.textContent = word;
-                                blank.classList.add('filled');
-                                
-                                // Hide the corresponding word in the word bank
-                                const wordElement = Array.from(document.querySelectorAll('.draggable-word'))
-                                    .find(el => el.textContent === word);
-                                if (wordElement) {
-                                    wordElement.style.display = 'none';
+                        // Restore answers if we have saved state
+                        if (state.answers) {
+                            for (let blankId in state.answers) {
+                                const blank = document.getElementById(blankId);
+                                const word = state.answers[blankId];
+                                if (blank && word) {
+                                    // Use innerHTML to preserve furigana
+                                    blank.innerHTML = word;
+                                    blank.classList.add('filled');
+                                    
+                                    // Hide the corresponding word in the word bank
+                                    // Extract text content for comparison
+                                    const textContent = word.replace(/<[^>]*>/g, '');
+                                    const wordElement = Array.from(document.querySelectorAll('.draggable-word'))
+                                        .find(el => {
+                                            const elTextContent = el.textContent || el.innerText;
+                                            return elTextContent === textContent;
+                                        });
+                                    if (wordElement) {
+                                        wordElement.style.display = 'none';
+                                    }
                                 }
                             }
-                        }
 
                         // Calculate results
                         const result = calculateResults();
@@ -891,10 +1032,10 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                                 // Restore original blank appearance
                                 const userAnswer = state.answers[blankId];
                                 if (userAnswer) {
-                                    newBlank.textContent = userAnswer;
+                                    newBlank.innerHTML = userAnswer;
                                     newBlank.classList.add('filled');
                                 } else {
-                                    newBlank.textContent = '';
+                                    newBlank.innerHTML = '';
                                     newBlank.classList.remove('filled');
                                 }
                                 

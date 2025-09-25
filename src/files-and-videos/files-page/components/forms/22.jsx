@@ -38,11 +38,11 @@ const GrammarSentenceRearrangementForm = ({ quizData, setQuizData }) => {
             }));
           }}
           placeholder="Enter instructions for the quiz"
-          defaultValue="単語を正しい順序に並べ替えてください。"
+          defaultValue="正しい順番に並び替えてください。"
         />
         <Form.Text>
           Instructions that will appear above the quiz.
-          Default is "単語を正しい順序に並べ替えてください。"
+          Default is "正しい順番に並び替えてください。"
         </Form.Text>
       </Form.Group>
     </>

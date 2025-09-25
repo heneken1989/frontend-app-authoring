@@ -1048,11 +1048,11 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT:
       const sentenceWords = quizData.wordBank.split(',').map(word => word.trim());
-      return getGrammarSentenceRearrangementTemplate(sentenceWords);
+      return getGrammarSentenceRearrangementTemplate(sentenceWords, quizData.instructions || '正しい順番に並び替えてください。');
 
     case TEMPLATE_IDS.ID27_GRAMMAR_SENTENCE_REARRANGEMENT:
         const sentenceWords1 = quizData.wordBank.split(',').map(word => word.trim());
-        return getGrammarSentenceRearrangementTemplate(sentenceWords1);
+        return getGrammarSentenceRearrangementTemplate(sentenceWords1, quizData.instructions || '正しい順番に並び替えてください。');
 
     case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT:
       return getGrammarSingleSelectTemplate(
@@ -1850,7 +1850,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
       wordBank: '',
       timeLimit: 60, // Default to 60 seconds
       published: true,
-      instructions: '',
+      instructions: '正しい順番に並び替えてください。',
       audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
       imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
       images: '',

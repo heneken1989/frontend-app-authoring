@@ -6,7 +6,7 @@ function convertFurigana(text) {
 }
 
 // Template ID: TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT
-export const getGrammarSentenceRearrangementTemplate = (words) => {
+export const getGrammarSentenceRearrangementTemplate = (words, instructions = '正しい順番に並び替えてください。') => {
     const blanks = words.map((_, index) => 
         `<div id="blank${index + 1}" class="blank" draggable="false"></div>`
     ).join(' ');
@@ -23,6 +23,7 @@ export const getGrammarSentenceRearrangementTemplate = (words) => {
     ).join('');
 
     return grammarSentenceRearrangementTemplate
+        .replace('{{INSTRUCTIONS}}', instructions)
         .replace('{{PARAGRAPH_TEXT}}', blanks)
         .replace('{{WORD_BANK}}', wordBankHTML)
         .replace('{{CORRECT_SENTENCE}}', convertFurigana(words.join(' ')));
@@ -134,130 +135,28 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
             border-color: #b40000;
             background-color: #f9ecec;
         }
-        #feedback {
-            margin: 1rem 0;
-            padding: 1rem;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-        .success {
-            background-color: #ecf3ec;
-            color: #2e7d32;
-            border: 1px solid #c5e0c5;
-        }
-        .error {
-            background-color: #f9ecec;
-            color: #b40000;
-            border: 1px solid #ebccd1;
-        }
-        .answer-feedback {
-            margin-top: 1rem;
+        .instructions {
+            font-style: italic;
             font-size: 1.1rem;
-        }
-        .answer-paragraph-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            padding: 0.3rem 4rem;
-            background-color: rgba(99, 97, 97, 0.95);
-            border-top: 1px solid #e0e0e0;
-            border-bottom: 1px solid #e0e0e0;
-            display: none;
-            z-index: 2;
-            transition: transform 0.3s ease;
-        }
-        .answer-paragraph-inner {
-            max-width: 90%;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-            padding: 1.5rem 1.2rem 1.2rem 1.2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .answer-feedback {
+            color: #333;
             margin-bottom: 1rem;
-            padding: 0.8rem 1rem;
-            border-radius: 3px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            background: #f9ecec;
-            color: #b40000;
-            border: 1px solid #ebccd1;
-        }
-        .answer-feedback.success {
-            background: #ecf3ec;
-            color: #2e7d32;
-            border: 1px solid #c5e0c5;
-        }
-        .answer-paragraph {
-            margin: 0;
-            background-color: #ffffff;
-            line-height: 1.6;
-            box-shadow: none;
-            border-radius: 3px;
-            padding: 0;
-            font-size: 1.2rem;
-            display: block;
-        }
-        .script-section {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f8f8f8;
+            padding: 0.8rem;
+            background-color: #f8f9fa;
+            border-left: 4px solid #0075b4;
             border-radius: 4px;
-            border: 1px solid #e0e0e0;
-        }
-        .script-section h3 {
-            margin-top: 0;
-            color: #414141;
-            font-size: 1.1rem;
-        }
-        .quiz-word {
-            display: inline-block;
-            margin: 0 0.2rem;
-            padding: 0.5rem 0.8rem;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .quiz-word.correct {
-            background: #2e7d32;
-            color: #fff;
-        }
-        .quiz-word.incorrect {
-            background: #b40000;
-            color: #fff;
-            text-decoration: line-through;
-        }
-        .quiz-word.empty {
-            background: #f0f0f0;
-            color: #666;
-            border: 2px dashed #999;
-            text-decoration: none;
-            padding: 0.5rem 2rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="instructions">{{INSTRUCTIONS}}</div>
         <div class="paragraph">
             <form id="quizForm" onsubmit="return false;">
                 {{PARAGRAPH_TEXT}}
                 <div class="word-bank">
                     {{WORD_BANK}}
                 </div>
-                <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
             </form>
-        </div>
-        <div class="answer-paragraph-container" id="answer-paragraph-container" style="display: none;">
-            <div class="answer-paragraph-inner">
-                <div id="feedback" class="answer-feedback"></div>
-                <div id="answer-paragraph" class="answer-paragraph"></div>
-            </div>
         </div>
     </div>
 
@@ -268,8 +167,7 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
             let state = {
                 answers: {},
                 score: 0,
-                attempts: 0,
-                showAnswer: false
+                attempts: 0
             };
             
             // Helper function to get cookies
@@ -447,9 +345,9 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
 
             function calculateResults() {
                 const blanks = document.querySelectorAll('.blank');
+                // Keep the exact positions, including empty ones
                 const userWords = Array.from(blanks)
-                    .map(blank => blank.textContent.trim())
-                    .filter(text => text);
+                    .map(blank => blank.textContent.trim());
 
                 let correctCount = 0;
                 const wordPositions = {};
@@ -459,152 +357,69 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                     wordPositions[word] = index;
                 });
 
-                // Check each word's relative position
+                // Check each word's absolute position
                 for (let i = 0; i < userWords.length; i++) {
                     const currentWord = userWords[i];
                     const correctPosOfCurrentWord = wordPositions[currentWord];
                     
-                    // If this word exists in correct words
-                    if (correctPosOfCurrentWord !== undefined) {
-                        // Check if all words before this one in user's answer are supposed to be before it
-                        let isCorrectPosition = true;
-                        for (let j = 0; j < i; j++) {
-                            const previousWord = userWords[j];
-                            const correctPosOfPreviousWord = wordPositions[previousWord];
-                            
-                            // If a previous word exists and should come after current word, position is wrong
-                            if (correctPosOfPreviousWord !== undefined && 
-                                correctPosOfPreviousWord > correctPosOfCurrentWord) {
-                                isCorrectPosition = false;
-                                break;
-                            }
-                        }
-                        if (isCorrectPosition) correctCount++;
+                    // If this word exists in correct words and is in the correct absolute position
+                    if (correctPosOfCurrentWord !== undefined && correctPosOfCurrentWord === i) {
+                        correctCount++;
                     }
                 }
 
-                const isCorrect = correctCount === correctWords.length && userWords.length === correctWords.length;
+                // Count filled positions
+                const filledWords = userWords.filter(text => text);
+                const isCorrect = correctCount === correctWords.length && filledWords.length === correctWords.length;
                 const message = isCorrect ? '正解です！' : '不正解です。';
 
                 return {
                     rawScore: isCorrect ? 1 : 0,
                     message,
-                    userWords,
+                    userWords, // Keep original positions including empty ones
                     isCorrect,
                     wordPositions
                 };
             }
 
             function updateDisplay(result) {
-                const answerParagraph = document.getElementById('answer-paragraph');
-                const answerContainer = document.getElementById('answer-paragraph-container');
-                const feedbackDiv = document.getElementById('feedback');
-                
-                feedbackDiv.textContent = result.message;
-                feedbackDiv.className = result.isCorrect ? 'answer-feedback success' : 'answer-feedback';
+                // ✅ SEND QUIZ DATA TO PARENT (PersistentNavigationBar)
+                const quizData = {
+                    templateId: 22,
+                    templateName: 'Grammar Sentence Rearrangement',
+                    score: result.rawScore,
+                    message: result.message,
+                    isCorrect: result.isCorrect,
+                    correctWords: correctWords,
+                    userWords: result.userWords,
+                    wordPositions: result.wordPositions,
+                    correctOrder: correctWords.join(' '),
+                    userOrder: result.userWords.join(' ')
+                };
 
-                // Create answer display container
-                const answerDisplay = document.createElement('div');
+                console.log('🔍 DEBUG - Template 22 sending quiz data:', quizData);
                 
-                // Show correct order first
-                const correctOrderDiv = document.createElement('div');
-                correctOrderDiv.style.marginBottom = '1.5rem';
-                correctOrderDiv.innerHTML = '<strong>正しい順序:</strong><br>';
-                correctWords.forEach(word => {
-                    const wordSpan = document.createElement('span');
-                    wordSpan.className = 'quiz-word correct';
-                    wordSpan.textContent = word;
-                    correctOrderDiv.appendChild(wordSpan);
-                });
-                answerDisplay.appendChild(correctOrderDiv);
-
-                // Show user's answer
-                const userAnswerDiv = document.createElement('div');
-                userAnswerDiv.innerHTML = '<strong>あなたの答え:</strong><br>';
-                
-                // Create a map of filled positions
-                const filledPositions = new Set();
-                result.userWords.forEach((word, index) => {
-                    if (word.trim() !== '') {
-                        filledPositions.add(index);
-                    }
-                });
-
-                // Show all positions, including empty ones
-                for (let i = 0; i < correctWords.length; i++) {
-                    const wordSpan = document.createElement('span');
-                    
-                    if (filledPositions.has(i)) {
-                        const word = result.userWords[i];
-                        wordSpan.className = 'quiz-word';
-                        
-                        // Check if this word is in correct relative position
-                        const correctPosOfCurrentWord = result.wordPositions[word];
-                        let isCorrectPosition = false;
-                        
-                        if (correctPosOfCurrentWord !== undefined) {
-                            isCorrectPosition = true;
-                            // Check all previous words
-                            for (let j = 0; j < i; j++) {
-                                const previousWord = result.userWords[j];
-                                const correctPosOfPreviousWord = result.wordPositions[previousWord];
-                                
-                                // If a previous word exists and should come after current word, position is wrong
-                                if (correctPosOfPreviousWord !== undefined && 
-                                    correctPosOfPreviousWord > correctPosOfCurrentWord) {
-                                    isCorrectPosition = false;
-                                    break;
-                                }
-                            }
+                // Send data to parent window (problem.html)
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'quiz.data.ready',
+                        quizData: quizData,
+                        templateConfig: {
+                            showPopup: true,
+                            templateId: 22
                         }
-                        
-                        wordSpan.className += isCorrectPosition ? ' correct' : ' incorrect';
-                        wordSpan.textContent = word;
-                    } else {
-                        // Show empty slot
-                        wordSpan.className = 'quiz-word empty';
-                        wordSpan.textContent = '＿＿＿';
-                    }
-                    userAnswerDiv.appendChild(wordSpan);
-                    
-                    // Add space between words
-                    if (i < correctWords.length - 1) {
-                        userAnswerDiv.appendChild(document.createTextNode(' '));
-                    }
+                    }, '*');
                 }
-                answerDisplay.appendChild(userAnswerDiv);
-
-                // Clear and update answer paragraph
-                answerParagraph.innerHTML = '';
-                answerParagraph.appendChild(answerDisplay);
-
-                // Show/hide the answer container
-                answerContainer.style.display = state.showAnswer ? 'block' : 'none';
             }
 
             function getGrade() {
                 console.log('🎯 getGrade() called - Processing quiz submission');
                 
-                const answerContainer = document.getElementById('answer-paragraph-container');
-                const showFlag = document.getElementById('showAnswerFlag');
-                const isVisible = answerContainer.style.display === 'block';
-
-                if (isVisible) {
-                    answerContainer.style.display = 'none';
-                    showFlag.value = 'false';
-                    state.showAnswer = false;
-                    console.log('📱 Hiding answer container');
-                } else {
-                    const result = calculateResults();
-                    updateDisplay(result);
-                    answerContainer.style.display = 'block';
-                    showFlag.value = 'true';
-                    state.showAnswer = true;
-                    console.log('📱 Showing answer container');
-                }
-
                 const result = calculateResults();
                 console.log('📊 Quiz results:', result);
+                
+                // Update display and send data to PersistentNavigationBar
+                updateDisplay(result);
                 
                 // ✅ CALL COMPLETION API (NON-BLOCKING)
                 setTimeout(() => {
@@ -713,7 +528,11 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
             }
 
             function getState() {
-                return JSON.stringify(state);
+                return JSON.stringify({
+                    answers: state.answers,
+                    attempts: state.attempts,
+                    score: state.score
+                });
             }
 
             function setState(stateStr) {
@@ -722,8 +541,7 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                     state = {
                         answers: newState.answers || {},
                         attempts: newState.attempts || 0,
-                        score: newState.score || 0,
-                        showAnswer: newState.showAnswer || false
+                        score: newState.score || 0
                     };
 
                     if (state.answers) {
@@ -747,6 +565,33 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                 }
             }
 
+            function resetQuiz() {
+                console.log('🔄 Resetting quiz - clearing all answers');
+                
+                // Clear all answers from state
+                state.answers = {};
+                state.score = 0;
+                state.attempts = 0;
+                
+                // Clear all blank boxes
+                const blanks = document.querySelectorAll('.blank');
+                blanks.forEach(blank => {
+                    blank.textContent = '';
+                    blank.classList.remove('filled', 'correct', 'incorrect');
+                });
+                
+                // Show all words in word bank
+                const draggableWords = document.querySelectorAll('.draggable-word');
+                draggableWords.forEach(word => {
+                    word.style.display = '';
+                });
+                
+                // Re-initialize drag and drop
+                initializeDragAndDrop();
+                
+                console.log('✅ Quiz reset completed');
+            }
+
             document.addEventListener('DOMContentLoaded', function() {
                 initializeDragAndDrop();
             });
@@ -763,7 +608,33 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                 channel.bind('getGrade', getGrade);
                 channel.bind('getState', getState);
                 channel.bind('setState', setState);
+                channel.bind('reset', resetQuiz);
             }
+
+            // Listen for messages from parent window
+            window.addEventListener('message', function(event) {
+                console.log('🔄 Received message:', event.data);
+                
+                if (event.data && event.data.type === 'problem.check') {
+                    console.log('🔄 Processing problem.check - resetting quiz');
+                    // Reset quiz state
+                    resetQuiz();
+                }
+                
+                if (event.data && event.data.type === 'problem.submit') {
+                    console.log('🔄 Processing problem.submit - action:', event.data.action);
+                    
+                    if (event.data.action === 'check') {
+                        console.log('🔄 Processing problem.submit with action=check - showing answers');
+                        // Trigger quiz submission when Check button is clicked
+                        getGrade();
+                    } else if (event.data.action === 'reset') {
+                        console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
+                        // Reset quiz when reset action is received
+                        resetQuiz();
+                    }
+                }
+            });
         })();
     </script>
 </body>

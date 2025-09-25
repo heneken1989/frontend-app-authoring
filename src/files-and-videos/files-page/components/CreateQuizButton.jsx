@@ -700,23 +700,23 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.DRAG_DROP_OLD: // Drag and Drop Quiz (ID 20)
       const dragDropWords = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
-      // Apply furigana conversion to paragraphText
-      const processedParagraphText = convertFurigana(quizData.paragraphText);
+      // Process blank boxes first, then apply furigana conversion
+      const processedParagraphText = convertFurigana(quizData.paragraphText.replace(/（ー）/g, '___BLANK_PLACEHOLDER___'));
       return getDragDropQuizTemplate(processedParagraphText, dragDropWords, quizData.instructions, quizData.instructorContent || '');
     
 
     case TEMPLATE_IDS.ID25_DRAG_DROP: // Drag and Drop Quiz (ID 25)
       const dragDropWords1 = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
-      // Apply furigana conversion to paragraphText
-      const processedParagraphText1 = convertFurigana(quizData.paragraphText);
+      // Process blank boxes first, then apply furigana conversion
+      const processedParagraphText1 = convertFurigana(quizData.paragraphText.replace(/（ー）/g, '___BLANK_PLACEHOLDER___'));
       return getDragDropQuizTemplate(processedParagraphText1, dragDropWords1, quizData.instructions, quizData.instructorContent || '');
 
 
 
     case TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP: // Drag and Drop Quiz (ID 12)
       const vocabDragDropWords = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
-      // Apply furigana conversion to paragraphText
-      const processedParagraphText12 = convertFurigana(quizData.paragraphText);
+      // Process blank boxes first, then apply furigana conversion
+      const processedParagraphText12 = convertFurigana(quizData.paragraphText.replace(/（ー）/g, '___BLANK_PLACEHOLDER___'));
       return getDragDropQuizTemplate(processedParagraphText12, vocabDragDropWords);
 
       case TEMPLATE_IDS.LISTEN_FILL_BLANK: // Listen and Fill in the Blank

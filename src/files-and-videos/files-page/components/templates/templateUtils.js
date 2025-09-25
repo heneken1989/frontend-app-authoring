@@ -43,8 +43,8 @@ const processDragDropQuiz = (paragraphText, words) => {
   const blanks = {};
   let currentId = 1;
   
-  // Process the paragraph to replace blanks marked with （ー）
-  const processedParagraph = paragraphText.replace(/（ー）/g, (match) => {
+  // Process the paragraph to replace blanks marked with （ー）or placeholder
+  const processedParagraph = paragraphText.replace(/(（ー）|___BLANK_PLACEHOLDER___)/g, (match) => {
     const blankId = `blank${currentId}`;
     const correctAnswer = words[currentId - 1]; // Get the correct word from the array
     blanks[blankId] = correctAnswer;

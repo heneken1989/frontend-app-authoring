@@ -38,9 +38,10 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             padding: 1rem;
             position: relative;
             height: 100%;
+            background-color: white;
         }
         .paragraph {
-            background-color: #f0f0f0;
+            background-color: white;
             padding: 1.5rem;
             margin-bottom: 1rem;
             font-size: 1.1rem;
@@ -447,26 +448,6 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             font-size: 0.85em; 
         }
         .quiz-word.incorrect rt { 
-            font-size: 0.7em; 
-            color: #fff !important; 
-            opacity: 0.9;
-        }
-        
-        /* Furigana styling for correct answers (green boxes) */
-        .blank.correct ruby { 
-            font-size: 0.85em; 
-        }
-        .blank.correct rt { 
-            font-size: 0.7em; 
-            color: #fff !important; 
-            opacity: 0.9;
-        }
-        
-        /* Furigana styling for quiz words correct in feedback */
-        .quiz-word.correct ruby { 
-            font-size: 0.85em; 
-        }
-        .quiz-word.correct rt { 
             font-size: 0.7em; 
             color: #fff !important; 
             opacity: 0.9;

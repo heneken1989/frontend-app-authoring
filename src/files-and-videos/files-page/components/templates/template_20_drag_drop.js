@@ -21,37 +21,6 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         /* CSS Reset for cross-browser compatibility */
         * { 
             box-sizing: border-box; 
-            margin: 0;
-            padding: 0;
-        }
-        
-        *:before,
-        *:after {
-            box-sizing: border-box;
-        }
-        
-        /* Ensure no background colors are inherited */
-        html, body, div, span, applet, object, iframe,
-        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-        a, abbr, acronym, address, big, cite, code,
-        del, dfn, em, img, ins, kbd, q, s, samp,
-        small, strike, strong, sub, sup, tt, var,
-        b, u, i, center,
-        dl, dt, dd, ol, ul, li,
-        fieldset, form, label, legend,
-        table, caption, tbody, tfoot, thead, tr, th, td,
-        article, aside, canvas, details, embed, 
-        figure, figcaption, footer, header, hgroup, 
-        menu, nav, output, ruby, section, summary,
-        time, mark, audio, video {
-            margin: 0;
-            padding: 0;
-            border: 0;
-            font-size: 100%;
-            font: inherit;
-            vertical-align: baseline;
-            background: transparent;
-            background-color: transparent;
         }
         
         body {
@@ -64,18 +33,14 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             position: relative;
             font-size: 1.1rem;
             letter-spacing: 0.05em;
-            background: #ffffff !important;
-            background-color: #ffffff !important;
         }
         .container {
             padding: 1rem;
             position: relative;
             height: 100%;
-            background: #ffffff !important;
-            background-color: #ffffff !important;
         }
         .paragraph {
-            background-color: #f8f8f8;
+            background-color: #f0f0f0;
             padding: 1.5rem;
             margin-bottom: 1rem;
             font-size: 1.1rem;
@@ -121,8 +86,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             border-radius: 4px;
             margin: 0 0.3rem;
             vertical-align: middle;
-            background: #ffffff !important;
-            background-color: #ffffff !important;
+            background-color: white;
             text-align: center;
             line-height: 35px;
             font-size: 0.9rem;
@@ -137,13 +101,11 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         .blank.filled {
             border-style: solid;
             border-color: #ccc;
-            background: #ffffff !important;
-            background-color: #ffffff !important;
+            background-color: white;
             color: #000;
         }
         .blank.incorrect {
             border-color: #b40000 !important;
-            background: #f9ecec !important;
             background-color: #f9ecec !important;
         }
         

@@ -639,6 +639,7 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
             window.addEventListener('message', function(event) {
                 console.log('🔄 Received message:', event.data);
                 
+                // Only process messages from problem.html (not direct from PersistentNavigationBar)
                 if (event.data && event.data.type === 'problem.check') {
                     console.log('🔄 Processing problem.check - resetting quiz');
                     // Reset quiz state

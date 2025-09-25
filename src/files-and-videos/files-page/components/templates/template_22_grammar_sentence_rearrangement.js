@@ -170,6 +170,11 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                 attempts: 0
             };
             
+            // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+            function convertFurigana(text) {
+                return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+            }
+            
             // Helper function to get cookies
             function getCookie(name) {
                 let cookieValue = null;
@@ -580,11 +585,30 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                     blank.classList.remove('filled', 'correct', 'incorrect');
                 });
                 
-                // Show all words in word bank
-                const draggableWords = document.querySelectorAll('.draggable-word');
-                draggableWords.forEach(word => {
-                    word.style.display = '';
-                });
+                // Get the word bank container
+                const wordBank = document.querySelector('.word-bank');
+                if (wordBank) {
+                    // Clear existing words
+                    wordBank.innerHTML = '';
+                    
+                    // Recreate word bank with original words (shuffled)
+                    const originalWords = correctWords.slice(); // Copy the array
+                    for (let i = originalWords.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [originalWords[i], originalWords[j]] = [originalWords[j], originalWords[i]];
+                    }
+                    
+                    // Add words back to word bank
+                    originalWords.forEach(word => {
+                        const wordElement = document.createElement('div');
+                        wordElement.className = 'draggable-word';
+                        wordElement.draggable = true;
+                        wordElement.innerHTML = convertFurigana(word);
+                        wordElement.addEventListener('dragstart', handleDragStart);
+                        wordElement.addEventListener('dragend', handleDragEnd);
+                        wordBank.appendChild(wordElement);
+                    });
+                }
                 
                 // Re-initialize drag and drop
                 initializeDragAndDrop();

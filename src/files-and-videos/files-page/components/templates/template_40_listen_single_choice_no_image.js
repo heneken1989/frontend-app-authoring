@@ -566,8 +566,8 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 const endTimeElement = document.getElementById('end-time');
                 const playerStatus = document.getElementById('player-status');
                 
-                const startTime = parseFloat(startTimeElement.textContent) || 0;
-                const endTime = parseFloat(endTimeElement.textContent) || 0;
+                let startTime = parseFloat(startTimeElement.textContent) || 0;
+                let endTime = parseFloat(endTimeElement.textContent) || 0;
                 let isPlaying = false;
                 
                 // Update volume level display based on slider value
@@ -624,15 +624,15 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     if (audioElement.duration) {
                         // Calculate relative to the start/end times
                         const currentRelative = audioElement.currentTime - startTime;
-                        const durationRelative = (endTime > 0 ? endTime : audioElement.duration) - startTime;
+                        const durationRelative = endTime - startTime;
                         
                         // Update progress bar width
-                        const progressPercent = (currentRelative / durationRelative) * 100;
+                        const progressPercent = Math.min(100, Math.max(0, (currentRelative / durationRelative) * 100));
                         progressBar.style.width = progressPercent + '%';
                     }
                     
                     // Check if we've reached the end time
-                    if (endTime > 0 && audioElement.currentTime >= endTime) {
+                    if (audioElement.currentTime >= endTime) {
                         audioElement.pause();
                         audioElement.currentTime = startTime;
                         isPlaying = false;
@@ -648,9 +648,40 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 
                 // When metadata is loaded, set up the player
                 audioElement.addEventListener('loadedmetadata', () => {
-                    // If endTime is not set or is greater than duration, use full duration
-                    if (endTime <= 0 || endTime > audioElement.duration) {
-                        endTime = audioElement.duration;
+                    // Get actual duration of the audio file
+                    const actualDuration = audioElement.duration;
+                    console.log('🎵 Audio duration:', actualDuration, 'seconds');
+                    console.log('⏰ Requested start time:', startTime, 'end time:', endTime);
+                    
+                    // Handle different scenarios for start/end times
+                    if (startTime <= 0 && endTime <= 0) {
+                        // No start/end time specified - play full audio
+                        console.log('📻 No time range specified - playing full audio');
+                        startTime = 0;
+                        endTime = actualDuration;
+                    } else if (endTime > actualDuration) {
+                        // End time exceeds file duration - play from start time to end of file
+                        console.log('⚠️ End time exceeds file duration - adjusting to play until end of file');
+                        endTime = actualDuration;
+                    } else if (startTime > actualDuration) {
+                        // Start time exceeds file duration - play from beginning
+                        console.log('⚠️ Start time exceeds file duration - playing from beginning');
+                        startTime = 0;
+                        if (endTime <= 0) {
+                            endTime = actualDuration;
+                        }
+                    } else if (endTime <= 0) {
+                        // Only start time specified - play from start to end of file
+                        console.log('📻 Only start time specified - playing from start time to end of file');
+                        endTime = actualDuration;
+                    }
+                    
+                    console.log('✅ Final time range:', startTime, 'to', endTime);
+                    
+                    // Update time display with adjusted values
+                    const timeDisplayElement = document.querySelector('.time-display');
+                    if (timeDisplayElement) {
+                        timeDisplayElement.textContent = '再生区間: ' + formatTime(startTime) + ' - ' + formatTime(endTime);
                     }
                     
                     // Set to start time
@@ -705,7 +736,8 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                         audioElement.currentTime = startTime;
                         audioElement.pause();
                         playerStatus.textContent = 'Current Status: Paused';
-                    }
+                    },
+                    getTimeRange: () => ({ startTime, endTime })
                 };
             }
 
@@ -730,7 +762,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 const audioElement = document.getElementById('audio-player');
                 const startTimeElement = document.getElementById('start-time');
                 
-                const startTime = parseFloat(startTimeElement.textContent) || 0;
+                let startTime = parseFloat(startTimeElement.textContent) || 0;
                 const isVisible = answerContainer.style.display === 'block';
 
                 if (isVisible) {
@@ -968,7 +1000,7 @@ export const getListenSingleChoiceNoImageTemplate = (questionText, optionsString
         .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>')
         .replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
     
-    // Add time display to the audio player
+    // Add time display to the audio player (will be updated after audio loads)
     const timeDisplay = `
         <div class="time-display" style="text-align: center; margin-top: 5px; font-size: 12px; color: #666;">
             再生区間: ${formatTime(startTime)} - ${formatTime(endTime)}

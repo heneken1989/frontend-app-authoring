@@ -11,25 +11,37 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
 <html>
 <head>
     <title>Vocabulary Matching Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kyokashotai&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"></script>
     <style>
         body {
-            font-family: 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            line-height: 1.8;
+            padding: 0;
+            line-height: 1.6;
             color: #414141;
+            height: auto;
+            position: relative;
+            overflow-y: hidden;
         }
         .container {
+            position: relative;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 1.5rem;
             max-width: 800px;
             margin: 0 auto;
         }
         .instructions {
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-left: 4px solid #0075b4;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #333;
+            font-weight: bold;
             font-style: italic;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
         }
         .quiz-area {
             position: relative;

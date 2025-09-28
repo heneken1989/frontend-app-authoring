@@ -104,13 +104,16 @@ export const readingDroplistTemplate = `<!DOCTYPE html>
 <html>
 <head>
     <title>Reading Droplist Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         body {
-            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
             font-weight: 400;
-            line-height: 1.5;
+            line-height: 1.6;
             text-align: left;
             margin: 0;
             padding: 0;
@@ -166,16 +169,16 @@ export const readingDroplistTemplate = `<!DOCTYPE html>
             gap: 0;
         }
         .instructions {
-            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 1rem;
-            font-weight: 400;
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.1rem;
+            font-weight: bold;
             line-height: 1.5;
             text-align: left;
             background-color: white;
             color: #333;
             font-style: italic;
-            margin: 0;
-            position: relative;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
         }
         .instructions:before {
             content: '';
@@ -187,16 +190,17 @@ export const readingDroplistTemplate = `<!DOCTYPE html>
             background-color: #0075b4;
         }
         .question-text {
-            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
-            font-weight: 400;
-            line-height: 1.5;
+            font-weight: normal;
+            line-height: 1.6;
             text-align: left;
             background: white;
             color: #333;
             margin: 0;
             position: relative;
             padding-left: 5px;
+            letter-spacing: 0.4px;
         }
         .question-text:before {
             content: '';
@@ -445,13 +449,18 @@ export const readingDroplistTemplate = `<!DOCTYPE html>
             margin: 0 2px;
         }
         .answer-item {
-            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 1rem;
-            font-weight: 400;
-            line-height: 1.5;
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
+            font-weight: normal;
+            line-height: 1.6;
             text-align: left;
-            margin-bottom: 10px;
+            margin: 0;
             color: #333;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            letter-spacing: 0.4px;
         }
         .answers-list {
             padding: 5px;

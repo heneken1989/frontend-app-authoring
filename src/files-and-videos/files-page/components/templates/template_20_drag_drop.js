@@ -15,7 +15,9 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
 <html>
 <head>
     <title>Drag and Drop Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kyokashotai&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"></script>
     <style>
         /* CSS Reset for cross-browser compatibility */
@@ -24,41 +26,49 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         
         body {
-            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
             margin: 0;
             padding: 0;
             line-height: 1.8;
             color: #414141;
             height: 100%;
             position: relative;
-            font-size: 1.1rem;
             letter-spacing: 0.05em;
+            width: 100%;
         }
         .container {
-            padding: 1rem;
+            padding: 0.1rem;
             position: relative;
             height: 100%;
             background-color: white;
+            width: 100%;
+            margin: 0;
+            text-align: left;
         }
         .paragraph {
             background-color: white;
-            padding: 1.5rem;
+            padding: 0.5rem;
             margin-bottom: 1rem;
-            font-size: 1.1rem;
-            line-height: 2;
+            font-size: 1.2rem;
+            line-height: 1.6;
             position: relative;
             z-index: 1;
             border-radius: 4px;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.4px;
+            text-align: left;
         }
+        
         .word-bank {
             display: flex;
             flex-wrap: wrap;
             gap: 0.8rem;
-            margin: 1.5rem 0;
-            padding: 1.2rem;
-            background-color: #f0f0f0;
-            border-radius: 4px;
+            margin: 0.5rem 0;
+            padding: 0.2rem;
+            background-color: transparent;
+            border-radius: 0;
+            justify-content: space-between;
+            align-items: center;
         }
         .draggable-word {
             padding: 0.4rem 0.8rem;
@@ -70,8 +80,12 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             transition: background-color 0.2s;
             font-size: 0.9rem;
             min-width: 60px;
-            text-align: center;
+            text-align: left;
             letter-spacing: 0.05em;
+            margin: 0.2rem;
+            width: auto;
+            height: auto;
+            display: inline-block;
         }
         .draggable-word:hover {
             background-color: #005a8c;
@@ -81,18 +95,21 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         .blank {
             display: inline-block;
-            min-width: 120px;
-            height: 35px;
+            min-width: 60px;
+            min-height: 35px;
             border: 1px solid #ccc;
             border-radius: 4px;
             margin: 0 0.3rem;
             vertical-align: middle;
             background-color: white;
-            text-align: center;
-            line-height: 35px;
+            text-align: left;
+            line-height: 1.4;
             font-size: 0.9rem;
             position: relative;
             letter-spacing: 0.05em;
+            padding: 8px 12px;
+            width: auto;
+            height: auto;
         }
         .blank.dragover {
             background-color: #f0f8ff;
@@ -143,7 +160,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             border-radius: 3px;
             font-weight: bold;
             font-size: 0.8rem;
-            text-align: center;
+            text-align: left;
             min-width: 50px;
             letter-spacing: 0.05em;
         }
@@ -179,7 +196,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             border-radius: 3px;
             font-weight: bold;
             font-size: 0.8rem;
-            text-align: center;
+            text-align: left;
             min-width: 50px;
             letter-spacing: 0.05em;
         }
@@ -321,7 +338,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             margin: 0 0.3rem;
             vertical-align: middle;
             min-width: 80px;
-            text-align: center;
+            text-align: left;
             font-size: 0.9rem;
             letter-spacing: 0.05em;
         }
@@ -368,27 +385,19 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             color: #856404;
         }
         .instructions {
-            font-family: Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
-            font-weight: 400;
+            font-weight: bold;
             line-height: 1.5;
             text-align: left;
             background-color: white;
             color: #333;
             font-style: italic;
-            margin: 0;
-            position: relative;
-            padding-left: 20px;
-            letter-spacing: 0.05em;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
         }
         .instructions:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background-color: #0075b4;
+            display: none;
         }
         #answer-paragraph form > div {
             margin-bottom: 1rem;
@@ -403,12 +412,12 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         rt { 
             font-size: 0.7em; 
-            color: #666; 
+            color: #fff; 
         }
         
         /* Furigana styling for draggable words */
         .draggable-word ruby { 
-            font-size: 0.85em; 
+            font-size: 1.2em; 
         }
         .draggable-word rt { 
             font-size: 0.7em; 
@@ -425,7 +434,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         
         /* Furigana styling for blank content */
         .blank ruby { 
-            font-size: 0.85em; 
+            font-size: 1.2em; 
         }
         .blank rt { 
             font-size: 0.7em; 
@@ -435,7 +444,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         
         /* Furigana styling for incorrect answers (red boxes) */
         .blank.incorrect ruby { 
-            font-size: 0.85em; 
+            font-size: 1.2em; 
         }
         .blank.incorrect rt { 
             font-size: 0.7em; 
@@ -445,7 +454,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         
         /* Furigana styling for quiz words in feedback */
         .quiz-word.incorrect ruby { 
-            font-size: 0.85em; 
+            font-size: 1.2em; 
         }
         .quiz-word.incorrect rt { 
             font-size: 0.7em; 
@@ -997,6 +1006,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                 }
             }
 
+
             // Initialize drag and drop when the page loads
             document.addEventListener('DOMContentLoaded', function() {
                 // Render each sentence in a <div> for line breaks and correct drag-drop
@@ -1032,14 +1042,17 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                                 return s.trim(); 
                             });
                         } else {
-                            // Fall back to splitting by Japanese period
-                            sentences = formContent.split('。').filter(function(s) { 
-                                return s.trim(); 
-                            });
-                            // Add periods back for non-numbered splitting
-                            sentences = sentences.map(function(s, index) {
-                                return s + (index < sentences.length - 1 || s.trim() ? '。' : '');
-                            });
+                            // Check if content contains dialogue pattern (period followed by any word and colon)
+                            var dialoguePattern = /。[^：。]+：/;
+                            if (dialoguePattern.test(formContent)) {
+                                // Split by dialogue pattern (after period, before word and colon)
+                                sentences = formContent.split(/(?<=。)(?=[^：。]+：)/).filter(function(s) { 
+                                    return s.trim(); 
+                                });
+                            } else {
+                                // For non-numbered content, don't split - keep as single sentence
+                                sentences = [formContent];
+                            }
                         }
                         
                         // Wrap each sentence in a div
@@ -1064,14 +1077,17 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                                 return s.trim(); 
                             });
                         } else {
-                            // Fall back to splitting by Japanese period
-                            sentences = original.split('。').filter(function(s) { 
-                                return s.trim(); 
-                            });
-                            // Add periods back for non-numbered splitting
-                            sentences = sentences.map(function(s, index) {
-                                return s + (index < sentences.length - 1 || s.trim() ? '。' : '');
-                            });
+                            // Check if content contains dialogue pattern (period followed by any word and colon)
+                            var dialoguePattern = /。[^：。]+：/;
+                            if (dialoguePattern.test(original)) {
+                                // Split by dialogue pattern (after period, before word and colon)
+                                sentences = original.split(/(?<=。)(?=[^：。]+：)/).filter(function(s) { 
+                                    return s.trim(); 
+                                });
+                            } else {
+                                // For non-numbered content, don't split - keep as single sentence
+                                sentences = [original];
+                            }
                         }
                         
                         para.innerHTML = sentences.map(function(s) { return '<div>' + s + '</div>'; }).join('');

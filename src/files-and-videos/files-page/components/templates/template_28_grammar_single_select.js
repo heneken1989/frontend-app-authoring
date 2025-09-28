@@ -2,11 +2,19 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
 <html>
 <head>
     <title>Grammar Single Select Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kyokashotai&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
+        /* Force Japanese font loading and application */
+        * {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+        }
+        
         body {
-            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-weight: 400 !important;
             margin: 0;
             padding: 0;
             line-height: 1.6;
@@ -31,21 +39,26 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
             gap: 10px;
         }
         .instructions {
-            font-size: 1.1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            font-weight: bold !important;
             line-height: 1.5;
+            text-align: left;
+            background-color: white;
             color: #333;
-            font-weight: bold;
             font-style: italic;
             margin: 0 0 20px 0;
             letter-spacing: 0.3px;
         }
         .question-text {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
-            padding: 15px 0;
-            color: #333;
-            font-weight: normal;
-            margin: 0;
+            font-weight: normal !important;
             line-height: 1.6;
+            text-align: left;
+            color: #333;
+            margin: 0;
+            padding: 15px 0;
             letter-spacing: 0.4px;
         }
         .answer-section {
@@ -66,6 +79,12 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
             max-width: 600px;
         }
         .option-button {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            font-weight: normal !important;
+            line-height: 1.6;
+            text-align: center;
+            color: #333;
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -74,20 +93,15 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
             border: 1px solid #ddd;
             outline: none;
             background: #f5f5f5;
-            font-size: 1.3rem;
             cursor: pointer;
-            text-align: center;
-            line-height: 1.4;
             min-height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            color: #000;
-            font-weight: bold;
             border-radius: 4px;
             transition: all 0.3s ease;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
         }
         .option-button::before {
             display: none;
@@ -116,8 +130,14 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
             color: white;
         }
         .answer-feedback {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            font-weight: normal !important;
+            line-height: 1.6;
+            text-align: left;
+            color: #333;
             margin-top: 0.5rem;
-            font-size: 1.0rem;
+            letter-spacing: 0.4px;
         }
         .answer-feedback span {
             display: block;
@@ -132,26 +152,40 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
             color: #b40000;
         }
         .correct-answer {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            font-weight: bold !important;
+            line-height: 1.6;
+            text-align: left;
             color: #2e7d32;
-            font-weight: bold;
             border-radius: 3px;
             display: inline-block;
             margin: 0;
+            letter-spacing: 0.4px;
         }
         .wrong-answer {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            font-weight: normal !important;
+            line-height: 1.6;
+            text-align: left;
             color: #b40000;
             text-decoration: line-through;
             border-radius: 3px;
             display: inline-block;
             margin: 0;
+            letter-spacing: 0.4px;
         }
         .select-answer-header {
-            font-size: 1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            font-weight: bold !important;
+            line-height: 1.5;
+            text-align: left;
             color: #333;
             margin: 0 0 10px 0;
             padding: 5px 0;
-            font-weight: bold;
-            text-align: left;
+            letter-spacing: 0.3px;
         }
         
         /* Furigana styling */
@@ -200,7 +234,7 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
             }
             .option-button {
                 padding: 10px 12px;
-                font-size: 1rem;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -698,7 +732,7 @@ function convertFurigana(text) {
 export const getGrammarSingleSelectTemplate = (questionText, optionsString, instructions = '正しい文を選んでください。', explanationText = '') => {
   // Process questionText to underline text in quotes and convert furigana
   const processedQuestionText = questionText
-    .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
+    .replace(/"([^"]+)"/g, '<span style="text-decoration: underline; text-underline-offset: 3px;">$1</span>');
   const finalQuestionText = convertFurigana(processedQuestionText);
 
   // Split options string into array and trim each option
@@ -711,7 +745,7 @@ export const getGrammarSingleSelectTemplate = (questionText, optionsString, inst
     .map(option => {
       // Process each option to underline text in quotes and convert furigana
       const processedOption = option
-        .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
+        .replace(/"([^"]+)"/g, '<span style="text-decoration: underline; text-underline-offset: 3px;">$1</span>');
       const finalOption = convertFurigana(processedOption);
       return `<button type="button" class="option-button" data-value="${option}">${finalOption}</button>`;
     })

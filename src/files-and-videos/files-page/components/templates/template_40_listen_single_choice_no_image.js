@@ -7,10 +7,14 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
 <html>
 <head>
     <title>Listen and Choose Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         body {
-            font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
             margin: 0;
             padding: 0;
             line-height: 1.6;
@@ -25,28 +29,32 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             gap: 20px;
-
+            padding: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
         }
         .content-wrapper {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 10px;
         }
         .instructions {
-
             font-size: 1.1rem;
             line-height: 1.5;
             color: #333;
             font-weight: bold;
             font-style: italic;
-            margin: 0;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
         }
         .question-text {
             font-size: 1.2rem;
-            padding: 5x;
+            padding: 15px 0;
             color: #333;
-            font-weight: bold;
+            font-weight: normal;
             margin: 0;
+            line-height: 1.6;
+            letter-spacing: 0.4px;
         }
         .audio-container {
             margin-bottom: 10px;
@@ -79,20 +87,23 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             -webkit-appearance: none;
             -moz-appearance: none;
             max-width: 100%;
-            padding: 4px 4px 4px 28px;
-            border: none;
+            padding: 12px 16px 12px 28px;
+            border: 1px solid #ddd;
             outline: none;
-            background: transparent;
-            font-size: 0.95rem;
+            background: #f5f5f5;
+            font-size: 1.3rem;
             cursor: pointer;
             text-align: left;
             line-height: 1.4;
-            min-height: 24px;
+            min-height: 20px;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             position: relative;
-            color: #333;
-            font-weight: normal;
+            color: #000;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
         }
         .option-button::before {
             content: '';

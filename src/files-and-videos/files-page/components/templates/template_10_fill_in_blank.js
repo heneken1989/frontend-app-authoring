@@ -39,28 +39,41 @@ export const fillInBlankTemplate = `<!DOCTYPE html>
 <html>
 <head>
     <title>Fill in the Blank Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         body {
-            font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
             margin: 0;
             padding: 0;
-            line-height: 1;
+            line-height: 1.6;
             color: #414141;
-            height: 100%;
+            height: auto;
             position: relative;
+            overflow-y: hidden;
         }
         .container {
-            padding: 20px;
             position: relative;
-            height: 100%;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
         }
         .instructions {
-            background-color: #f8f8f8;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #0075b4;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            line-height: 1.5;
+            color: #333;
+            font-weight: bold;
             font-style: italic;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
         }
         
         /* Furigana styling */

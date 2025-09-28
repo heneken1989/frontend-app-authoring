@@ -2,11 +2,14 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
 <html>
 <head>
     <title>Grammar Single Select Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kyokashotai&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         body {
-            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
             margin: 0;
             padding: 0;
             line-height: 1.6;
@@ -31,20 +34,24 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             gap: 10px;
         }
         .instructions {
-            font-size: 1.1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
             line-height: 1.5;
             color: #333;
             font-weight: bold;
             font-style: italic;
-            margin: 0;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
         }
         .question-text {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
             padding: 15px 0;
             color: #333;
-            font-weight: bold;
+            font-weight: normal;
             margin: 0;
             line-height: 1.6;
+            letter-spacing: 0.4px;
         }
         .answer-section {
             background: transparent;
@@ -72,7 +79,8 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             border: none;
             outline: none;
             background: transparent;
-            font-size: 1.1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
             cursor: pointer;
             text-align: left;
             line-height: 1.4;
@@ -182,7 +190,8 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             margin: 0;
         }
         .select-answer-header {
-            font-size: 1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
             color: #333;
             margin: 0 0 10px 0;
             padding: 5px 0;
@@ -233,7 +242,7 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             }
             .option-button {
                 padding: 10px 12px;
-                font-size: 1rem;
+                font-size: 1.2rem;
             }
         }
     </style>

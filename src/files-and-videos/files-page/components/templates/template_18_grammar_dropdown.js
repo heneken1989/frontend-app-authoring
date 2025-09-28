@@ -236,7 +236,9 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
 <html>
 <head>
     <title>Grammar Dropdown Quiz</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kyokashotai&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"><\/script>
     <style>
         /* CSS Reset for cross-browser compatibility */
@@ -256,13 +258,22 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         }
         select:focus { outline: none; }
         
-        body { font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin: 0; padding: 0; color: #414141; height: auto; position: relative; background-color: white; }
-        .container { position: relative; height: auto; display: flex; flex-direction: column; gap: 20px; background-color: white; padding: 20px; }
-        .content-wrapper { background: white; padding: 0; display: flex; flex-direction: column; gap: 20px; }
-        .instructions { font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; background-color: white; color: #333; font-style: italic; margin: 0; position: relative; padding-left: 20px; }
-        .instructions:before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #0075b4; }
+        body { font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 1.2rem; font-weight: 400; line-height: 1.6; text-align: left; margin: 0; padding: 0; color: #414141; height: auto; position: relative; background-color: white; }
+        .container { position: relative; height: auto; display: flex; flex-direction: column; gap: 20px; background-color: white; padding: 1.5rem; max-width: 800px; margin: 0 auto; }
+        .content-wrapper { background: white; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+        .instructions { font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 1.2rem; font-weight: bold; line-height: 1.5; text-align: left; background-color: white; color: #333; font-style: italic; margin: 0 0 20px 0; letter-spacing: 0.3px; }
+        .instructions:before { display: none; }
         .select-container { margin: 0; display: flex; flex-direction: column; gap: 8px; padding: 0; background: white; }
-        .select-answer-header { font-size: 1rem; color: #333; margin: 0; font-weight: bold; }
+        .select-answer-header { 
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem; 
+            font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333; 
+            margin: 0;
+            letter-spacing: 0.3px;
+        }
         .custom-dropdown {
             position: relative;
             display: inline-block;
@@ -271,11 +282,14 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             z-index: 1;
             margin: 0 10px;
         }
+        .custom-dropdown.open {
+            z-index: 1000;
+        }
         .dropdown-button {
-            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
-            font-size: 1rem !important; 
-            font-weight: 400 !important; 
-            line-height: 1.5 !important; 
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
+            font-size: 1.2rem !important; 
+            font-weight: normal !important; 
+            line-height: 1.6 !important; 
             text-align: center !important; 
             width: 100% !important; 
             min-width: 120px !important; 
@@ -297,6 +311,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             box-sizing: border-box !important;
             margin: 0 !important;
             outline: none !important;
+            letter-spacing: 0.4px !important;
         }
         .dropdown-button:hover {
             background-color: #0075b4;
@@ -320,15 +335,19 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             display: block;
         }
         .dropdown-option {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            font-weight: normal;
+            line-height: 1.6;
+            text-align: left;
+            color: #333;
             padding: 12px 16px;
             cursor: pointer;
             border-bottom: 1px solid #eee;
-            color: #333;
-            font-size: 1rem;
-            line-height: 1.5;
             min-height: 40px;
             display: flex;
             align-items: center;
+            letter-spacing: 0.4px;
         }
         .dropdown-option:hover {
             background-color: #f5f5f5;
@@ -338,10 +357,10 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         }
         /* Furigana styling for dropdown */
         .dropdown-button ruby, .dropdown-option ruby {
-            font-size: 0.8em;
+            font-size: 1em;
         }
         .dropdown-button rt, .dropdown-option rt {
-            font-size: 0.7em;
+            font-size: 0.6em;
             color: #666;
         }
         .answer-select:hover {
@@ -377,35 +396,73 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         }
         .answer-select.correct { border-color: #4caf50; background-color: #4caf50; color: #000; font-weight: bold; }
         .answer-select.incorrect { border-color: #f44336; background-color: #f44336; color: #fff; font-weight: bold; }
-        .correct-answer { color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #4caf50; display: inline-block; margin: 2px; }
+        .correct-answer { 
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            line-height: 1.6;
+            text-align: left;
+            color: #fff; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            background-color: #4caf50; 
+            display: inline-block; 
+            margin: 2px;
+            letter-spacing: 0.4px;
+        }
         .correct-answer rt { color: #fff !important; }
-        .wrong-answer { color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #f44336; display: inline-block; margin: 2px; }
+        .wrong-answer { 
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            line-height: 1.6;
+            text-align: left;
+            color: #fff; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            background-color: #f44336; 
+            display: inline-block; 
+            margin: 2px;
+            letter-spacing: 0.4px;
+        }
         .wrong-answer rt { color: #fff !important; }
         .answer-comparison { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
         .answer-replacement { display: inline-block; }
         .script-highlight { color: #b40000; font-weight: normal; }
-        .no-answer { color: #666; border-bottom: 2px solid #666; padding: 0 4px; margin: 0 2px; }
+        .no-answer { 
+            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
+            font-weight: normal;
+            line-height: 1.6;
+            text-align: left;
+            color: #666; 
+            border-bottom: 2px solid #666; 
+            padding: 0 4px; 
+            margin: 0 2px;
+            letter-spacing: 0.4px;
+        }
         .answer-item { 
-            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-            font-size: 1rem; 
-            font-weight: 400; 
-            line-height: 1.5; 
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
+            font-size: 1.2rem; 
+            font-weight: normal; 
+            line-height: 1.6; 
             text-align: left; 
-            margin-bottom: 10px; 
+            margin: 0; 
             color: #333; 
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             gap: 5px;
+            letter-spacing: 0.4px;
         }
         .answers-list { padding: 5px; background: white; border-radius: 2px; margin: 5px 0; }
         /* Furigana (Ruby) styling */
-        ruby { font-size: 0.8em; }
-        rt { font-size: 0.7em; color: #666; }
-        .instructions ruby { font-size: 0.85em; }
-        .instructions rt { font-size: 0.7em; color: #666; }
-        .answers-list ruby { font-size: 0.85em; }
-        .answers-list rt { font-size: 0.7em; color: #666; }
+        ruby { font-size: 1em; }
+        rt { font-size: 0.6em; color: #666; }
+        .instructions ruby { font-size: 1em; }
+        .instructions rt { font-size: 0.6em; color: #666; }
+        .answers-list ruby { font-size: 1em; }
+        .answers-list rt { font-size: 0.6em; color: #666; }
         @media (max-width: 768px) { .container { padding: 15px; gap: 15px; } .content-wrapper { gap: 15px; } }
     </style>
 </head>
@@ -524,9 +581,13 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                 document.querySelectorAll('.dropdown-options').forEach(function(opt) {
                     opt.classList.remove('show');
                 });
+                document.querySelectorAll('.custom-dropdown').forEach(function(dropdown) {
+                    dropdown.classList.remove('open');
+                });
                 // Toggle current dropdown
                 if (!isOpen) {
                     this.parentNode.querySelector('.dropdown-options').classList.add('show');
+                    this.parentNode.classList.add('open');
                 }
             });
             
@@ -544,6 +605,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     
                     // Close dropdown
                     this.parentNode.classList.remove('show');
+                    this.parentNode.parentNode.classList.remove('open');
                     
                     // Update selected answers
                     var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
@@ -562,6 +624,9 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             if (!e.target.closest('.custom-dropdown')) {
                 document.querySelectorAll('.dropdown-options').forEach(function(opt) {
                     opt.classList.remove('show');
+                });
+                document.querySelectorAll('.custom-dropdown').forEach(function(dropdown) {
+                    dropdown.classList.remove('open');
                 });
             }
         });
@@ -650,9 +715,13 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     document.querySelectorAll('.dropdown-options').forEach(function(opt) {
                         opt.classList.remove('show');
                     });
+                    document.querySelectorAll('.custom-dropdown').forEach(function(dropdown) {
+                        dropdown.classList.remove('open');
+                    });
                     // Toggle current dropdown
                     if (!isOpen) {
                         this.parentNode.querySelector('.dropdown-options').classList.add('show');
+                        this.parentNode.classList.add('open');
                     }
                 });
                 
@@ -670,6 +739,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                         
                         // Close dropdown
                         this.parentNode.classList.remove('show');
+                        this.parentNode.parentNode.classList.remove('open');
                         
                         // Update selected answers
                         var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;

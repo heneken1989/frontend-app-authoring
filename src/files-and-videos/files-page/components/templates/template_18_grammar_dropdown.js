@@ -303,9 +303,8 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             background-size: 18px !important;
             color: #333 !important; 
             cursor: pointer !important; 
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
+            display: block !important;
+            text-align: center !important;
             padding: 8px 40px 8px 12px !important; 
             transition: all 0.3s ease !important;
             box-sizing: border-box !important;
@@ -355,7 +354,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         .dropdown-option:last-child {
             border-bottom: none;
         }
-        /* Furigana styling for dropdown */
+        /* Furigana styling for dropdown - Simple approach */
         .dropdown-button ruby, .dropdown-option ruby {
             font-size: 1em;
         }
@@ -449,20 +448,19 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             text-align: left; 
             margin: 0; 
             color: #333; 
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 5px;
+            display: block;
             letter-spacing: 0.4px;
         }
         .answers-list { padding: 5px; background: white; border-radius: 2px; margin: 5px 0; }
-        /* Furigana (Ruby) styling */
-        ruby { font-size: 1em; }
-        rt { font-size: 0.6em; color: #666; }
-        .instructions ruby { font-size: 1em; }
-        .instructions rt { font-size: 0.6em; color: #666; }
-        .answers-list ruby { font-size: 1em; }
-        .answers-list rt { font-size: 0.6em; color: #666; }
+        /* Furigana (Ruby) styling - Simple approach like template_28 */
+        ruby {
+            font-size: 1em;
+        }
+        
+        rt {
+            font-size: 0.6em;
+            color: #666;
+        }
         @media (max-width: 768px) { .container { padding: 15px; gap: 15px; } .content-wrapper { gap: 15px; } }
     </style>
 </head>

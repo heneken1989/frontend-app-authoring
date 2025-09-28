@@ -290,7 +290,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
             font-size: 1.2rem !important; 
             font-weight: normal !important; 
-            line-height: 1.6 !important; 
+            line-height: 1.2 !important; 
             text-align: center !important; 
             width: 100% !important; 
             min-width: 120px !important; 
@@ -305,9 +305,10 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             background-size: 18px !important;
             color: #333 !important; 
             cursor: pointer !important; 
-            display: block !important;
-            text-align: center !important;
-            padding: 6px 40px 6px 12px !important; 
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 40px 0 12px !important; 
             transition: all 0.3s ease !important;
             box-sizing: border-box !important;
             margin: 0 !important;
@@ -456,6 +457,12 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         .answer-item .custom-dropdown {
             vertical-align: middle;
             display: inline-block;
+        }
+        .dropdown-button ruby {
+            vertical-align: baseline;
+        }
+        .dropdown-button rt {
+            vertical-align: baseline;
         }
         .answers-list { padding: 5px; background: white; border-radius: 2px; margin: 5px 0; }
         /* Furigana (Ruby) styling - Simple approach like template_28 */

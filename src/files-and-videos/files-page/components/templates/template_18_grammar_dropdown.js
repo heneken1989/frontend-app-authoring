@@ -281,6 +281,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             width: 200px;
             z-index: 1;
             margin: 0 10px;
+            vertical-align: middle;
         }
         .custom-dropdown.open {
             z-index: 1000;
@@ -293,7 +294,8 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             text-align: center !important; 
             width: 100% !important; 
             min-width: 120px !important; 
-            min-height: 40px !important;
+            height: 32px !important;
+            min-height: 32px !important;
             border: 1px solid #666 !important; 
             border-radius: 4px !important; 
             background-color: white !important; 
@@ -305,7 +307,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             cursor: pointer !important; 
             display: block !important;
             text-align: center !important;
-            padding: 8px 40px 8px 12px !important; 
+            padding: 6px 40px 6px 12px !important; 
             transition: all 0.3s ease !important;
             box-sizing: border-box !important;
             margin: 0 !important;
@@ -450,6 +452,10 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             color: #333; 
             display: block;
             letter-spacing: 0.4px;
+        }
+        .answer-item .custom-dropdown {
+            vertical-align: middle;
+            display: inline-block;
         }
         .answers-list { padding: 5px; background: white; border-radius: 2px; margin: 5px 0; }
         /* Furigana (Ruby) styling - Simple approach like template_28 */

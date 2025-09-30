@@ -37,25 +37,26 @@ import * as XLSX from 'xlsx'; // Added for Excel parsing
 
 // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
 const convertFurigana = (text) => {
-  if (!text || typeof text !== 'string') return text;
+  if (!text || typeof text !== "string") return text;
 
-  // Unicode ranges for Japanese characters
-  const jpWord = "[\\u4E00-\\u9FFF\\u3040-\\u309F\\u30A0-\\u30FF\\u30FC\\u3005\\u30FB\\w\\s\\u3000]+";
+  // Chỉ Kanji (và vài ký tự đặc biệt)
+  const kanjiWord = "[\u4E00-\u9FFF々〆〤ヶ]+";
 
-  // Japanese parentheses: 毎日（まいにち）
-  const reJaParens = new RegExp('(' + jpWord + ')（([^）]+)）', 'g');
-  text = text.replace(reJaParens, function(match, p1, p2) {
-    return '<ruby>' + (p1 || '').trim() + '<rt>' + p2 + '</rt></ruby>';
+  // Dấu ngoặc Nhật (全角)
+  const reJaParens = new RegExp("(" + kanjiWord + ")（([^）]+)）", "g");
+  text = text.replace(reJaParens, (match, p1, p2) => {
+    return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
   });
 
-  // ASCII parentheses: 車(くるま)
-  const reAsciiParens = new RegExp('(' + jpWord + ')\\(([^)]+)\\)', 'g');
-  text = text.replace(reAsciiParens, function(match, p1, p2) {
-    return '<ruby>' + (p1 || '').trim() + '<rt>' + p2 + '</rt></ruby>';
+  // Dấu ngoặc ASCII (半角)
+  const reAsciiParens = new RegExp("(" + kanjiWord + ")\\(([^)]+)\\)", "g");
+  text = text.replace(reAsciiParens, (match, p1, p2) => {
+    return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
   });
-  
+
   return text;
 };
+
 
 // Excel parsing function
 const parseExcelFile = (file) => {
@@ -134,36 +135,54 @@ const parseExcelFile = (file) => {
           
           // NEW: Parse startTime/endTime column (format: "0.34-0.50" = 34 seconds to 50 seconds)
           if (quiz['startTime/endTime'] && typeof quiz['startTime/endTime'] === 'string') {
-            const timeParts = quiz['startTime/endTime'].split('-');
-            if (timeParts.length === 2) {
-              // Parse start time: "0.34" = 34 seconds
-              const startTimePart = timeParts[0];
-              let startTime = 0;
-              if (startTimePart.includes('.')) {
-                const [minutes, secondsPart] = startTimePart.split('.');
-                const minutesNum = parseInt(minutes) || 0;
-                const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
-                startTime = minutesNum * 60 + secondsNum;
-              } else {
-                startTime = parseFloat(startTimePart) || 0;
+            const timeValue = quiz['startTime/endTime'];
+            console.log('🔍 Processing startTime/endTime:', timeValue);
+            
+            // Check if it contains semicolon (multiple segments)
+            if (timeValue.includes(';')) {
+              // Multiple segments format: "0.04-0.09;0.21-0.30"
+              quiz.timeSegmentsString = timeValue;
+              console.log('🔍 Detected multiple segments, setting timeSegmentsString:', timeValue);
+            } else {
+              // Single segment format: "0.34-0.50"
+              const timeParts = timeValue.split('-');
+              if (timeParts.length === 2) {
+                // Parse start time: "0.34" = 34 seconds
+                const startTimePart = timeParts[0];
+                let startTime = 0;
+                if (startTimePart.includes('.')) {
+                  const [minutes, secondsPart] = startTimePart.split('.');
+                  const minutesNum = parseInt(minutes) || 0;
+                  const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
+                  startTime = minutesNum * 60 + secondsNum;
+                } else {
+                  startTime = parseFloat(startTimePart) || 0;
+                }
+                
+                // Parse end time: "0.50" = 50 seconds
+                const endTimePart = timeParts[1];
+                let endTime = 0;
+                if (endTimePart.includes('.')) {
+                  const [minutes, secondsPart] = endTimePart.split('.');
+                  const minutesNum = parseInt(minutes) || 0;
+                  const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
+                  endTime = minutesNum * 60 + secondsNum;
+                } else {
+                  endTime = parseFloat(endTimePart) || 0;
+                }
+                
+                quiz.startTime = startTime;
+                quiz.endTime = endTime;
+                console.log(`Parsed single segment startTime/endTime "${timeValue}": start=${startTime}s, end=${endTime}s`);
               }
-              
-              // Parse end time: "0.50" = 50 seconds
-              const endTimePart = timeParts[1];
-              let endTime = 0;
-              if (endTimePart.includes('.')) {
-                const [minutes, secondsPart] = endTimePart.split('.');
-                const minutesNum = parseInt(minutes) || 0;
-                const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
-                endTime = minutesNum * 60 + secondsNum;
-              } else {
-                endTime = parseFloat(endTimePart) || 0;
-              }
-              
-              quiz.startTime = startTime;
-              quiz.endTime = endTime;
-              console.log(`Parsed startTime/endTime "${quiz['startTime/endTime']}": start=${startTime}s, end=${endTime}s`);
             }
+          }
+          
+          // NEW: Parse timeSegments column (format: "0.04-0.09;0.21-0.30" = multiple segments)
+          if (quiz.timeSegments && typeof quiz.timeSegments === 'string') {
+            // Store the original timeSegments string for templates that support it
+            quiz.timeSegmentsString = quiz.timeSegments;
+            console.log(`Found timeSegments: "${quiz.timeSegments}"`);
           }
           
           return quiz;
@@ -702,14 +721,18 @@ const generateQuizTemplate = (templateId, quizData) => {
       const dragDropWords = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
       // Process blank boxes first, then apply furigana conversion
       const processedParagraphText = convertFurigana(quizData.paragraphText.replace(/（ー）/g, '___BLANK_PLACEHOLDER___'));
-      return getDragDropQuizTemplate(processedParagraphText, dragDropWords, quizData.instructions, quizData.instructorContent || '');
+      // Apply furigana to instructions
+      const processedInstructions = convertFurigana(quizData.instructions);
+      return getDragDropQuizTemplate(processedParagraphText, dragDropWords, processedInstructions, quizData.instructorContent || '');
     
 
     case TEMPLATE_IDS.ID25_DRAG_DROP: // Drag and Drop Quiz (ID 25)
       const dragDropWords1 = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
       // Process blank boxes first, then apply furigana conversion
       const processedParagraphText1 = convertFurigana(quizData.paragraphText.replace(/（ー）/g, '___BLANK_PLACEHOLDER___'));
-      return getDragDropQuizTemplate(processedParagraphText1, dragDropWords1, quizData.instructions, quizData.instructorContent || '');
+      // Apply furigana to instructions
+      const processedInstructions1 = convertFurigana(quizData.instructions);
+      return getDragDropQuizTemplate(processedParagraphText1, dragDropWords1, processedInstructions1, quizData.instructorContent || '');
 
 
 
@@ -717,7 +740,9 @@ const generateQuizTemplate = (templateId, quizData) => {
       const vocabDragDropWords = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
       // Process blank boxes first, then apply furigana conversion
       const processedParagraphText12 = convertFurigana(quizData.paragraphText.replace(/（ー）/g, '___BLANK_PLACEHOLDER___'));
-      return getDragDropQuizTemplate(processedParagraphText12, vocabDragDropWords);
+      // Apply furigana to instructions
+      const processedInstructions12 = convertFurigana(quizData.instructions);
+      return getDragDropQuizTemplate(processedParagraphText12, vocabDragDropWords, processedInstructions12);
 
       case TEMPLATE_IDS.LISTEN_FILL_BLANK: // Listen and Fill in the Blank
         // Parse the options for each blank
@@ -840,23 +865,33 @@ const generateQuizTemplate = (templateId, quizData) => {
           );
 
     case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
+      // Use timeSegmentsString if available, otherwise convert startTime and endTime
+      const timeSegments = quizData.timeSegmentsString || 
+        (quizData.startTime && quizData.endTime 
+          ? `${quizData.startTime}-${quizData.endTime}` 
+          : '0-0');
+      
       return getListenSingleChoiceNoImageTemplate(
         quizData.paragraphText,
         quizData.blankOptions,
         quizData.audioFile || '',
-        quizData.startTime || 0,
-        quizData.endTime || 0,
+        timeSegments,
         quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
         quizData.scriptText || ''
       );
     
     case TEMPLATE_IDS.ID44_LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
+      // Use timeSegmentsString if available, otherwise convert startTime and endTime
+      const timeSegments44 = quizData.timeSegmentsString || 
+        (quizData.startTime && quizData.endTime 
+          ? `${quizData.startTime}-${quizData.endTime}` 
+          : '0-0');
+      
       return getListenSingleChoiceNoImageTemplate(
         quizData.paragraphText,
         quizData.blankOptions,
         quizData.audioFile || '',
-        quizData.startTime || 0,
-        quizData.endTime || 0,
+        timeSegments44,
         quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
         quizData.scriptText || ''
       );
@@ -1561,6 +1596,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           images: String(quiz.images || ''), // Add mapping for images column
           startTime: parseFloat(quiz.startTime) || 0,
           endTime: parseFloat(quiz.endTime) || 0,
+          timeSegmentsString: String(quiz.timeSegmentsString || quiz.timeSegments || ''), // Add timeSegmentsString
           timeLimit: parseInt(quiz.timeLimit) || 60, // Default to 60 seconds
           published: quiz.published !== 'false',
           correctAnswers: String(quiz.correctAnswers || ''),
@@ -1578,12 +1614,15 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           unitTitle: quizData.unitTitle,
           startTime: quizData.startTime,
           endTime: quizData.endTime,
+          timeSegmentsString: quizData.timeSegmentsString,
           audioFile: quizData.audioFile,
           problemTypeId: quizData.problemTypeId,
           originalStartTime: quiz.startTime,
           originalEndTime: quiz.endTime,
           hasStartTimeEndTime: !!quiz['startTime/endTime'],
-          startTimeEndTimeValue: quiz['startTime/endTime']
+          startTimeEndTimeValue: quiz['startTime/endTime'],
+          hasTimeSegments: !!quiz.timeSegments,
+          timeSegmentsValue: quiz.timeSegments
         });
 
         // Create quiz using existing createQuiz function
@@ -1711,6 +1750,8 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               <br />
               • startTime/endTime (format: "0.34-0.50" = 34s to 50s)
               <br />
+              • timeSegments (format: "0.04-0.09;0.21-0.30" = multiple segments for ID 40)
+              <br />
               <strong>Problem Type IDs:</strong> 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 20 (Drag Drop), etc.
             </Form.Text>
           </Form.Group>
@@ -1821,6 +1862,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
     images: '',
     startTime: 0,
     endTime: 0,
+    timeSegmentsString: '',
     questionText: '',
     words: '',
     dropZones: '[]'
@@ -1856,6 +1898,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
       images: '',
       startTime: 0,
       endTime: 0,
+      timeSegmentsString: '',
       questionText: '',
       words: '',
       dropZones: '[]'
@@ -1879,6 +1922,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
         audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
         imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
         'startTime/endTime': '0.34-0.50',
+        timeSegments: '0.04-0.09;0.21-0.30',
         timeLimit: '60', // 60 seconds
         published: 'true'
       },
@@ -1999,6 +2043,7 @@ A:そうですか。`,
           audioFile: quizData.audioFile,
           startTime: quizData.startTime,
           endTime: quizData.endTime,
+          timeSegmentsString: quizData.timeSegmentsString || '',
           blankOptions: quizData.blankOptions,
           optionsForBlanks: quizData.optionsForBlanks,
           scriptText: quizData.scriptText,

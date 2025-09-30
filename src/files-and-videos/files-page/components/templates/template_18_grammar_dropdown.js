@@ -259,7 +259,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         select:focus { outline: none; }
         
         body { font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 1.2rem; font-weight: 400; line-height: 1.6; text-align: left; margin: 0; padding: 0; color: #414141; height: auto; position: relative; background-color: white; }
-        .container { position: relative; height: auto; display: flex; flex-direction: column; gap: 20px; background-color: white; padding: 1.5rem; max-width: 800px; margin: 0 auto; }
+        .container { position: relative; height: auto; display: flex; flex-direction: column; gap: 20px; background-color: white; padding: 1.5rem; max-width: 900px; margin: 0 auto; }
         .content-wrapper { background: white; padding: 0; display: flex; flex-direction: column; gap: 10px; }
         .instructions { font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 1.2rem; font-weight: bold; line-height: 1.5; text-align: left; background-color: white; color: #333; font-style: italic; margin: 0 0 20px 0; letter-spacing: 0.3px; }
         .instructions:before { display: none; }
@@ -277,10 +277,10 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         .custom-dropdown {
             position: relative;
             display: inline-block;
-            min-width: 120px;
-            width: 200px;
+            min-width: 100px;
+            width: auto;
             z-index: 1;
-            margin: 0 10px;
+            margin: 0 2px;
             vertical-align: middle;
         }
         .custom-dropdown.open {
@@ -292,8 +292,8 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             font-weight: normal !important; 
             line-height: 1.2 !important; 
             text-align: center !important; 
-            width: 100% !important; 
-            min-width: 120px !important; 
+            width: auto !important; 
+            min-width: 100px !important; 
             height: 32px !important;
             min-height: 32px !important;
             border: 1px solid #666 !important; 
@@ -305,7 +305,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             background-size: 18px !important;
             color: #333 !important; 
             cursor: pointer !important; 
-            display: flex !important;
+            display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
             padding: 0 40px 0 12px !important; 
@@ -614,6 +614,26 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     button.innerHTML = selectedText;
                     button.setAttribute('data-value', selectedValue);
                     
+                    // Auto-adjust width to fit content
+                    var tempSpan = document.createElement('span');
+                    tempSpan.style.visibility = 'hidden';
+                    tempSpan.style.position = 'absolute';
+                    tempSpan.style.fontSize = button.style.fontSize || '1.2rem';
+                    tempSpan.style.fontFamily = button.style.fontFamily || 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                    tempSpan.style.fontWeight = button.style.fontWeight || 'normal';
+                    tempSpan.style.letterSpacing = button.style.letterSpacing || '0.4px';
+                    tempSpan.innerHTML = selectedText;
+                    document.body.appendChild(tempSpan);
+                    
+                    var textWidth = tempSpan.offsetWidth;
+                    document.body.removeChild(tempSpan);
+                    
+                    // Set width to fit content (add padding for dropdown arrow)
+                    var newWidth = Math.max(100, textWidth + 52); // 52px for padding and arrow
+                    button.style.width = newWidth + 'px';
+                    // Also update the dropdown container width
+                    dropdown.style.width = newWidth + 'px';
+                    
                     // Close dropdown
                     this.parentNode.classList.remove('show');
                     this.parentNode.parentNode.classList.remove('open');
@@ -695,6 +715,10 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     if (button) {
                         button.setAttribute('data-value', '');
                         button.innerHTML = '';
+                        // Reset width to min-width
+                        button.style.width = '100px';
+                        // Also reset the dropdown container width
+                        restoredDropdown.style.width = '100px';
                     }
                     replacement.parentNode.replaceChild(restoredDropdown, replacement);
                 }
@@ -747,6 +771,26 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                         // Update button text
                         button.innerHTML = selectedText;
                         button.setAttribute('data-value', selectedValue);
+                        
+                        // Auto-adjust width to fit content
+                        var tempSpan = document.createElement('span');
+                        tempSpan.style.visibility = 'hidden';
+                        tempSpan.style.position = 'absolute';
+                        tempSpan.style.fontSize = button.style.fontSize || '1.2rem';
+                        tempSpan.style.fontFamily = button.style.fontFamily || 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                        tempSpan.style.fontWeight = button.style.fontWeight || 'normal';
+                        tempSpan.style.letterSpacing = button.style.letterSpacing || '0.4px';
+                        tempSpan.innerHTML = selectedText;
+                        document.body.appendChild(tempSpan);
+                        
+                        var textWidth = tempSpan.offsetWidth;
+                        document.body.removeChild(tempSpan);
+                        
+                        // Set width to fit content (add padding for dropdown arrow)
+                        var newWidth = Math.max(100, textWidth + 52); // 52px for padding and arrow
+                        button.style.width = newWidth + 'px';
+                        // Also update the dropdown container width
+                        dropdown.style.width = newWidth + 'px';
                         
                         // Close dropdown
                         this.parentNode.classList.remove('show');
@@ -937,9 +981,48 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                                 var index = parseInt(key);
                                 var value = answers[key];
                                 selectedAnswers[index] = value;
-                                var selects = document.querySelectorAll('.answer-select');
-                                if (selects[index]) {
-                                    selects[index].value = value;
+                                
+                                // Update custom dropdowns
+                                var dropdowns = document.querySelectorAll('.custom-dropdown');
+                                if (dropdowns[index]) {
+                                    var dropdown = dropdowns[index];
+                                    var button = dropdown.querySelector('.dropdown-button');
+                                    if (button && value) {
+                                        // Find the option text for this value
+                                        var options = dropdown.querySelectorAll('.dropdown-option');
+                                        var selectedText = '';
+                                        for (var i = 0; i < options.length; i++) {
+                                            if (options[i].getAttribute('data-value') === value) {
+                                                selectedText = options[i].innerHTML;
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if (selectedText) {
+                                            button.innerHTML = selectedText;
+                                            button.setAttribute('data-value', value);
+                                            
+                                            // Auto-adjust width to fit content
+                                            var tempSpan = document.createElement('span');
+                                            tempSpan.style.visibility = 'hidden';
+                                            tempSpan.style.position = 'absolute';
+                                            tempSpan.style.fontSize = button.style.fontSize || '1.2rem';
+                                            tempSpan.style.fontFamily = button.style.fontFamily || 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                                            tempSpan.style.fontWeight = button.style.fontWeight || 'normal';
+                                            tempSpan.style.letterSpacing = button.style.letterSpacing || '0.4px';
+                                            tempSpan.innerHTML = selectedText;
+                                            document.body.appendChild(tempSpan);
+                                            
+                                            var textWidth = tempSpan.offsetWidth;
+                                            document.body.removeChild(tempSpan);
+                                            
+                                            // Set width to fit content (add padding for dropdown arrow)
+                                            var newWidth = Math.max(100, textWidth + 52); // 52px for padding and arrow
+                                            button.style.width = newWidth + 'px';
+                                            // Also update the dropdown container width
+                                            dropdown.style.width = newWidth + 'px';
+                                        }
+                                    }
                                 }
                             }
                         }

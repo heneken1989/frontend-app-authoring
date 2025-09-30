@@ -62,12 +62,12 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         .word-bank {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.8rem;
+            gap: 3px;
             margin: 0.5rem 0;
             padding: 0.2rem;
             background-color: transparent;
             border-radius: 0;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
         }
         .draggable-word {
@@ -78,7 +78,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             cursor: move;
             user-select: none;
             transition: background-color 0.2s;
-            font-size: 0.9rem;
+            font-size: 1.2rem;
             min-width: 60px;
             text-align: left;
             letter-spacing: 0.05em;
@@ -86,6 +86,8 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             width: auto;
             height: auto;
             display: inline-block;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
         .draggable-word:hover {
             background-color: #005a8c;
@@ -104,7 +106,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             background-color: white;
             text-align: left;
             line-height: 1.4;
-            font-size: 0.9rem;
+            font-size: 1.2rem;
             position: relative;
             letter-spacing: 0.05em;
             padding: 8px 12px;
@@ -159,7 +161,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             padding: 0.2rem 0.4rem;
             border-radius: 3px;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 1.2rem;
             text-align: left;
             min-width: 50px;
             letter-spacing: 0.05em;
@@ -195,7 +197,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             padding: 0.2rem 0.4rem;
             border-radius: 3px;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 1.2rem;
             text-align: left;
             min-width: 50px;
             letter-spacing: 0.05em;
@@ -222,7 +224,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             padding: 1rem;
             border-radius: 4px;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             letter-spacing: 0.05em;
         }
         .success {
@@ -237,7 +239,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         .answer-feedback {
             margin-top: 1rem;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             letter-spacing: 0.05em;
         }
         .correct-answer {
@@ -286,7 +288,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             padding: 0.8rem 1rem;
             border-radius: 3px;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 1.2rem;
             background: #f9ecec !important;
             background-color: #f9ecec !important;
             color: #b40000 !important;
@@ -300,11 +302,11 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         .answer-paragraph {
             margin: 0;
             background-color: #ffffff;
-            line-height: 1.6;
+            line-height: 2.16;
             box-shadow: none;
             border-radius: 3px;
             padding: 0;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             display: block;
             letter-spacing: 0.05em;
         }
@@ -316,7 +318,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
             box-sizing: border-box;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             letter-spacing: 0.05em;
         }
         .quiz-word.correct {
@@ -339,7 +341,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             vertical-align: middle;
             min-width: 80px;
             text-align: left;
-            font-size: 0.9rem;
+            font-size: 1.2rem;
             letter-spacing: 0.05em;
         }
         .answer-blank .quiz-word {
@@ -347,7 +349,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             padding: 0.3rem 0.5rem;
             border-radius: 4px;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 1.2rem;
             letter-spacing: 0.05em;
         }
         #answer-paragraph form {
@@ -366,11 +368,11 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             font-weight: bold;
             color: #0075b4;
             margin-bottom: 0.5rem;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             letter-spacing: 0.05em;
         }
         .instructor-content {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             line-height: 1.6;
             color: #333;
             letter-spacing: 0.05em;
@@ -381,7 +383,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             border-radius: 3px;
             padding: 0.5rem;
             margin-top: 0.5rem;
-            font-size: 1rem;
+            font-size: 1.2rem;
             color: #856404;
         }
         .instructions {
@@ -401,28 +403,37 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         }
         #answer-paragraph form > div {
             margin-bottom: 1rem;
-            line-height: 1.8;
-            font-size: 1.1rem;
+            line-height: 2.16;
+            font-size: 1.2rem;
             letter-spacing: 0.05em;
         }
         
         /* Furigana styling */
         ruby { 
-            font-size: 0.85em; 
+            font-size: 1.2rem !important; 
         }
         rt { 
-            font-size: 0.7em; 
-            color: #fff; 
+            font-size: 0.8rem !important; 
+            color: #666; 
         }
         
         /* Furigana styling for draggable words */
         .draggable-word ruby { 
-            font-size: 1.2em; 
+            font-size: 1.2rem !important; 
         }
         .draggable-word rt { 
-            font-size: 0.7em; 
+            font-size: 0.8rem !important; 
             color: #fff !important; 
             opacity: 0.9;
+        }
+        
+        /* Furigana styling for correct boxes (blue background) */
+        .correct-box rt,
+        .correct-box ruby rt,
+        .quiz-word.correct rt,
+        .quiz-word.correct ruby rt { 
+            color: #fff !important; 
+            font-size: 0.8rem !important;
         }
         
         /* Ensure furigana in draggable words is white */
@@ -434,30 +445,30 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         
         /* Furigana styling for blank content */
         .blank ruby { 
-            font-size: 1.2em; 
+            font-size: 1.2rem !important; 
         }
         .blank rt { 
-            font-size: 0.7em; 
+            font-size: 0.8rem !important; 
             color: #333 !important; 
             opacity: 0.8;
         }
         
         /* Furigana styling for incorrect answers (red boxes) */
         .blank.incorrect ruby { 
-            font-size: 1.2em; 
+            font-size: 1.2rem !important; 
         }
         .blank.incorrect rt { 
-            font-size: 0.7em; 
+            font-size: 0.8rem !important; 
             color: #fff !important; 
             opacity: 0.9;
         }
         
         /* Furigana styling for quiz words in feedback */
         .quiz-word.incorrect ruby { 
-            font-size: 1.2em; 
+            font-size: 1.2rem !important; 
         }
         .quiz-word.incorrect rt { 
-            font-size: 0.7em; 
+            font-size: 0.8rem !important; 
             color: #fff !important; 
             opacity: 0.9;
         }

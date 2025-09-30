@@ -7,8 +7,9 @@ import quizMessages from '../quiz-messages';
 import { 
   getQuizTemplate, 
   getDragDropQuizTemplate, 
-  getListenFillInBlankTemplate,
-  getFillInBlankTemplate,
+  processGrammarSentenceRearrangement,
+  getListenFillInBlankTemplate, 
+  getFillInBlankTemplate, 
   getListenWithImageMultipleDifferentBlankOptionsTemplate,
   getGrammarDropdownTemplate,
   getGrammarSentenceRearrangementTemplate,
@@ -1082,8 +1083,14 @@ const generateQuizTemplate = (templateId, quizData) => {
                     );
 
     case TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT:
-      const sentenceWords = quizData.wordBank.split(',').map(word => word.trim());
-      return getGrammarSentenceRearrangementTemplate(sentenceWords, quizData.instructions || '正しい順番に並び替えてください。');
+      const sentenceWords = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
+      // Process paragraph text with furigana conversion first
+      const paragraphWithFurigana = convertFurigana(quizData.paragraphText);
+      // Process blanks using templateUtils
+      const { processedParagraph, wordBankHTML } = processGrammarSentenceRearrangement(paragraphWithFurigana, sentenceWords);
+      // Apply furigana to instructions
+      const processedInstructions22 = convertFurigana(quizData.instructions);
+      return getGrammarSentenceRearrangementTemplate(processedParagraph, wordBankHTML, processedInstructions22, quizData.instructorContent || '');
 
     case TEMPLATE_IDS.ID27_GRAMMAR_SENTENCE_REARRANGEMENT:
         const sentenceWords1 = quizData.wordBank.split(',').map(word => word.trim());

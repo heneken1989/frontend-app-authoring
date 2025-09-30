@@ -1,55 +1,18 @@
 import { TEMPLATE_IDS } from './templateUtils';
 
-// Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
-function convertFurigana(text) {
-    return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
-}
-
-// Template ID: TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT
-export const getGrammarSentenceRearrangementTemplate = (words, instructions = '正しい順番に並び替えてください。') => {
-    const blanks = words.map((_, index) => 
-        `<div id="blank${index + 1}" class="blank" draggable="false"></div>`
-    ).join(' ');
-
-    // Shuffle words using the helper function
-    const shuffledWords = [...words];
-    for (let i = shuffledWords.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
-    }
-
-    const wordBankHTML = shuffledWords.map(word => 
-        `<div class="draggable-word" draggable="true">${convertFurigana(word)}</div>`
-    ).join('');
-
-    return grammarSentenceRearrangementTemplate
-        .replace('{{INSTRUCTIONS}}', instructions)
-        .replace('{{PARAGRAPH_TEXT}}', blanks)
+// Function to generate grammar sentence rearrangement quiz template (same data format as ID 20)
+export const getGrammarSentenceRearrangementTemplate = function(paragraphText, wordBankHTML, instructions = '正しい順番に並び替えてください。', instructorContent = '') {
+    const result = grammarSentenceRearrangementTemplateString
+        .replace('{{PARAGRAPH_TEXT}}', paragraphText)
         .replace('{{WORD_BANK}}', wordBankHTML)
-        .replace('{{CORRECT_SENTENCE}}', convertFurigana(words.join(' ')));
+        .replace('{{INSTRUCTIONS}}', instructions)
+        .replace('{{INSTRUCTOR_CONTENT}}', instructorContent);
+    
+    return result;
 };
 
-const processSentenceRearrangement = (words) => {
-    // Create blanks based on number of words
-    const blanks = words.map((_, index) => 
-        `<div id="blank${index + 1}" class="blank" draggable="false"></div>`
-    ).join(' ');
-
-    // Shuffle words using the helper function
-    const shuffledWords = shuffleArray(words);
-
-    // Create word bank HTML with shuffled words
-    const wordBankHTML = shuffledWords.map(word => 
-        `<div class="draggable-word" draggable="true">${convertFurigana(word)}</div>`
-    ).join('');
-
-    return {
-        processedParagraph: blanks,
-        wordBankHTML
-    };
-};
-
-export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
+// Template string for Grammar Sentence Rearrangement Quiz (ID 22)
+const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
 <html>
 <head>
     <title>Grammar Sentence Rearrangement Quiz</title>
@@ -58,6 +21,11 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
     <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschannel/1.0.0-git-commit1-8c4f7eb/jschannel.min.js"></script>
     <style>
+        /* CSS Reset for cross-browser compatibility */
+        * { 
+            box-sizing: border-box; 
+        }
+        
         body {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
@@ -67,37 +35,51 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
             color: #414141;
             height: 100%;
             position: relative;
+            letter-spacing: 0.05em;
+            width: 100%;
         }
         .container {
-            padding: 1rem;
+            padding: 30px 0.1rem 0.1rem 0.1rem;
             position: relative;
             height: 100%;
+            background-color: white;
+            width: 100%;
+            margin: 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
         }
         .paragraph {
-            background-color: #f8f8f8;
-            padding: 1.5rem;
+            background-color: white;
+            padding: 0.5rem;
             margin-bottom: 1rem;
-            font-size: 1.3rem;
-            line-height: 2;
+            font-size: 1.2rem;
+            line-height: 1.6;
             position: relative;
             z-index: 1;
             border-radius: 4px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            align-items: center;
+            letter-spacing: 0.4px;
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
         }
+        
         .word-bank {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.8rem;
-            margin: 1.5rem 0;
-            padding: 1.2rem;
-            background-color: #f0f0f0;
-            border-radius: 4px;
+            gap: 3px;
+            margin: 0.5rem 0;
+            padding: 0.2rem;
+            background-color: transparent;
+            border-radius: 0;
+            justify-content: center;
+            align-items: center;
         }
         .draggable-word {
-            padding: 0.6rem 1.2rem;
+            padding: 0.4rem 0.8rem;
             background-color: #0075b4;
             color: white;
             border-radius: 4px;
@@ -105,8 +87,15 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
             user-select: none;
             transition: background-color 0.2s;
             font-size: 1.2rem;
-            min-width: 80px;
-            text-align: center;
+            min-width: 60px;
+            text-align: left;
+            letter-spacing: 0.05em;
+            margin: 0.2rem;
+            width: auto;
+            height: auto;
+            display: inline-block;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
         .draggable-word:hover {
             background-color: #005a8c;
@@ -116,68 +105,409 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
         }
         .blank {
             display: inline-block;
-            min-width: 120px;
-            height: 45px;
-            border: 2px dashed #0075b4;
+            min-width: 60px;
+            min-height: 35px;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            margin: 0 0.2rem;
+            margin: 0 0.3rem;
             vertical-align: middle;
             background-color: white;
-            text-align: center;
-            line-height: 45px;
+            text-align: left;
+            line-height: 1.4;
+            font-size: 1.2rem;
+            position: relative;
+            letter-spacing: 0.05em;
+            padding: 8px 12px;
+            width: auto;
+            height: auto;
         }
         .blank.dragover {
-            background-color: #e6f3f8;
+            background-color: #f0f8ff;
+            border-color: #0075b4;
             border-style: solid;
         }
         .blank.filled {
             border-style: solid;
-            border-color: #2e7d32;
-            background-color: #ecf3ec;
+            border-color: #ccc;
+            background-color: white;
+            color: #000;
         }
         .blank.incorrect {
-            border-color: #b40000;
+            border-color: #b40000 !important;
+            background-color: #f9ecec !important;
+        }
+        
+        /* Universal incorrect styling for cross-browser compatibility */
+        .incorrect, 
+        .quiz-word.incorrect,
+        .feedback-replacement .quiz-word.incorrect,
+        .blank.show-feedback .quiz-word.incorrect {
+            background: #b40000 !important;
+            background-color: #b40000 !important;
+            color: #fff !important;
+            border: none !important;
+            outline: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+        .blank.show-feedback {
+            position: relative;
+            display: inline-block;
+            margin: 0 0.3rem;
+            vertical-align: middle;
+        }
+        .blank.show-feedback .answer-container {
+            display: flex;
+            gap: 0.2rem;
+            align-items: center;
+            min-width: 80px;
+        }
+        .blank.show-feedback .quiz-word {
+            display: inline-block;
+            margin: 0 0.02em;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: left;
+            min-width: 50px;
+            letter-spacing: 0.05em;
+        }
+        .blank.show-feedback .quiz-word.correct {
+            background: #2e7d32;
+            color: #fff;
+        }
+        .blank.show-feedback .quiz-word.incorrect {
+            background: #b40000 !important;
+            background-color: #b40000 !important;
+            color: #fff !important;
+            border: none !important;
+            outline: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+        .feedback-replacement {
+            display: inline-block;
+            margin: 0 0.3rem;
+            vertical-align: middle;
+        }
+        .feedback-replacement .answer-container {
+            display: flex;
+            gap: 0.2rem;
+            align-items: center;
+            min-width: 80px;
+        }
+        .feedback-replacement .quiz-word {
+            display: inline-block;
+            margin: 0 0.02em;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: left;
+            min-width: 50px;
+            letter-spacing: 0.05em;
+        }
+        .feedback-replacement .quiz-word.correct {
+            background: #2e7d32;
+            color: #fff;
+        }
+        .feedback-replacement .quiz-word.incorrect {
+            background: #b40000 !important;
+            background-color: #b40000 !important;
+            color: #fff !important;
+            border: none !important;
+            outline: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+        .buttons {
+            margin: 1rem 0;
+        }
+        #feedback {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+        .success {
+            background-color: #ecf3ec;
+            color: #2e7d32;
+            border: 1px solid #c5e0c5;
+        }
+        .error {
             background-color: #f9ecec;
+            color: #b40000;
+            border: 1px solid #ebccd1;
+        }
+        .answer-feedback {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+        .correct-answer {
+            color: #2e7d32;
+            font-weight: bold;
+            padding: 0.2rem 0.4rem;
+            background-color: #ecf3ec;
+            border-radius: 3px;
+        }
+        .wrong-answer {
+            color: #b40000 !important;
+            padding: 0.2rem 0.4rem;
+            background-color: #f9ecec !important;
+            border-radius: 3px;
+            margin-right: 0.3rem;
+            border: none !important;
+            outline: none !important;
+        }
+        .answer-paragraph-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 0.3rem 4rem;
+            background-color: rgba(99, 97, 97, 0.95);
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            display: none;
+            z-index: 2;
+            transition: transform 0.3s ease;
+        }
+        .answer-paragraph-inner {
+            max-width: 90%;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+            padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .answer-feedback {
+            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            background: #f9ecec !important;
+            background-color: #f9ecec !important;
+            color: #b40000 !important;
+            border: 1px solid #ebccd1 !important;
+        }
+        .answer-feedback.success {
+            background: #ecf3ec;
+            color: #2e7d32;
+            border: 1px solid #c5e0c5;
+        }
+        .answer-paragraph {
+            margin: 0;
+            background-color: #ffffff;
+            line-height: 2.16;
+            box-shadow: none;
+            border-radius: 3px;
+            padding: 0;
+            font-size: 1.2rem;
+            display: block;
+            letter-spacing: 0.05em;
+        }
+        .quiz-word {
+            display: inline-block;
+            margin: 0 0.02em;
+            padding: 0.02em 0.1em;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            box-sizing: border-box;
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+        .quiz-word.correct {
+            background: #2e7d32;
+            color: #fff;
+        }
+        .quiz-word.incorrect {
+            background: #b40000 !important;
+            background-color: #b40000 !important;
+            color: #fff !important;
+            border: none !important;
+            outline: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+        .answer-blank {
+            display: inline-block;
+            margin: 0 0.3rem;
+            vertical-align: middle;
+            min-width: 80px;
+            text-align: left;
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+        .answer-blank .quiz-word {
+            margin: 0 0.1rem;
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+        #answer-paragraph form {
+            padding: 0;
+            margin: 0;
+            background: transparent;
+        }
+        .instructor-section {
+            background-color: #f0f8ff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid #0075b4;
+        }
+        .instructor-title {
+            font-weight: bold;
+            color: #0075b4;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+        .instructor-content {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #333;
+            letter-spacing: 0.05em;
+        }
+        .instructor-note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 3px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 1.2rem;
+            color: #856404;
         }
         .instructions {
-            font-style: italic;
-            font-size: 1.1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            background-color: white;
             color: #333;
+            font-style: italic;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
+        }
+        .instructions:before {
+            display: none;
+        }
+        #answer-paragraph form > div {
             margin-bottom: 1rem;
-            padding: 0.8rem;
-            background-color: #f8f9fa;
-            border-left: 4px solid #0075b4;
-            border-radius: 4px;
+            line-height: 2.16;
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Furigana styling */
+        ruby { 
+            font-size: 1.2rem !important; 
+        }
+        rt { 
+            font-size: 0.8rem !important; 
+            color: #666; 
+        }
+        
+        /* Furigana styling for draggable words */
+        .draggable-word ruby { 
+            font-size: 1.2rem !important; 
+        }
+        .draggable-word rt { 
+            font-size: 0.8rem !important; 
+            color: #fff !important; 
+            opacity: 0.9;
+        }
+        
+        /* Furigana styling for correct boxes (blue background) */
+        .correct-box rt,
+        .correct-box ruby rt,
+        .quiz-word.correct rt,
+        .quiz-word.correct ruby rt { 
+            color: #fff !important; 
+            font-size: 0.8rem !important;
+        }
+        
+        /* Ensure furigana in draggable words is white */
+        .draggable-word rt,
+        .draggable-word ruby rt {
+            color: #fff !important;
+            opacity: 0.9 !important;
+        }
+        
+        /* Furigana styling for blank content */
+        .blank ruby { 
+            font-size: 1.2rem !important; 
+        }
+        .blank rt { 
+            font-size: 0.8rem !important; 
+            color: #333 !important; 
+            opacity: 0.8;
+        }
+        
+        /* Furigana styling for incorrect answers (red boxes) */
+        .blank.incorrect ruby { 
+            font-size: 1.2rem !important; 
+        }
+        .blank.incorrect rt { 
+            font-size: 0.8rem !important; 
+            color: #fff !important; 
+            opacity: 0.9;
+        }
+        
+        /* Furigana styling for quiz words in feedback */
+        .quiz-word.incorrect ruby { 
+            font-size: 1.2rem !important; 
+        }
+        .quiz-word.incorrect rt { 
+            font-size: 0.8rem !important; 
+            color: #fff !important; 
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="instructions">{{INSTRUCTIONS}}</div>
+        <div class="instructions" id="quiz-instructions">
+            {{INSTRUCTIONS}}
+        </div>
         <div class="paragraph">
             <form id="quizForm" onsubmit="return false;">
                 {{PARAGRAPH_TEXT}}
                 <div class="word-bank">
                     {{WORD_BANK}}
                 </div>
+                <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
             </form>
         </div>
+        {{INSTRUCTOR_CONTENT}}
+ 
     </div>
 
     <script>
         (function() {
-            const correctSentence = "{{CORRECT_SENTENCE}}";
-            const correctWords = correctSentence.split(' ');
-            let state = {
+            var state = {
                 answers: {},
                 score: 0,
-                attempts: 0
+                attempts: 0,
+                showAnswer: false
             };
-            
-            // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
-            function convertFurigana(text) {
-                return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
-            }
             
             // Helper function to get cookies
             function getCookie(name) {
@@ -195,15 +525,20 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                 return cookieValue;
             }
 
-            function shuffleArray(array) {
-                const shuffled = [...array];
-                for (let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                }
-                return shuffled;
+            // Get correct word order from word bank - will be replaced by CreateQuizButton.jsx
+            const correctWords = [];
+
+            // Initialize EdX integration
+            var channel;
+            if (window.parent !== window) {
+                channel = Channel.build({
+                    window: window.parent,
+                    origin: '*',
+                    scope: 'JSInput'
+                });
             }
 
+            // Drag and Drop functionality
             function initializeDragAndDrop() {
                 const draggableWords = document.querySelectorAll('.draggable-word');
                 const blanks = document.querySelectorAll('.blank');
@@ -224,6 +559,7 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                     blank.setAttribute('draggable', 'true');
                 });
 
+                // Allow dropping back to word bank
                 wordBank.addEventListener('dragover', function(e) {
                     e.preventDefault();
                     wordBank.classList.add('dragover');
@@ -236,7 +572,9 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
 
             function handleDragStart(e) {
                 e.target.classList.add('dragging');
+                // Store both textContent and innerHTML for proper handling
                 e.dataTransfer.setData('text/plain', e.target.textContent);
+                e.dataTransfer.setData('text/html', e.target.innerHTML);
                 e.dataTransfer.setData('source', 'word-bank');
             }
 
@@ -250,6 +588,7 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                     return;
                 }
                 e.dataTransfer.setData('text/plain', e.currentTarget.textContent);
+                e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
                 e.dataTransfer.setData('source', 'blank');
                 e.dataTransfer.setData('blankId', e.currentTarget.id);
                 e.currentTarget.classList.add('dragging');
@@ -274,39 +613,46 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                 blank.classList.remove('dragover');
 
                 const word = e.dataTransfer.getData('text/plain');
+                const wordHTML = e.dataTransfer.getData('text/html');
                 const source = e.dataTransfer.getData('source');
                 const fromBlankId = e.dataTransfer.getData('blankId');
                 const blankId = blank.id;
 
+                // If this blank already has a word, return it to the word bank (replace logic)
                 if (blank.textContent.trim()) {
+                    // Only return if the word is different
                     if (blank.textContent.trim() !== word) {
-                        const wordBank = document.querySelector('.word-bank');
-                        const wordElement = document.createElement('div');
-                        wordElement.className = 'draggable-word';
-                        wordElement.draggable = true;
-                        wordElement.textContent = blank.textContent.trim();
-                        wordElement.addEventListener('dragstart', handleDragStart);
-                        wordElement.addEventListener('dragend', handleDragEnd);
-                        wordBank.appendChild(wordElement);
+                        restoreWordToBank(blank.textContent.trim());
                     }
                 }
 
+                // If moving from another blank, clear that blank
                 if (source === 'blank' && fromBlankId && fromBlankId !== blankId) {
                     const fromBlank = document.getElementById(fromBlankId);
                     if (fromBlank) {
-                        fromBlank.textContent = '';
+                        fromBlank.innerHTML = '';
                         fromBlank.classList.remove('filled');
                         delete state.answers[fromBlankId];
                     }
                 }
 
-                state.answers[blankId] = word;
-                blank.textContent = word;
+                // Store the answer (use HTML version if available, otherwise text)
+                const answerToStore = wordHTML || word;
+                state.answers[blankId] = answerToStore;
+
+                // Update the blank's appearance - use innerHTML to preserve furigana
+                blank.innerHTML = answerToStore;
                 blank.classList.add('filled');
 
-                const draggedWord = Array.from(document.querySelectorAll('.draggable-word')).find(w => w.textContent === word);
+                // Hide the dragged word from the word bank if it exists there
+                // Compare using textContent to find the original word without furigana
+                const draggedWord = Array.from(document.querySelectorAll('.draggable-word')).find(w => {
+                    // Extract text content without HTML tags for comparison
+                    const textContent = w.textContent || w.innerText;
+                    return textContent === word || textContent === word.replace(/<[^>]*>/g, '');
+                });
                 if (draggedWord) {
-                    draggedWord.remove();
+                    draggedWord.style.display = 'none';
                 }
             }
 
@@ -315,120 +661,153 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                 const word = e.dataTransfer.getData('text/plain');
                 const source = e.dataTransfer.getData('source');
                 const fromBlankId = e.dataTransfer.getData('blankId');
-                
                 if (source === 'blank' && fromBlankId) {
+                    // Remove word from blank
                     const fromBlank = document.getElementById(fromBlankId);
                     if (fromBlank) {
-                        fromBlank.textContent = '';
+                        fromBlank.innerHTML = '';
                         fromBlank.classList.remove('filled');
                         delete state.answers[fromBlankId];
                     }
                 }
-                
-                // Get all visible words in the word bank
-                const wordBank = document.querySelector('.word-bank');
-                const visibleWords = Array.from(wordBank.querySelectorAll('.draggable-word'))
-                    .filter(w => w.style.display !== 'none')
-                    .map(w => w.textContent);
-                
-                // Add the returned word and shuffle all visible words
-                visibleWords.push(word);
-                const shuffledWords = shuffleArray(visibleWords);
-                
-                // Remove all existing visible words
-                Array.from(wordBank.querySelectorAll('.draggable-word'))
-                    .filter(w => w.style.display !== 'none')
-                    .forEach(w => w.remove());
-                
-                // Add shuffled words back to word bank
-                shuffledWords.forEach(w => {
-                    const wordElement = document.createElement('div');
-                    wordElement.className = 'draggable-word';
-                    wordElement.draggable = true;
-                    wordElement.textContent = w;
-                    wordElement.addEventListener('dragstart', handleDragStart);
-                    wordElement.addEventListener('dragend', handleDragEnd);
-                    wordBank.appendChild(wordElement);
+                restoreWordToBank(word);
+            }
+
+            function restoreWordToBank(word) {
+                // Compare using textContent to find the original word without furigana
+                const wordElement = Array.from(document.querySelectorAll('.draggable-word')).find(w => {
+                    const textContent = w.textContent || w.innerText;
+                    return textContent === word || textContent === word.replace(/<[^>]*>/g, '');
                 });
+                if (wordElement) {
+                    wordElement.style.display = '';
+                }
             }
 
             function calculateResults() {
-                const blanks = document.querySelectorAll('.blank');
-                // Keep the exact positions, including empty ones
-                const userWords = Array.from(blanks)
-                    .map(blank => blank.textContent.trim());
-
-                let correctCount = 0;
-                const wordPositions = {};
+                // Get correct words from word bank (original order) - preserve furigana
+                const wordBankElements = document.querySelectorAll('.draggable-word');
+                const correctWords = Array.from(wordBankElements).map(word => word.innerHTML.trim());
                 
-                // First, record the correct position of each word
-                correctWords.forEach((word, index) => {
-                    wordPositions[word] = index;
+                let correctCount = 0;
+                const totalQuestions = correctWords.length;
+                
+                // Get user's word order - preserve furigana
+                const userWords = [];
+                const blanks = document.querySelectorAll('.blank');
+                blanks.forEach(blank => {
+                    const word = blank.innerHTML.trim();
+                    userWords.push(word || '');
                 });
-
-                // Check each word's absolute position
-                for (let i = 0; i < userWords.length; i++) {
-                    const currentWord = userWords[i];
-                    const correctPosOfCurrentWord = wordPositions[currentWord];
+                
+                // Check each position - compare text content for accuracy
+                for (let i = 0; i < correctWords.length; i++) {
+                    const userWord = userWords[i];
+                    const correctWord = correctWords[i];
                     
-                    // If this word exists in correct words and is in the correct absolute position
-                    if (correctPosOfCurrentWord !== undefined && correctPosOfCurrentWord === i) {
+                    // Extract text content for comparison (remove HTML tags)
+                    const userText = userWord.replace(/<[^>]*>/g, '');
+                    const correctText = correctWord.replace(/<[^>]*>/g, '');
+                    
+                    if (userText === correctText) {
                         correctCount++;
                     }
                 }
 
-                // Count filled positions
-                const filledWords = userWords.filter(text => text);
-                const isCorrect = correctCount === correctWords.length && filledWords.length === correctWords.length;
-                const message = isCorrect ? '正解です！' : '不正解です。';
+                const rawScore = correctCount / totalQuestions;
+                const message = \`Your score: \${correctCount} out of \${totalQuestions}\`;
 
                 return {
-                    rawScore: isCorrect ? 1 : 0,
+                    rawScore,
                     message,
-                    userWords, // Keep original positions including empty ones
-                    isCorrect,
-                    wordPositions
+                    correctCount,
+                    totalQuestions,
+                    correctWords,
+                    userWords,
+                    wordPositions: getWordPositions()
                 };
             }
 
-            function updateDisplay(result) {
-                // ✅ SEND QUIZ DATA TO PARENT (PersistentNavigationBar)
+            function getWordPositions() {
+                const positions = {};
+                const blanks = document.querySelectorAll('.blank');
+                blanks.forEach((blank, index) => {
+                    const word = blank.textContent.trim();
+                    if (word) {
+                        positions[word] = index;
+                    }
+                });
+                return positions;
+            }
+
+
+
+            function sendQuizDataToParent(result) {
+                // Get correct words from word bank (original order) - preserve furigana
+                const wordBankElements = document.querySelectorAll('.draggable-word');
+                const correctWords = Array.from(wordBankElements).map(word => word.innerHTML.trim());
+                
+                // Get original paragraph text with placeholders
+                const originalParagraph = document.querySelector('#quizForm').innerHTML;
+                const paragraphMatch = originalParagraph.match(/^(.*?)(<div class="word-bank">)/s);
+                const paragraphText = paragraphMatch ? paragraphMatch[1] : '';
+                
+                // Create correct paragraph with furigana for display
+                const correctParagraph = correctWords.join(' ');
+                
+                // 🔍 DEBUG: Log paragraph text to check for blank placeholders
+                console.log('🔍 DEBUG - paragraphText contains ___BLANK_PLACEHOLDER___:', paragraphText.includes('___BLANK_PLACEHOLDER___'));
+                console.log('🔍 DEBUG - paragraphText content:', paragraphText);
+                console.log('🔍 DEBUG - correctWords:', correctWords);
+                console.log('🔍 DEBUG - userWords:', result.userWords);
+                
+                // Send quiz data to parent window for popup display
                 const quizData = {
                     templateId: 22,
-                    templateName: 'Grammar Sentence Rearrangement',
-                    score: result.rawScore,
-                    message: result.message,
-                    isCorrect: result.isCorrect,
                     correctWords: correctWords,
                     userWords: result.userWords,
                     wordPositions: result.wordPositions,
-                    correctOrder: correctWords.join(' '),
-                    userOrder: result.userWords.join(' ')
+                    paragraphText: paragraphText,
+                    correctParagraph: correctParagraph,
+                    score: result.rawScore,
+                    message: result.message,
+                    correctCount: result.correctCount,
+                    totalQuestions: result.totalQuestions
                 };
 
-                console.log('🔍 DEBUG - Template 22 sending quiz data:', quizData);
-                
-                // Send data to parent window (problem.html)
+                // Send to parent window
                 if (window.parent && window.parent !== window) {
                     window.parent.postMessage({
                         type: 'quiz.data.ready',
                         quizData: quizData,
                         templateConfig: {
-                            showPopup: true,
-                            templateId: 22
+                            showPopup: true
                         }
                     }, '*');
+                }
+
+                // Also store in localStorage for backup
+                try {
+                    localStorage.setItem('quizGradeSubmitted', JSON.stringify(quizData));
+                    localStorage.setItem('quizGradeSubmittedTimestamp', Date.now().toString());
+                } catch (e) {
+                    console.error('Error storing quiz data:', e);
                 }
             }
 
             function getGrade() {
-                console.log('🎯 getGrade() called - Processing quiz submission');
+                // Always show feedback when submitted
+                const showFlag = document.getElementById('showAnswerFlag');
                 
+                // Calculate results
                 const result = calculateResults();
-                console.log('📊 Quiz results:', result);
                 
-                // Update display and send data to PersistentNavigationBar
-                updateDisplay(result);
+                // Always show feedback when submitted
+                state.showAnswer = true;
+                showFlag.value = 'true';
+                
+                // Send quiz data to parent for popup display
+                sendQuizDataToParent(result);
                 
                 // ✅ CALL COMPLETION API (NON-BLOCKING)
                 setTimeout(() => {
@@ -437,18 +816,15 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                 
                 // ✅ RETURN DATA TO EDX (PREVENT RELOAD)
                 const returnValue = {
-                    edxResult: None,
+                    edxResult: None,  // Keep it null to avoid EdX refresh
                     edxScore: result.rawScore,
                     edxMessage: result.message
                 };
-                console.log('🔄 Returning to EdX:', returnValue);
                 
                 return JSON.stringify(returnValue);
             }
             
             function updateCompletionStatus(result) {
-                console.log('🚀 Starting completion API call...');
-                
                 // Get CSRF token
                 let csrfToken = '';
                 try {
@@ -465,18 +841,15 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                             const token = getToken();
                             if (token) {
                                 csrfToken = token;
-                                console.log('🔑 Found CSRF token:', token.substring(0, 8) + '...');
                                 break;
                             }
                         } catch (e) {}
                     }
                     
                     if (!csrfToken) {
-                        console.log('⚠️ No CSRF token found - using fallback');
                         csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
                     }
                 } catch (e) {
-                    console.log('❌ CSRF token search failed:', e.message);
                     csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
                 }
                 
@@ -488,22 +861,14 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                         const blockMatch = parentUrl.match(/block-v1:([^\/\?\&]+)/);
                         if (blockMatch) {
                             blockId = blockMatch[0];
-                            console.log('🎯 Found block ID from parent:', blockId);
                         }
                     }
                 } catch (e) {
-                    console.log('⚠️ Cannot access parent URL, using fallback block ID');
+                    // Use fallback block ID
                 }
                 
                 // Always mark as complete when user submits
                 const completionStatus = 1.0;
-                
-                console.log('📡 Calling completion API with:', {
-                    block_key: blockId,
-                    completion: completionStatus,
-                    score: result.rawScore,
-                    note: 'COMPLETE'
-                });
                 
                 // ✅ CALL COMPLETION API
                 fetch('/courseware/mark_block_completion/', {
@@ -518,7 +883,6 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                     })
                 })
                 .then(response => {
-                    console.log('📈 API Response status:', response.status);
                     if (response.ok) {
                         return response.json();
                     } else {
@@ -526,13 +890,10 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                     }
                 })
                 .then(data => {
-                    console.log('✅ COMPLETION API SUCCESS:', data);
-                    if (data.saved_to_blockcompletion) {
-                        console.log('🎉 Progress page will update with new completion!');
-                    }
+                    // Success
                 })
                 .catch(error => {
-                    console.log('❌ Completion API Error:', error.message);
+                    // Error handling
                 });
             }
 
@@ -540,131 +901,290 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
                 return JSON.stringify({
                     answers: state.answers,
                     attempts: state.attempts,
-                    score: state.score
+                    score: state.score,
+                    showAnswer: state.showAnswer
                 });
+            }
+
+            function resetQuiz() {
+                // Clear all answers
+                state.answers = {};
+                state.score = 0;
+                state.attempts = 0;
+                state.showAnswer = false;
+                
+                // No answer container to hide for this template
+                
+                // Reset show answer flag
+                const showFlag = document.getElementById('showAnswerFlag');
+                if (showFlag) {
+                    showFlag.value = 'false';
+                }
+                
+                // Get the quiz form
+                const quizForm = document.getElementById('quizForm');
+                if (!quizForm) {
+                    return;
+                }
+                
+                // Remove all feedback replacements
+                const feedbackReplacements = document.querySelectorAll('.feedback-replacement');
+                feedbackReplacements.forEach(replacement => {
+                    const parent = replacement.parentNode;
+                    const blankId = replacement.getAttribute('data-blank-id');
+                    
+                    // Create new blank element
+                    const newBlank = document.createElement('span');
+                    newBlank.className = 'blank';
+                    newBlank.id = blankId;
+                    newBlank.innerHTML = '';
+                    
+                    // Replace the feedback replacement with the original blank
+                    parent.replaceChild(newBlank, replacement);
+                });
+                
+                // Clear all existing blanks
+                const existingBlanks = quizForm.querySelectorAll('.blank');
+                existingBlanks.forEach(blank => {
+                    blank.innerHTML = '';
+                    blank.classList.remove('filled', 'incorrect', 'show-feedback', 'correct', 'wrong');
+                });
+                
+                // Show all words in word bank
+                const draggableWords = document.querySelectorAll('.draggable-word');
+                draggableWords.forEach(word => {
+                    word.style.display = '';
+                });
+                
+                // Re-initialize drag and drop
+                initializeDragAndDrop();
             }
 
             function setState(stateStr) {
                 try {
-                    let newState = JSON.parse(stateStr);
+                    let newState;
+                    
+                    // Check if stateStr is already an object or a string
+                    if (typeof stateStr === 'string') {
+                        newState = JSON.parse(stateStr);
+                    } else if (typeof stateStr === 'object') {
+                        newState = stateStr;
+                    } else {
+                        console.error('Invalid state format:', stateStr);
+                        return;
+                    }
+                    
                     state = {
                         answers: newState.answers || {},
                         attempts: newState.attempts || 0,
-                        score: newState.score || 0
+                        score: newState.score || 0,
+                        showAnswer: newState.showAnswer || false
                     };
-
-                    if (state.answers) {
-                        for (let blankId in state.answers) {
-                            const blank = document.getElementById(blankId);
-                            const word = state.answers[blankId];
-                            if (blank && word) {
-                                blank.textContent = word;
-                                blank.classList.add('filled');
-                                
-                                const wordElement = Array.from(document.querySelectorAll('.draggable-word'))
-                                    .find(el => el.textContent === word);
-                                if (wordElement) {
-                                    wordElement.remove();
+                    
+                        // Restore answers if we have saved state
+                        if (state.answers) {
+                            for (let blankId in state.answers) {
+                                const blank = document.getElementById(blankId);
+                                const word = state.answers[blankId];
+                                if (blank && word) {
+                                    // Use innerHTML to preserve furigana
+                                    blank.innerHTML = word;
+                                    blank.classList.add('filled');
+                                    
+                                    // Hide the corresponding word in the word bank
+                                    // Extract text content for comparison
+                                    const textContent = word.replace(/<[^>]*>/g, '');
+                                    const wordElement = Array.from(document.querySelectorAll('.draggable-word'))
+                                        .find(el => {
+                                            const elTextContent = el.textContent || el.innerText;
+                                            return elTextContent === textContent;
+                                        });
+                                    if (wordElement) {
+                                        wordElement.style.display = 'none';
+                                    }
                                 }
                             }
+
+                        // Calculate results
+                        const result = calculateResults();
+                        
+                        // Update feedback display
+                        if (state.showAnswer) {
+                            sendQuizDataToParent(result);
+                        } else {
+                            // Hide feedback - restore original blanks
+                            const feedbackReplacements = document.querySelectorAll('.feedback-replacement');
+                            feedbackReplacements.forEach(replacement => {
+                                const parent = replacement.parentNode;
+                                const blankId = replacement.getAttribute('data-blank-id');
+                                
+                                // Create new blank element
+                                const newBlank = document.createElement('span');
+                                newBlank.className = 'blank';
+                                newBlank.id = blankId;
+                                
+                                // Restore original blank appearance
+                                const userAnswer = state.answers[blankId];
+                                if (userAnswer) {
+                                    newBlank.innerHTML = userAnswer;
+                                    newBlank.classList.add('filled');
+                                } else {
+                                    newBlank.innerHTML = '';
+                                    newBlank.classList.remove('filled');
+                                }
+                                
+                                // Replace the feedback replacement with the original blank
+                                parent.replaceChild(newBlank, replacement);
+                            });
+                            
+                            // Re-initialize drag and drop for restored blanks
+                            initializeDragAndDrop();
                         }
+                        
+                        document.getElementById('showAnswerFlag').value = state.showAnswer ? 'true' : 'false';
                     }
                 } catch (e) {
                     console.error('Error setting state:', e);
                 }
             }
 
-            function resetQuiz() {
-                console.log('🔄 Resetting quiz - clearing all answers');
+
+            // Initialize drag and drop when the page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                // Render each sentence in a <div> for line breaks and correct drag-drop
+                var para = document.querySelector('.paragraph');
                 
-                // Clear all answers from state
-                state.answers = {};
-                state.score = 0;
-                state.attempts = 0;
-                
-                // Clear all blank boxes
-                const blanks = document.querySelectorAll('.blank');
-                blanks.forEach(blank => {
-                    blank.textContent = '';
-                    blank.classList.remove('filled', 'correct', 'incorrect');
-                });
-                
-                // Get the word bank container
-                const wordBank = document.querySelector('.word-bank');
-                if (wordBank) {
-                    // Clear existing words
-                    wordBank.innerHTML = '';
+                if (para) {
+                    // Get the quiz form directly instead of manipulating the HTML string
+                    var quizForm = para.querySelector('#quizForm');
                     
-                    // Recreate word bank with original words (shuffled)
-                    const originalWords = correctWords.slice(); // Copy the array
-                    for (let i = originalWords.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [originalWords[i], originalWords[j]] = [originalWords[j], originalWords[i]];
+                    if (quizForm) {
+                        // Get the content of the form excluding the word bank
+                        var wordBank = quizForm.querySelector('.word-bank');
+                        var hiddenInput = quizForm.querySelector('input[type="hidden"]');
+                        
+                        // Store the word bank and hidden input for later
+                        var wordBankHTML = wordBank ? wordBank.outerHTML : '';
+                        var hiddenInputHTML = hiddenInput ? hiddenInput.outerHTML : '';
+                        
+                        // Temporarily remove word bank and hidden input to process only the sentences
+                        if (wordBank) wordBank.remove();
+                        if (hiddenInput) hiddenInput.remove();
+                        
+                        // Get the form content without word bank and hidden input
+                        var formContent = quizForm.innerHTML;
+                        
+                        // Check if content contains numbered characters (①②③...)
+                        var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩]/;
+                        var sentences = [];
+                        
+                        if (numberedPattern.test(formContent)) {
+                            // Split by numbered characters
+                            sentences = formContent.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/).filter(function(s) { 
+                                return s.trim(); 
+                            });
+                        } else {
+                            // Check if content contains dialogue pattern (period followed by any word and colon)
+                            var dialoguePattern = /。[^：。]+：/;
+                            if (dialoguePattern.test(formContent)) {
+                                // Split by dialogue pattern (after period, before word and colon)
+                                sentences = formContent.split(/(?<=。)(?=[^：。]+：)/).filter(function(s) { 
+                                    return s.trim(); 
+                                });
+                            } else {
+                                // For non-numbered content, don't split - keep as single sentence
+                                sentences = [formContent];
+                            }
+                        }
+                        
+                        // Wrap each sentence in a div
+                        var wrappedContent = sentences.map(function(s) {
+                            return '<div>' + s + '</div>';
+                        }).join('');
+                        
+                        // Reconstruct the form with the wrapped sentences and the word bank
+                        quizForm.innerHTML = wrappedContent + wordBankHTML + hiddenInputHTML;
+                        
+                    } else {
+                        // Fall back to the original method
+                        var original = para.innerHTML;
+                        
+                        // Check if content contains numbered characters for fallback too
+                        var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩]/;
+                        var sentences = [];
+                        
+                        if (numberedPattern.test(original)) {
+                            // Split by numbered characters
+                            sentences = original.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/).filter(function(s) { 
+                                return s.trim(); 
+                            });
+                        } else {
+                            // Check if content contains dialogue pattern (period followed by any word and colon)
+                            var dialoguePattern = /。[^：。]+：/;
+                            if (dialoguePattern.test(original)) {
+                                // Split by dialogue pattern (after period, before word and colon)
+                                sentences = original.split(/(?<=。)(?=[^：。]+：)/).filter(function(s) { 
+                                    return s.trim(); 
+                                });
+                            } else {
+                                // For non-numbered content, don't split - keep as single sentence
+                                sentences = [original];
+                            }
+                        }
+                        
+                        para.innerHTML = sentences.map(function(s) { return '<div>' + s + '</div>'; }).join('');
                     }
-                    
-                    // Add words back to word bank
-                    originalWords.forEach(word => {
-                        const wordElement = document.createElement('div');
-                        wordElement.className = 'draggable-word';
-                        wordElement.draggable = true;
-                        wordElement.innerHTML = convertFurigana(word);
-                        wordElement.addEventListener('dragstart', handleDragStart);
-                        wordElement.addEventListener('dragend', handleDragEnd);
-                        wordBank.appendChild(wordElement);
-                    });
                 }
                 
-                // Re-initialize drag and drop
-                initializeDragAndDrop();
-                
-                console.log('✅ Quiz reset completed');
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize drag-drop
                 initializeDragAndDrop();
             });
 
-            // Initialize EdX integration
-            var channel;
-            if (window.parent !== window) {
-                channel = Channel.build({
-                    window: window.parent,
-                    origin: '*',
-                    scope: 'JSInput'
-                });
-
+            // Set up EdX bindings
+            if (channel) {
                 channel.bind('getGrade', getGrade);
                 channel.bind('getState', getState);
                 channel.bind('setState', setState);
                 channel.bind('reset', resetQuiz);
             }
-
-            // Listen for messages from parent window
+            
+            // Listen for messages from parent (Check button)
             window.addEventListener('message', function(event) {
-                console.log('🔄 Received message:', event.data);
+                // Handle JSChannel messages (from EdX)
+                if (event.data && event.data.method === 'JSInput::getGrade') {
+                    getGrade();
+                    return;
+                }
                 
-                // Only process messages from problem.html (not direct from PersistentNavigationBar)
+                // Process postMessage from parent window or problem.html
+                if (event.source !== window.parent && event.source !== window) {
+                    return;
+                }
+                
                 if (event.data && event.data.type === 'problem.check') {
-                    console.log('🔄 Processing problem.check - resetting quiz');
                     // Reset quiz state
                     resetQuiz();
                 }
                 
                 if (event.data && event.data.type === 'problem.submit') {
-                    console.log('🔄 Processing problem.submit - action:', event.data.action);
-                    
                     if (event.data.action === 'check') {
-                        console.log('🔄 Processing problem.submit with action=check - showing answers');
                         // Trigger quiz submission when Check button is clicked
                         getGrade();
                     } else if (event.data.action === 'reset') {
-                        console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
                         // Reset quiz when reset action is received
                         resetQuiz();
                     }
+                }
+                
+                // Legacy support for simple reset message
+                if (event.data && event.data.type === 'reset') {
+                    resetQuiz();
                 }
             });
         })();
     </script>
 </body>
 </html>`; 
+
+// Export the original template for backward compatibility
+export const grammarSentenceRearrangementTemplate = grammarSentenceRearrangementTemplateString;

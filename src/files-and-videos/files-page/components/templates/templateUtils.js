@@ -49,7 +49,7 @@ const processDragDropQuiz = (paragraphText, words) => {
     const correctAnswer = words[currentId - 1]; // Get the correct word from the array
     blanks[blankId] = correctAnswer;
     currentId += 1;
-    return `<div id="${blankId}" class="blank" draggable="false"></div>`;
+    return `<span id="${blankId}" class="blank"></span>`;
   });
 
   // Create a copy of words array and shuffle it
@@ -61,7 +61,7 @@ const processDragDropQuiz = (paragraphText, words) => {
 
   // Create word bank HTML with the shuffled words
   const wordBankHTML = shuffledWords.map(word => 
-    `<div class="draggable-word" draggable="true">${word}</div>`
+    `<span class="draggable-word">${word}</span>`
   ).join('');
 
   return {
@@ -80,6 +80,31 @@ const getDragDropQuizTemplate = (paragraphText, words, instructions = '正しい
     .replace('{{WORD_BANK}}', wordBankHTML)
     .replace('{{CORRECT_ANSWERS}}', JSON.stringify(blanks))
     .replace('{{INSTRUCTIONS}}', instructions);
+};
+
+const processGrammarSentenceRearrangement = (paragraphText, words) => {
+  const blanks = {};
+  let currentId = 1;
+  
+  // Process the paragraph to replace blanks marked with （ー）or placeholder
+  const processedParagraph = paragraphText.replace(/(（ー）|___BLANK_PLACEHOLDER___)/g, (match) => {
+    const blankId = `blank${currentId}`;
+    const correctAnswer = words[currentId - 1]; // Get the correct word from the array
+    blanks[blankId] = correctAnswer;
+    currentId += 1;
+    return `<span id="${blankId}" class="blank"></span>`;
+  });
+
+  // Create word bank HTML with the words (not shuffled for sentence rearrangement)
+  const wordBankHTML = words.map(word => 
+    `<span class="draggable-word">${word}</span>`
+  ).join('');
+
+  return {
+    processedParagraph,
+    wordBankHTML,
+    blanks
+  };
 };
 
 // Template IDs - matching actual template files
@@ -141,6 +166,7 @@ export const TEMPLATE_IDS = {
 export {
   getQuizTemplate,
   getDragDropQuizTemplate,
+  processGrammarSentenceRearrangement,
   getListenFillInBlankTemplate,
   getFillInBlankTemplate,
   getListenWithImageMultipleDifferentBlankOptionsTemplate,

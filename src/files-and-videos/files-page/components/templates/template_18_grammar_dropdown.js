@@ -291,29 +291,30 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             font-size: 1.2rem !important; 
             font-weight: normal !important; 
             line-height: 1.2 !important; 
-            text-align: center !important; 
+            text-align: left !important; 
             width: auto !important; 
-            min-width: 100px !important; 
-            height: 32px !important;
-            min-height: 32px !important;
+            min-width: 120px !important; 
+            height: 40px !important;
+            min-height: 40px !important;
             border: 1px solid #666 !important; 
             border-radius: 4px !important; 
             background-color: white !important; 
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
             background-repeat: no-repeat !important;
-            background-position: right 12px center !important;
+            background-position: right 16px center !important;
             background-size: 18px !important;
             color: #333 !important; 
             cursor: pointer !important; 
             display: inline-flex !important;
             align-items: center !important;
-            justify-content: center !important;
-            padding: 0 40px 0 12px !important; 
+            justify-content: flex-start !important;
+            padding: 0 50px 0 16px !important; 
             transition: all 0.3s ease !important;
             box-sizing: border-box !important;
             margin: 0 !important;
             outline: none !important;
             letter-spacing: 0.4px !important;
+            white-space: nowrap !important;
         }
         .dropdown-button:hover {
             background-color: #0075b4;
@@ -324,7 +325,8 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             position: absolute;
             top: 100%;
             left: 0;
-            right: 0;
+            min-width: 100%;
+            width: auto;
             background: white;
             border: 1px solid #666;
             border-top: none;
@@ -350,6 +352,8 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             display: flex;
             align-items: center;
             letter-spacing: 0.4px;
+            white-space: nowrap;
+            min-width: max-content;
         }
         .dropdown-option:hover {
             background-color: #f5f5f5;
@@ -597,8 +601,43 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                 });
                 // Toggle current dropdown
                 if (!isOpen) {
-                    this.parentNode.querySelector('.dropdown-options').classList.add('show');
+                    var dropdownOptions = this.parentNode.querySelector('.dropdown-options');
+                    dropdownOptions.classList.add('show');
                     this.parentNode.classList.add('open');
+                    
+                    // Auto-adjust dropdown width based on content
+                    var maxWidth = 0;
+                    var options = dropdownOptions.querySelectorAll('.dropdown-option');
+                    for (var i = 0; i < options.length; i++) {
+                        var tempSpan = document.createElement('span');
+                        tempSpan.style.visibility = 'hidden';
+                        tempSpan.style.position = 'absolute';
+                        tempSpan.style.fontSize = '1.2rem';
+                        tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                        tempSpan.style.fontWeight = 'normal';
+                        tempSpan.style.letterSpacing = '0.4px';
+                        tempSpan.style.padding = '0';
+                        tempSpan.style.margin = '0';
+                        tempSpan.style.border = 'none';
+                        tempSpan.style.whiteSpace = 'nowrap';
+                        tempSpan.innerHTML = options[i].innerHTML;
+                        document.body.appendChild(tempSpan);
+                        
+                        var textWidth = tempSpan.offsetWidth;
+                        document.body.removeChild(tempSpan);
+                        
+                        // Add padding for option (12px left + 16px right = 28px total)
+                        var optionWidth = textWidth + 28;
+                        
+                        if (optionWidth > maxWidth) {
+                            maxWidth = optionWidth;
+                        }
+                    }
+                    
+                    // Set dropdown width to fit content (minimum button width)
+                    var buttonWidth = this.offsetWidth;
+                    var finalWidth = Math.max(buttonWidth, maxWidth);
+                    dropdownOptions.style.width = finalWidth + 'px';
                 }
             });
             
@@ -618,18 +657,22 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     var tempSpan = document.createElement('span');
                     tempSpan.style.visibility = 'hidden';
                     tempSpan.style.position = 'absolute';
-                    tempSpan.style.fontSize = button.style.fontSize || '1.2rem';
-                    tempSpan.style.fontFamily = button.style.fontFamily || 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
-                    tempSpan.style.fontWeight = button.style.fontWeight || 'normal';
-                    tempSpan.style.letterSpacing = button.style.letterSpacing || '0.4px';
+                    tempSpan.style.fontSize = '1.2rem';
+                    tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                    tempSpan.style.fontWeight = 'normal';
+                    tempSpan.style.letterSpacing = '0.4px';
+                    tempSpan.style.padding = '0';
+                    tempSpan.style.margin = '0';
+                    tempSpan.style.border = 'none';
+                    tempSpan.style.whiteSpace = 'nowrap';
                     tempSpan.innerHTML = selectedText;
                     document.body.appendChild(tempSpan);
                     
                     var textWidth = tempSpan.offsetWidth;
                     document.body.removeChild(tempSpan);
                     
-                    // Set width to fit content (add padding for dropdown arrow)
-                    var newWidth = Math.max(100, textWidth + 52); // 52px for padding and arrow
+                    // Set width to fit content (add padding: 16px left + 50px right = 66px total)
+                    var newWidth = Math.max(120, textWidth + 66);
                     button.style.width = newWidth + 'px';
                     // Also update the dropdown container width
                     dropdown.style.width = newWidth + 'px';
@@ -755,8 +798,43 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     });
                     // Toggle current dropdown
                     if (!isOpen) {
-                        this.parentNode.querySelector('.dropdown-options').classList.add('show');
+                        var dropdownOptions = this.parentNode.querySelector('.dropdown-options');
+                        dropdownOptions.classList.add('show');
                         this.parentNode.classList.add('open');
+                        
+                        // Auto-adjust dropdown width based on content
+                        var maxWidth = 0;
+                        var options = dropdownOptions.querySelectorAll('.dropdown-option');
+                        for (var i = 0; i < options.length; i++) {
+                            var tempSpan = document.createElement('span');
+                            tempSpan.style.visibility = 'hidden';
+                            tempSpan.style.position = 'absolute';
+                            tempSpan.style.fontSize = '1.2rem';
+                            tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                            tempSpan.style.fontWeight = 'normal';
+                            tempSpan.style.letterSpacing = '0.4px';
+                            tempSpan.style.padding = '0';
+                            tempSpan.style.margin = '0';
+                            tempSpan.style.border = 'none';
+                            tempSpan.style.whiteSpace = 'nowrap';
+                            tempSpan.innerHTML = options[i].innerHTML;
+                            document.body.appendChild(tempSpan);
+                            
+                            var textWidth = tempSpan.offsetWidth;
+                            document.body.removeChild(tempSpan);
+                            
+                            // Add padding for option (12px left + 16px right = 28px total)
+                            var optionWidth = textWidth + 28;
+                            
+                            if (optionWidth > maxWidth) {
+                                maxWidth = optionWidth;
+                            }
+                        }
+                        
+                        // Set dropdown width to fit content (minimum button width)
+                        var buttonWidth = this.offsetWidth;
+                        var finalWidth = Math.max(buttonWidth, maxWidth);
+                        dropdownOptions.style.width = finalWidth + 'px';
                     }
                 });
                 
@@ -776,18 +854,22 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                         var tempSpan = document.createElement('span');
                         tempSpan.style.visibility = 'hidden';
                         tempSpan.style.position = 'absolute';
-                        tempSpan.style.fontSize = button.style.fontSize || '1.2rem';
-                        tempSpan.style.fontFamily = button.style.fontFamily || 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
-                        tempSpan.style.fontWeight = button.style.fontWeight || 'normal';
-                        tempSpan.style.letterSpacing = button.style.letterSpacing || '0.4px';
+                        tempSpan.style.fontSize = '1.2rem';
+                        tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                        tempSpan.style.fontWeight = 'normal';
+                        tempSpan.style.letterSpacing = '0.4px';
+                        tempSpan.style.padding = '0';
+                        tempSpan.style.margin = '0';
+                        tempSpan.style.border = 'none';
+                        tempSpan.style.whiteSpace = 'nowrap';
                         tempSpan.innerHTML = selectedText;
                         document.body.appendChild(tempSpan);
                         
                         var textWidth = tempSpan.offsetWidth;
                         document.body.removeChild(tempSpan);
                         
-                        // Set width to fit content (add padding for dropdown arrow)
-                        var newWidth = Math.max(100, textWidth + 52); // 52px for padding and arrow
+                        // Set width to fit content (add padding: 16px left + 50px right = 66px total)
+                        var newWidth = Math.max(120, textWidth + 66);
                         button.style.width = newWidth + 'px';
                         // Also update the dropdown container width
                         dropdown.style.width = newWidth + 'px';

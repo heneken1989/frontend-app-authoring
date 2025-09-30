@@ -1044,12 +1044,12 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                         var formContent = quizForm.innerHTML;
                         
                         // Check if content contains numbered characters (①②③...)
-                        var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩]/;
+                        var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩➂➃➄➅➆➇➈➉]/;
                         var sentences = [];
                         
                         if (numberedPattern.test(formContent)) {
                             // Split by numbered characters
-                            sentences = formContent.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/).filter(function(s) { 
+                            sentences = formContent.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩➂➃➄➅➆➇➈➉])/).filter(function(s) { 
                                 return s.trim(); 
                             });
                         } else {
@@ -1079,12 +1079,12 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                         var original = para.innerHTML;
                         
                         // Check if content contains numbered characters for fallback too
-                        var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩]/;
+                        var numberedPattern = /[①②③④⑤⑥⑦⑧⑨⑩➂➃➄➅➆➇➈➉]/;
                         var sentences = [];
                         
                         if (numberedPattern.test(original)) {
                             // Split by numbered characters
-                            sentences = original.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩])/).filter(function(s) { 
+                            sentences = original.split(/(?=[①②③④⑤⑥⑦⑧⑨⑩➂➃➄➅➆➇➈➉])/).filter(function(s) { 
                                 return s.trim(); 
                             });
                         } else {

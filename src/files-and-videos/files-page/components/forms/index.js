@@ -38,7 +38,7 @@ const FORM_COMPONENTS = {
   19: Form18,
   20: Form20,   // Drag and Drop Quiz
   21: Form18,
-  22: Form22,   // Grammar Sentence Rearrangement Quiz
+  22: Form20,   // Grammar Sentence Rearrangement Quiz
   23: Form18,
   24: Form18,
   25: Form20,

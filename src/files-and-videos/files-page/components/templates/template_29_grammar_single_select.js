@@ -86,7 +86,7 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
             line-height: 1.4;
             min-height: 20px;
             display: flex;
-            align-items: center;
+            align-items: baseline;
             justify-content: flex-start;
             position: relative;
             color: #333;

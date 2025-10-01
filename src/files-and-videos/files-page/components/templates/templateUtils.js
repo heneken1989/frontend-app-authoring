@@ -136,8 +136,8 @@ export const TEMPLATE_IDS = {
   ID30_GRAMMAR_DROPDOWN: 30,
   ID25_DRAG_DROP: 25,              // Uses template_20_drag_drop.js
   
-  GRAMMAR_SINGLE_SELECT: 28,                           // template_28_grammar_single_select.js
-  GRAMMAR_SINGLE_SELECT_ALT: 29,                       // Uses template_28_grammar_single_select.js
+  GRAMMAR_SINGLE_SELECT: 28,                           // template_28_grammar_single_select.js                // Uses template_28_grammar_single_select.js
+  ID29_GRAMMAR_SINGLE_SELECT: 29,                      // template_29_grammar_single_select.js
   DRAG_DROP_OLD: 20,                                   // template_20_drag_drop.js  
   LISTEN_SINGLE_CHOICE: 39,                           // template_39_listen_single_choice.js
   LISTEN_SINGLE_CHOICE_NO_IMAGE: 40,                  // template_40_listen_single_choice_no_image.js

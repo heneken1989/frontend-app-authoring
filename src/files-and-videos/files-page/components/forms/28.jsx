@@ -45,11 +45,11 @@ const GrammarSingleSelectForm = ({ quizData, setQuizData }) => {
         <Form.Control
           as="textarea"
           rows={5}
-          value={quizData.scriptText}
+          value={quizData.explanationText}
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
-              scriptText: e.target.value
+              explanationText: e.target.value
             }));
           }}
           placeholder="Enter the explanation that will be shown after submission. You can use quotes to highlight important parts."
@@ -57,6 +57,25 @@ const GrammarSingleSelectForm = ({ quizData, setQuizData }) => {
         <Form.Text>
           This text will be shown as the explanation (解説) after the user submits their answer.
           Text in quotes ("...") will be shown in red.
+        </Form.Text>
+      </Form.Group>
+      <Form.Group>
+        <Form.Label>Script Text (スクリプト)</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={5}
+          value={quizData.scriptText || ''}
+          onChange={(e) => {
+            setQuizData(prev => ({
+              ...prev,
+              scriptText: e.target.value
+            }));
+          }}
+          placeholder="Enter the script text that will be shown after submission"
+        />
+        <Form.Text>
+          This text will be shown as the script (スクリプト) after the user submits their answer.
+          You can use furigana format like 毎日（まいにち）or 車(くるま).
         </Form.Text>
       </Form.Group>
       <Form.Group>

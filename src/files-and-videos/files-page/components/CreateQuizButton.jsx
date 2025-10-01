@@ -22,6 +22,7 @@ import {
   getReadingSelectTemplate,
   TEMPLATE_IDS 
 } from './templates/templateUtils';
+import { getGrammarSingleSelectTemplate29 } from './templates/template_29_grammar_single_select';
 import { getConfig } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { useDispatch } from 'react-redux';
@@ -227,6 +228,7 @@ const shouldShowAudioField = (problemTypeId) => ![
   TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10, // Add ID16 to the list
   TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11, // Add ID17 to the list
   TEMPLATE_IDS.ID19_GRAMMAR_DROPDOWN,
+  TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT,
   
 ].includes(problemTypeId);
 
@@ -254,6 +256,7 @@ const shouldShowImageField = (problemTypeId) => ![
   TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10, // Add ID16 to the list
   TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11, // Add ID17 to the list
   TEMPLATE_IDS.ID19_GRAMMAR_DROPDOWN, // Add ID19 to the list
+  TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT, // Add ID29 to the list
   TEMPLATE_IDS.ID34_READING_MULTIPLE_QUESTION,
 ].includes(problemTypeId);
 
@@ -359,6 +362,7 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               <option value={TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE}>{TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE} - Listen and Choose Quiz (No Image)</option>
               <option value={TEMPLATE_IDS.ID62_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID62_GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
               <option value={TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER}>{TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER} - Listen and Image Select Multiple Answer</option>
+              <option value={TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT}>{TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT} - Grammar Single Select Quiz 29</option>
             </Form.Control>
             <Form.Text>
               Select the type of quiz you want to create.
@@ -938,6 +942,14 @@ const generateQuizTemplate = (templateId, quizData) => {
           quizData.answerContent || '',
           quizData.blankOptions || ''  // Pass the blank options as the last parameter
         );
+
+    case TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT:
+      return getGrammarSingleSelectTemplate29(
+        quizData.paragraphText || '',
+        quizData.blankOptions || '',
+        quizData.instructions || '正しい文を選んでください。',
+        quizData.scriptText || ''
+      );
 
     case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS:
       return getListenImageSelectMultipleAnswerMultiOptionsTemplate(

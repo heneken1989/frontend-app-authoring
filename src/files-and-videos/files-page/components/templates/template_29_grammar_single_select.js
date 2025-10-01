@@ -697,6 +697,9 @@ function convertFurigana(text) {
 }
 
 export const getGrammarSingleSelectTemplate29 = (questionText, optionsString, instructions = '正しい文を選んでください。', scriptText = '') => {
+  // optionsString format: "Câu đúng，câu sai 1，câu sai 2，câu sai 3"
+  // Supports both Japanese comma (，) and English comma (,)
+  // First option is always the correct answer
   // Process questionText to underline text in quotes and convert furigana
   const processedQuestionText = questionText
     .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
@@ -707,8 +710,14 @@ export const getGrammarSingleSelectTemplate29 = (questionText, optionsString, in
     .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
   const finalScriptText = convertFurigana(processedScriptText);
 
-  // Split options string into array and trim each option
-  const options = optionsString.split(',').map(option => option.trim());
+  // Split options string into array using both English comma (,) and Japanese comma (，)
+  // First try Japanese comma, then fallback to English comma
+  let options;
+  if (optionsString.includes('，')) {
+    options = optionsString.split('，').map(option => option.trim());
+  } else {
+    options = optionsString.split(',').map(option => option.trim());
+  }
   const correctAnswer = options[0]; // First option is the correct answer
 
   // Create HTML for options

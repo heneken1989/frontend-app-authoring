@@ -39,18 +39,20 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
             width: 100%;
         }
         .container {
-            padding: 30px 0.1rem 0.1rem 0.1rem;
             position: relative;
-            height: 100%;
-            background-color: white;
-            width: 100%;
-            margin: 0;
-            text-align: center;
+            height: auto;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
+            gap: 20px;
+            padding: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         .paragraph {
             background-color: white;
@@ -62,8 +64,7 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
             z-index: 1;
             border-radius: 4px;
             letter-spacing: 0.4px;
-            text-align: center;
-            max-width: 800px;
+            text-align: left;
             width: 100%;
         }
         
@@ -75,7 +76,7 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
             padding: 0.2rem;
             background-color: transparent;
             border-radius: 0;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
         }
         .draggable-word {
@@ -409,6 +410,40 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
         .instructions:before {
             display: none;
         }
+        
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 700px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                gap: 10px;
+            }
+            .content-wrapper {
+                gap: 8px;
+            }
+            .paragraph {
+                padding: 0.3rem;
+                margin-bottom: 0.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 0.8rem;
+                gap: 8px;
+            }
+            .content-wrapper {
+                gap: 6px;
+            }
+            .paragraph {
+                padding: 0.2rem;
+                margin-bottom: 0.6rem;
+            }
+        }
         #answer-paragraph form > div {
             margin-bottom: 1rem;
             line-height: 2.16;
@@ -484,20 +519,21 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="instructions" id="quiz-instructions">
-            {{INSTRUCTIONS}}
-        </div>
-        <div class="paragraph">
-            <form id="quizForm" onsubmit="return false;">
-                {{PARAGRAPH_TEXT}}
-                <div class="word-bank">
-                    {{WORD_BANK}}
-                </div>
-                <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
-            </form>
+        <div class="content-wrapper">
+            <div class="instructions" id="quiz-instructions">
+                {{INSTRUCTIONS}}
+            </div>
+            <div class="paragraph">
+                <form id="quizForm" onsubmit="return false;">
+                    {{PARAGRAPH_TEXT}}
+                    <div class="word-bank">
+                        {{WORD_BANK}}
+                    </div>
+                    <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
+                </form>
+            </div>
         </div>
         {{INSTRUCTOR_CONTENT}}
- 
     </div>
 
     <script>
@@ -525,8 +561,9 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
                 return cookieValue;
             }
 
-            // Get correct word order from word bank - will be replaced by CreateQuizButton.jsx
-            const correctWords = [];
+            // Store original correct word order (before shuffling)
+            let originalCorrectWords = [];
+            let isOriginalOrderStored = false;
 
             // Initialize EdX integration
             var channel;
@@ -684,10 +721,49 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
                 }
             }
 
+            function storeOriginalCorrectWords() {
+                if (isOriginalOrderStored) return;
+                
+                const wordBank = document.querySelector('.word-bank');
+                if (!wordBank) return;
+                
+                const words = Array.from(wordBank.querySelectorAll('.draggable-word'));
+                originalCorrectWords = words.map(word => word.innerHTML.trim());
+                isOriginalOrderStored = true;
+                
+                console.log('🔍 Stored original correct words:', originalCorrectWords);
+            }
+
+            function shuffleWordBank() {
+                const wordBank = document.querySelector('.word-bank');
+                if (!wordBank) return;
+                
+                const words = Array.from(wordBank.querySelectorAll('.draggable-word'));
+                if (words.length <= 1) return;
+                
+                // Store original order before first shuffle
+                storeOriginalCorrectWords();
+                
+                // Store the HTML content of each word
+                const wordContents = words.map(word => word.outerHTML);
+                
+                // Fisher-Yates shuffle algorithm on the content array
+                for (let i = wordContents.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    // Swap elements in the array
+                    [wordContents[i], wordContents[j]] = [wordContents[j], wordContents[i]];
+                }
+                
+                // Replace the word bank content with shuffled words
+                wordBank.innerHTML = wordContents.join('');
+                
+                // Re-initialize drag and drop for the shuffled words
+                initializeDragAndDrop();
+            }
+
             function calculateResults() {
-                // Get correct words from word bank (original order) - preserve furigana
-                const wordBankElements = document.querySelectorAll('.draggable-word');
-                const correctWords = Array.from(wordBankElements).map(word => word.innerHTML.trim());
+                // Use original correct word order (before shuffling)
+                const correctWords = originalCorrectWords.length > 0 ? originalCorrectWords : [];
                 
                 let correctCount = 0;
                 const totalQuestions = correctWords.length;
@@ -743,9 +819,8 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
 
 
             function sendQuizDataToParent(result) {
-                // Get correct words from word bank (original order) - preserve furigana
-                const wordBankElements = document.querySelectorAll('.draggable-word');
-                const correctWords = Array.from(wordBankElements).map(word => word.innerHTML.trim());
+                // Use original correct word order (before shuffling)
+                const correctWords = originalCorrectWords.length > 0 ? originalCorrectWords : [];
                 
                 // Get original paragraph text with placeholders
                 const originalParagraph = document.querySelector('#quizForm').innerHTML;
@@ -950,11 +1025,19 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
                     blank.classList.remove('filled', 'incorrect', 'show-feedback', 'correct', 'wrong');
                 });
                 
-                // Show all words in word bank
-                const draggableWords = document.querySelectorAll('.draggable-word');
-                draggableWords.forEach(word => {
-                    word.style.display = '';
-                });
+                // Show all words in word bank and shuffle them
+                const wordBank = document.querySelector('.word-bank');
+                if (wordBank) {
+                    const draggableWords = Array.from(wordBank.querySelectorAll('.draggable-word'));
+                    
+                    // Show all words
+                    draggableWords.forEach(word => {
+                        word.style.display = '';
+                    });
+                    
+                    // Shuffle the words in the word bank
+                    shuffleWordBank();
+                }
                 
                 // Re-initialize drag and drop
                 initializeDragAndDrop();
@@ -1136,8 +1219,14 @@ const grammarSentenceRearrangementTemplateString = `<!DOCTYPE html>
                     }
                 }
                 
+                // Store original correct words before shuffling
+                storeOriginalCorrectWords();
+                
                 // Initialize drag-drop
                 initializeDragAndDrop();
+                
+                // Shuffle word bank on initial load
+                shuffleWordBank();
             });
 
             // Set up EdX bindings

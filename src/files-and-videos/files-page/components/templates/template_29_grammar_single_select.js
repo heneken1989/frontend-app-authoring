@@ -627,7 +627,10 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
                     
                     const quizData = {
                         templateId: 29,
-                        scriptText: encodedScriptText
+                        scriptText: encodedScriptText,
+                        correctAnswer: correctAnswer,
+                        selectedOption: selectedOption,
+                        isCorrect: selectedOption === correctAnswer
                     };
                     
                     // Store in localStorage for popup

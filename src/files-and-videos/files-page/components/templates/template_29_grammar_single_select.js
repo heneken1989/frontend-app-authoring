@@ -81,7 +81,7 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
             background: transparent;
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
-            cursor: pointer;
+            cursor: pointer !important;
             text-align: left;
             line-height: 1.4;
             min-height: 20px;
@@ -94,6 +94,12 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
             border-radius: 4px;
             transition: all 0.3s ease;
             gap: 12px;
+            pointer-events: auto !important;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            z-index: 10;
         }
         .option-button::before {
             content: '';
@@ -268,6 +274,25 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
     </div>
 
     <script>
+        // Function to encode script text for safe transmission
+        function encodeScriptText(text) {
+            if (!text) return '';
+            
+            // Script text already has underline styling from template processing
+            // Just encode special characters for safe transmission
+            return text
+                .replace(/\\\\/g, '\\\\\\\\')  // Escape backslashes first
+                .replace(/"/g, '\\\\"')    // Escape double quotes
+                .replace(/'/g, "\\\\'")    // Escape single quotes
+                .replace(/\\n/g, '\\\\n')   // Escape newlines
+                .replace(/\\r/g, '\\\\r')   // Escape carriage returns
+                .replace(/\\t/g, '\\\\t')   // Escape tabs
+                .replace(/「/g, '\\\\u300c') // Escape Japanese opening bracket
+                .replace(/」/g, '\\\\u300d') // Escape Japanese closing bracket
+                .replace(/（/g, '\\\\u3008') // Escape Japanese opening parenthesis
+                .replace(/）/g, '\\\\u3009'); // Escape Japanese closing parenthesis
+        }
+        
         (function() {
             var state = {
                 answer: '',
@@ -311,7 +336,20 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
             
             // Initialize options and question text when DOM is loaded
             document.addEventListener('DOMContentLoaded', function() {
+                console.log('📄 DOM loaded, initializing quiz');
                 updateGlobalVariables();
+                
+                // Debug: Check if buttons exist
+                const buttons = document.querySelectorAll('.option-button');
+                console.log('🔍 DOM loaded - found buttons:', buttons.length);
+                buttons.forEach((btn, i) => {
+                    console.log('🔍 Button ' + i + ':', {
+                        text: btn.textContent.trim(),
+                        dataValue: btn.dataset.value,
+                        onclick: typeof btn.onclick,
+                        style: btn.style.pointerEvents
+                    });
+                });
             });
             
             // Listen for messages from parent (Check button)
@@ -584,9 +622,12 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
                     // Get script text from the template or form data
                     const scriptText = '{{SCRIPT_TEXT}}' || '';
                     
+                    // Encode script text to handle special characters
+                    const encodedScriptText = encodeScriptText(scriptText);
+                    
                     const quizData = {
                         templateId: 29,
-                        scriptText: scriptText
+                        scriptText: encodedScriptText
                     };
                     
                     // Store in localStorage for popup
@@ -645,19 +686,69 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
                 }
             }
 
-            // Set up option button click handlers
-            document.querySelectorAll('.option-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    if (state.showAnswer) return;
-                    
-                    document.querySelectorAll('.option-button').forEach(btn => {
-                        btn.classList.remove('selected');
+            // Set up option button click handlers - simplified approach
+            function setupOptionButtons() {
+                const optionButtons = document.querySelectorAll('.option-button');
+                console.log('🔧 Setting up option buttons:', optionButtons.length);
+                
+                optionButtons.forEach((button, index) => {
+                    console.log('🔧 Button ' + index + ':', {
+                        text: button.textContent.trim(),
+                        dataValue: button.dataset.value
                     });
                     
-                    this.classList.add('selected');
-                    selectedOption = this.dataset.value;
+                    // Use onclick instead of addEventListener for better compatibility
+                    button.onclick = function(event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        console.log('🖱️ Option clicked:', {
+                            text: this.textContent.trim(),
+                            dataValue: this.dataset.value,
+                            showAnswer: state.showAnswer
+                        });
+                        
+                        if (state.showAnswer) {
+                            console.log('⚠️ Cannot select - showing answer');
+                            return false;
+                        }
+                        
+                        // Remove selected class from all buttons
+                        document.querySelectorAll('.option-button').forEach(btn => {
+                            btn.classList.remove('selected');
+                        });
+                        
+                        // Add selected class to clicked button
+                        this.classList.add('selected');
+                        selectedOption = this.dataset.value;
+                        
+                        console.log('✅ Option selected:', selectedOption);
+                        return false;
+                    };
                 });
-            });
+            }
+            
+            // Multiple attempts to set up buttons
+            function trySetupButtons() {
+                const buttons = document.querySelectorAll('.option-button');
+                if (buttons.length > 0) {
+                    console.log('🔧 Found buttons, setting up:', buttons.length);
+                    setupOptionButtons();
+                    return true;
+                }
+                return false;
+            }
+            
+            // Try immediately
+            if (!trySetupButtons()) {
+                // Try on DOM ready
+                document.addEventListener('DOMContentLoaded', trySetupButtons);
+                
+                // Try after short delay
+                setTimeout(trySetupButtons, 100);
+                setTimeout(trySetupButtons, 500);
+                setTimeout(trySetupButtons, 1000);
+            }
 
 
             // Set up EdX bindings
@@ -706,7 +797,13 @@ export const getGrammarSingleSelectTemplate29 = (questionText, optionsString, in
   const finalQuestionText = convertFurigana(processedQuestionText);
 
   // Process scriptText to underline text in quotes and convert furigana
-  const processedScriptText = scriptText
+  // First, handle newlines and normalize the text
+  const normalizedScriptText = scriptText
+    .replace(/\n/g, '<br>')  // Convert newlines to HTML breaks
+    .replace(/\r/g, '');     // Remove carriage returns
+  
+  // Then process quotes for underlining
+  const processedScriptText = normalizedScriptText
     .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
   const finalScriptText = convertFurigana(processedScriptText);
 
@@ -721,16 +818,27 @@ export const getGrammarSingleSelectTemplate29 = (questionText, optionsString, in
   const correctAnswer = options[0]; // First option is the correct answer
 
   // Create HTML for options
+  console.log('🔧 Creating options HTML from:', options);
   const optionsHtml = options
     .sort((a, b) => a.localeCompare(b)) // Sort alphabetically
-    .map(option => {
+    .map((option, index) => {
       // Process each option to underline text in quotes and convert furigana
       const processedOption = option
         .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
       const finalOption = convertFurigana(processedOption);
-      return `<button type="button" class="option-button" data-value="${option}">${finalOption}</button>`;
+      const escapedOption = option.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      const buttonHtml = `<button type="button" class="option-button" data-value="${escapedOption}">${finalOption}</button>`;
+      console.log('🔧 Option ' + index + ':', {
+        original: option,
+        processed: processedOption,
+        final: finalOption,
+        buttonHtml: buttonHtml.substring(0, 100) + '...'
+      });
+      return buttonHtml;
     })
     .join('');
+  
+  console.log('🔧 Final options HTML length:', optionsHtml.length);
 
   return grammarSingleSelectTemplate29
     .replace('{{INSTRUCTIONS}}', convertFurigana(instructions))

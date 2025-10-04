@@ -39,7 +39,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             gap: 10px;
         }
         .instructions {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             line-height: 1.5;
             color: #333;
             font-weight: bold;
@@ -80,80 +80,98 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             gap: 8px;
             padding: 0;
             background: transparent;
-            max-width: 400px;
+            max-width: 600px;
         }
         .option-button {
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
             max-width: 100%;
-            padding: 12px 16px 12px 28px;
-            border: 1px solid #ddd;
+            padding: 12px 16px;
+            border: none;
             outline: none;
-            background: #f5f5f5;
-            font-size: 1.3rem;
+            background: transparent;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
             cursor: pointer;
             text-align: left;
             line-height: 1.4;
             min-height: 20px;
             display: flex;
-            align-items: center;
+            align-items: baseline;
+            justify-content: flex-start;
             position: relative;
-            color: #000;
-            font-weight: bold;
+            color: #333;
+            font-weight: normal;
             border-radius: 4px;
             transition: all 0.3s ease;
-            letter-spacing: 0.5px;
+            gap: 12px;
+            word-wrap: break-word;
+            word-break: keep-all;
         }
         .option-button::before {
             content: '';
-            position: absolute;
-            left: 4px;
-            top: 4px;
-            width: 16px;
-            height: 16px;
-            border: 1px solid #666;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-radius: 3px;
             background: white;
-            border-radius: 2px;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
         }
-        .option-button:hover {
+        .option-button:hover:not(.selected):not(.correct):not(.incorrect) {
             background-color: #f8f9fa;
         }
-        .option-button.selected::before {
-            background: #0075b4;
-            border-color: #0075b4;
+        .option-button:hover:not(.selected):not(.correct):not(.incorrect)::before {
+            border-color: #999;
         }
-        .option-button.selected::after {
+        .option-button.selected {
+            background: transparent;
+            border: none;
+            color: #333;
+        }
+        .option-button.selected::before {
+            background: #f44336;
+            border-color: #f44336;
             content: '✓';
-            position: absolute;
-            left: 7px;
-            top: 4px;
-            font-size: 12px;
             color: white;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .option-button.correct {
+            background: transparent;
+            border: none;
+            color: #333;
         }
         .option-button.correct::before {
-            background: #2e7d32;
-            border-color: #2e7d32;
-        }
-        .option-button.correct::after {
+            background: #4caf50;
+            border-color: #4caf50;
             content: '✓';
-            position: absolute;
-            left: 7px;
-            top: 4px;
-            font-size: 12px;
             color: white;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .option-button.incorrect {
+            background: transparent;
+            border: none;
+            color: #333;
         }
         .option-button.incorrect::before {
-            background: #b40000;
-            border-color: #b40000;
-        }
-        .option-button.incorrect::after {
-            content: '✗';
-            position: absolute;
-            left: 7px;
-            top: 4px;
-            font-size: 12px;
+            background: #f44336;
+            border-color: #f44336;
+            content: '✓';
             color: white;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
         }
         .player-status {
             font-weight: bold;
@@ -161,12 +179,11 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             margin-bottom: 5px;
             text-align: left;
             font-size: 14px;
-            border-bottom: 1px solid #e0e0e0;
             padding-bottom: 10px;
         }
         .divider {
             height: 1px;
-            background-color: #e0e0e0;
+            background-color: transparent;
             width: 100%;
             margin: 5px 0;
         }
@@ -309,98 +326,77 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             display: inline-block;
             margin: 0;
         }
-        .answer-paragraph-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            background-color: rgba(99, 97, 97, 0.95);
-            border-top: 1px solid #e0e0e0;
-            border-bottom: 1px solid #e0e0e0;
-            display: none;
-            z-index: 2;
-            transition: transform 0.3s ease;
-            max-height: 460px;
-            overflow-y: auto;
+        .answer-feedback {
+            margin-top: 0.5rem;
+            font-size: 1.0rem;
         }
-        .answer-paragraph-inner {
-            max-width: 90%;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .transcript-section {
-            margin-bottom: 1.5rem;
-            background-color: #fff;
-            border-radius: 4px;
-            border: 1px solid #e0e0e0;
-            overflow-y: auto;
-        }
-        .transcript-title {
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #333;
-            font-size: 1.2rem;
-            text-align: center;
-        }
-        .transcript-text {
-            line-height: 1.5;
-            margin-bottom: 1rem;
-            white-space: pre-wrap;
-        }
-        .score-display {
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        .answer-paragraph {
-            margin: 0;
-            background-color: white;
-            line-height: 1.5;
+        .answer-feedback span {
             display: block;
-            box-shadow: none;
+            margin: 0.25rem 0;
+            padding: 0.25rem;
             border-radius: 3px;
-            font-size: 1rem;
-            border: 1px solid #e0e0e0;
-            overflow-y: auto;
-            max-height: 200px;
         }
-        .script-highlight {
+        .correct {
+            color: #2e7d32;
+        }
+        .incorrect {
             color: #b40000;
-            font-weight: normal;
         }
-        .no-answer {
-            color: #666;
-            padding: 0 4px;
-            margin: 0 2px;
-        }
-        .select-answer-header {
-            font-size: 1rem;
-            color: #333;
-            margin: 0;
-            padding: 5px 0;
+        .correct-answer {
+            color: #2e7d32;
             font-weight: bold;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 0;
         }
+        .wrong-answer {
+            color: #b40000;
+            text-decoration: line-through;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 0;
+        }
+        
+        /* Furigana styling */
+        ruby {
+            font-size: 1.2rem;
+        }
+        
+        rt {
+            font-size: 0.6em;
+            color: #666;
+        }
+        @media (max-width: 1024px) {
+            .options-container {
+                max-width: 500px;
+            }
+        }
+        
         @media (max-width: 768px) {
             .container {
-                padding: 15px;
-                gap: 15px;
+                padding: 1rem;
+                gap: 10px;
             }
             .content-wrapper {
-                gap: 15px;
+                gap: 8px;
             }
             .options-container {
                 width: 100%;
+                max-width: 100%;
             }
             .option-button {
                 width: 100%;
+                padding: 12px 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .options-container {
+                gap: 6px;
+            }
+            .option-button {
+                padding: 10px 12px;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -445,24 +441,10 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     </div>
                 </div>
                 <div class="options-container" id="options-container">
-                    <div class="select-answer-header">回答を選択してください</div>
                     {{OPTIONS}}
                 </div>
                 <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
             </form>
-        </div>
-        
-        <div class="answer-paragraph-container" id="answer-paragraph-container" style="display: none;">
-            <div class="answer-paragraph-inner">
-                <div class="transcript-section">
-                    <div class="transcript-title">スクリプト</div>
-                    <div id="transcript-paragraph" class="transcript-text">{{SCRIPT_TEXT}}</div>
-                </div>
-                <div class="your-answer-section">
-                    <div class="score-display" id="score-display"></div>
-                    <div id="answer-paragraph" class="answer-paragraph"></div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -514,14 +496,9 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             }
 
             function updateDisplay(result) {
-                const answerParagraph = document.getElementById('answer-paragraph');
-                const answerContainer = document.getElementById('answer-paragraph-container');
-                const scoreDisplay = document.getElementById('score-display');
                 const options = document.querySelectorAll('.option-button');
                 
-                scoreDisplay.textContent = result.message;
-                
-                // Update option buttons
+                // Update option buttons with correct/incorrect colors
                 options.forEach(button => {
                     const isSelected = button.dataset.value === selectedOption;
                     const isCorrect = button.dataset.value === correctAnswer;
@@ -529,11 +506,11 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     button.classList.remove('selected', 'correct', 'incorrect');
                     
                     if (state.showAnswer) {
-                        if (isSelected && !isCorrect) {
-                            button.classList.add('incorrect');
-                        }
+                        // When showing answer, show correct/incorrect colors
                         if (isCorrect) {
                             button.classList.add('correct');
+                        } else if (isSelected) {
+                            button.classList.add('incorrect');
                         }
                         button.disabled = true;
                     } else {
@@ -543,27 +520,6 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                         button.disabled = false;
                     }
                 });
-                
-                // Update answer paragraph
-                let answerHtml = '';
-                if (selectedOption) {
-                    if (result.isCorrect) {
-                        answerHtml = '<span class="correct-answer">' + selectedOption + '</span>';
-                    } else {
-                        answerHtml = '<span class="wrong-answer">' + selectedOption + '</span> ' +
-                                   '<span class="correct-answer">' + correctAnswer + '</span>';
-                    }
-                } else {
-                    answerHtml = '<span class="no-answer">選択してください</span>';
-                }
-                
-                answerParagraph.innerHTML = answerHtml;
-                
-                if (state.showAnswer) {
-                    answerContainer.style.display = 'block';
-                } else {
-                    answerContainer.style.display = 'none';
-                }
             }
 
             // Audio player functionality
@@ -623,6 +579,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 let isPlaying = false;
                 let totalDuration = 0;
                 let isTransitioning = false; // Flag to prevent multiple transitions
+                let countdownInterval = null; // Store countdown interval reference
                 
                 // Calculate total duration of all segments
                 if (timeSegments.length > 0) {
@@ -660,25 +617,32 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     updateVolumeDisplay();
                 });
                 
-                // Initialize with 3-second delay
+                // Initialize with 5-second delay
                 function initializePlayer() {
                     if (timeSegments.length === 0) return;
+                    
+                    // Clear any existing countdown interval
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
                     
                     // Set to first segment start time
                     currentSegmentIndex = 0;
                     audioElement.currentTime = timeSegments[0].start;
                     
                     // Update status to show countdown
-                    playerStatus.textContent = 'Current Status: Starting in 3s...';
+                    playerStatus.textContent = 'Current Status: Starting in 5s...';
                     
                     // Countdown timer
-                    let countdown = 3;
-                    const countdownInterval = setInterval(function() {
+                    let countdown = 5;
+                    countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
                             playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                         } else {
                             clearInterval(countdownInterval);
+                            countdownInterval = null;
                             // Auto-play when countdown reaches 0
                             playNextSegment();
                         }
@@ -842,22 +806,29 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 function startWithDelay() {
                     if (timeSegments.length === 0) return;
                     
+                    // Clear any existing countdown interval
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+                    
                     // Reset to first segment
                     currentSegmentIndex = 0;
                     isTransitioning = false; // Reset transition flag
                     audioElement.currentTime = timeSegments[0].start;
                     
                     // Update status with countdown
-                    playerStatus.textContent = 'Current Status: Starting in 3s...';
+                    playerStatus.textContent = 'Current Status: Starting in 5s...';
                     
                     // Countdown timer
-                    let countdown = 3;
-                    const countdownInterval = setInterval(function() {
+                    let countdown = 5;
+                    countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
                             playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                         } else {
                             clearInterval(countdownInterval);
+                            countdownInterval = null;
                             // Auto-play when countdown reaches 0
                             playNextSegment();
                         }
@@ -868,6 +839,12 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 return {
                     startWithDelay,
                     resetToStart: () => {
+                        // Clear any existing countdown interval
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                            countdownInterval = null;
+                        }
+                        
                         if (timeSegments.length > 0) {
                             currentSegmentIndex = 0;
                             audioElement.currentTime = timeSegments[0].start;
@@ -884,6 +861,36 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 };
             }
 
+            // Listen for messages from parent (Check button)
+            window.addEventListener('message', function(event) {
+                console.log('🔄 Received message:', event.data);
+                
+                if (event.data && event.data.type === 'problem.check') {
+                    console.log('🔄 Processing problem.check - resetting quiz');
+                    // Reset quiz state
+                    resetQuiz();
+                }
+                
+                if (event.data && event.data.type === 'problem.submit') {
+                    console.log('🔄 Processing problem.submit - action:', event.data.action);
+                    
+                    if (event.data.action === 'check') {
+                        console.log('🔄 Processing problem.submit with action=check - showing answers');
+                        // Pause audio when checking answers
+                        const audioElement = document.getElementById('audio-player');
+                        if (audioElement) {
+                            audioElement.pause();
+                        }
+                        // Trigger quiz submission when Check button is clicked
+                        getGrade();
+                    } else if (event.data.action === 'reset') {
+                        console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
+                        // Reset quiz when reset action is received
+                        resetQuiz();
+                    }
+                }
+            });
+
             // Initialize EdX integration
             var channel;
             if (window.parent !== window) {
@@ -898,42 +905,25 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             const audioPlayer = setupAudioPlayer();
 
             function getGrade() {
+                // Always show answer when submitted
+                state.showAnswer = true;
                 
-                const answerContainer = document.getElementById('answer-paragraph-container');
-                const showFlag = document.getElementById('showAnswerFlag');
-                const audioElement = document.getElementById('audio-player');
-                const startTimeElement = document.getElementById('start-time');
-                
-                const isVisible = answerContainer.style.display === 'block';
-
-                if (isVisible) {
-                    // Hide answers
-                    answerContainer.style.display = 'none';
-                    showFlag.value = 'false';
-                    state.showAnswer = false;
-                    
-                    // Reset to start and play with delay
-                    audioPlayer.startWithDelay();
-                } else {
-                    // Show answers
-                    const result = calculateResults();
-                    updateDisplay(result);
-                    answerContainer.style.display = 'block';
-                    showFlag.value = 'true';
-                    state.showAnswer = true;
-                    
-                    // Pause the audio
-                    audioElement.pause();
+                // Capture selected option
+                const selectedButton = document.querySelector('.option-button.selected');
+                if (selectedButton) {
+                    selectedOption = selectedButton.dataset.value;
                 }
-
-                const result = calculateResults();
                 
-                // ✅ CALL COMPLETION API (NON-BLOCKING)
+                // Update display with answer
+                const result = calculateResults();
+                updateDisplay(result);
+                
+                // Call completion API (non-blocking)
                 setTimeout(() => {
                     updateCompletionStatus(result);
                 }, 100);
                 
-                // ✅ RETURN DATA TO EDX (PREVENT RELOAD)
+                // Return data to EdX (prevent reload)
                 const returnValue = {
                     edxResult: None,
                     edxScore: result.rawScore,
@@ -941,6 +931,34 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 };
                 
                 return JSON.stringify(returnValue);
+            }
+            
+            function resetQuiz() {
+                // Reset all option buttons
+                const options = document.querySelectorAll('.option-button');
+                options.forEach(button => {
+                    button.classList.remove('selected', 'correct', 'incorrect');
+                    button.disabled = false;
+                });
+                
+                // Clear selected option
+                selectedOption = null;
+                
+                // Reset state completely
+                state.answer = '';
+                state.score = 0;
+                state.showAnswer = false;
+                
+                // Reset show flag
+                const showFlag = document.getElementById('showAnswerFlag');
+                if (showFlag) {
+                    showFlag.value = 'false';
+                }
+                
+                // Reset audio player and start with delay (like initial load)
+                if (audioPlayer) {
+                    audioPlayer.startWithDelay();
+                }
             }
             
             function updateCompletionStatus(result) {

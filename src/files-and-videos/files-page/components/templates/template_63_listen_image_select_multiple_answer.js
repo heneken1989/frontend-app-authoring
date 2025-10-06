@@ -1,4 +1,9 @@
-export const getListenImageSelectMultipleAnswerTemplate = (questionText, correctAnswers, audioFile, startTime = 0, endTime = 0, instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
+// Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+function convertFurigana(text) {
+    return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+}
+
+export const getListenImageSelectMultipleAnswerTemplate = (questionText, correctAnswers, audioFile, timeSegmentsString = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
     // Log the incoming parameters to help debug
     console.log('getListenImageSelectMultipleAnswerTemplate called with:', {
         questionText,
@@ -53,17 +58,24 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
                 // Determine correct answer purely from options order by index (cycle)
                 const correctAnswer = optionsArray[(answerDropdownIndex) % Math.max(1, optionsArray.length)] || '';
                 
-                // Create dropdown options from the options array
-                const optionsHtml = optionsArray.map(option => {
-                    // Remove the selected attribute to make "Select" the default
-                    return `<option value="${option}">${option}</option>`;
+                // Create dropdown options from the options array - remove duplicates and sort alphabetically
+                const uniqueOptions = [...new Set(optionsArray)].sort((a, b) => {
+                    try {
+                        return a.localeCompare(b, 'ja');
+                    } catch (e) {
+                        return a.localeCompare(b);
+                    }
+                });
+                
+                const optionsHtml = uniqueOptions.map(option => {
+                    return `<div class="dropdown-option" data-value="${option}">${option}</div>`;
                 }).join('');
                 
                 const dropdown = `
-                    <select class="answer-select" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}" style="width: auto; min-width: 80px;">
-                        <option value="" selected>Select</option>
-                        ${optionsHtml}
-                    </select>
+                    <div class="custom-dropdown" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}">
+                        <div class="dropdown-button" data-value=""></div>
+                        <div class="dropdown-options">${optionsHtml}</div>
+                    </div>
                 `;
                 
                 // Replace the placeholder with the dropdown
@@ -86,19 +98,20 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
         ).join('\n');
     }
 
-    // Process script text to highlight quoted text in red
-    const processedScriptText = scriptText.replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
+    // Process script text to highlight quoted text in red and convert furigana
+    const processedScriptText = scriptText
+        .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>')
+        .replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
     
-    // Extract the first line as the question text
-    const firstLine = processedLines[0] || questionText;
+    // Extract the first line as the question text and apply furigana
+    const firstLine = convertFurigana(processedLines[0] || questionText);
     
     let template = listenImageSelectMultipleAnswerTemplate
         .replace('{{QUESTION_TEXT}}', firstLine)
         .replace(/{{ANSWERS_LIST}}/g, answersList) // Replace all occurrences
         .replace('{{AUDIO_FILE}}', audioFile || '')
-        .replace('{{START_TIME}}', startTime || 0)
-        .replace('{{END_TIME}}', endTime || 0)
-        .replace('{{INSTRUCTIONS}}', instructions)
+        .replace('{{TIME_SEGMENTS}}', timeSegmentsString || '0-0')
+        .replace('{{INSTRUCTIONS}}', convertFurigana(instructions))
         .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
         .replace('{{CORRECT_ANSWERS}}', JSON.stringify(correctAnswersArray));
 
@@ -185,8 +198,8 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             gap: 0;
         }
         .instructions {
-            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 1.1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
             font-weight: bold;
             line-height: 1.5;
             text-align: left;
@@ -196,13 +209,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             letter-spacing: 0.3px;
         }
         .instructions:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background-color: #0075b4;
+            display: none;
         }
         .image-container {
             width: 100%;
@@ -222,7 +229,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             margin: 0 auto;
         }
         .question-text {
-            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: normal;
             line-height: 1.6;
@@ -234,47 +241,166 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             letter-spacing: 0.4px;
         }
         .question-text:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background-color: #0075b4;
+            display: none;
         }
         .audio-container {
             margin-bottom: 10px;
-            width: 90%;
+            width:90%;
             background-color: white;
+            display: flex;
+            justify-content: flex-start;
         }
         .custom-audio-player {
-            width: 90%;
+            width: 100%;
+            max-width: 350px;
+            margin: 0;
             background-color: white;
             border-radius: 4px;
             padding: 8px;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            border: 1px solid #e8e8e8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            border: 1px solid #e0e0e0;
         }
         .select-container {
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 3px;
             padding: 0;
             background: white;
             max-width: 400px;
+            align-items: flex-start;
         }
         .select-answer-header {
-            font-size: 1rem;
+            font-size: 1.2rem;
             color: #333;
             margin: 0;
             font-weight: bold;
         }
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+            min-width: 100px;
+            width: auto;
+            z-index: 1;
+            margin: 0 2px;
+            vertical-align: middle;
+        }
+        .custom-dropdown.open {
+            z-index: 1000;
+        }
+        .dropdown-button {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
+            font-size: 1.2rem !important; 
+            font-weight: normal !important; 
+            line-height: 1.2 !important; 
+            text-align: left !important; 
+            width: auto !important; 
+            min-width: 120px !important; 
+            height: 40px !important;
+            min-height: 40px !important;
+            border: 1px solid #666 !important; 
+            border-radius: 4px !important; 
+            background-color: white !important; 
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 16px center !important;
+            background-size: 18px !important;
+            color: #333 !important; 
+            cursor: pointer !important; 
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            padding: 0 50px 0 16px !important; 
+            transition: all 0.3s ease !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            outline: none !important;
+            letter-spacing: 0.4px !important;
+            white-space: nowrap !important;
+        }
+        .dropdown-button:hover {
+            background-color: #0075b4;
+            color: white;
+        }
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 100%;
+            width: auto;
+            background: white;
+            border: 1px solid #666;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .dropdown-options.dropup {
+            top: auto;
+            bottom: 100%;
+            border-top: 1px solid #666;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+        .dropdown-options.show {
+            display: block;
+        }
+        .custom-dropdown.open .dropdown-button {
+            background-color: #0075b4;
+            color: white;
+        }
+        .dropdown-option {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.2rem;
+            font-weight: normal;
+            line-height: 1.6;
+            text-align: center;
+            color: #333;
+            padding: 2px 2px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            min-height: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            min-width: max-content;
+            transition: all 0.2s ease;
+        }
+        .dropdown-option:hover {
+            background-color: #0075b4;
+            color: white;
+        }
+        .dropdown-option:last-child {
+            border-bottom: none;
+        }
+        /* Furigana styling for dropdown - Simple approach */
+        .dropdown-button ruby, .dropdown-option ruby {
+            font-size: 1em;
+        }
+        .dropdown-button rt, .dropdown-option rt {
+            font-size: 0.6em;
+            color: #666;
+        }
+        
+        /* Furigana styling */
+        ruby {
+            font-size: 1.2rem;
+        }
+        
+        rt {
+            font-size: 0.6em;
+            color: #666;
+        }
         .answer-select {
-            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
             font-weight: 400;
             line-height: 1.5;
             text-align: left;
@@ -289,11 +415,10 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         }
         .answer-select:focus {
             outline: none;
-            border-color: #0075b4;
         }
         .answer-select option {
             padding: 8px;
-            font-size: 0.95rem;
+            font-size: 1.2rem;
         }
         .answer-select.correct {
             border-color: #2e7d32;
@@ -303,53 +428,75 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             border-color: #b40000;
             background-color: #f9ecec;
         }
-        /* Styling for answer results */
-        .correct-answer {
-            color: #2e7d32;
+        /* Styling for answer results - copied from template 18 */
+        .correct-answer { 
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
             font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 3px;
-            background-color: #ecf3ec;
+            line-height: 1.6;
+            text-align: left;
+            color: #fff; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            background-color: #4caf50; 
+            display: inline-block; 
+            margin: 2px;
+            letter-spacing: 0.4px;
         }
-        .wrong-answer {
-            color: #b40000;
+        .correct-answer rt { color: #fff !important; }
+        .wrong-answer { 
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
             font-weight: bold;
-            text-decoration: line-through;
-            padding: 2px 8px;
-            border-radius: 3px;
-            background-color: #f9ecec;
+            line-height: 1.6;
+            text-align: left;
+            color: #fff; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            background-color: #f44336; 
+            display: inline-block; 
+            margin: 2px;
+            letter-spacing: 0.4px;
         }
+        .wrong-answer rt { color: #fff !important; }
+        .answer-replacement { display: inline-block; }
         /* Keep rest of the existing styles */
         .player-status {
             font-weight: bold;
             color: #333;
-            margin-bottom: 3px;
+            margin-bottom: 5px;
             text-align: left;
-            font-size: 14px;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 2px;
+            font-size: 1.2rem;
+            padding-bottom: 10px;
+        }
+        .divider {
+            height: 1px;
+            background-color: transparent;
+            width: 100%;
+            margin: 5px 0;
         }
         .controls-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             padding: 3px 0;
         }
         .progress-container {
             flex-grow: 1;
-            height: 6px;
-            background-color: #e0f0ff;
-            border-radius: 3px;
+            height: 8px;
+            background-color: #e0ffff;
+            border-radius: 4px;
             position: relative;
-            cursor: pointer;
+            cursor: default;
             width: 100%;
             margin-right: 0;
+            pointer-events: none; /* Disable all pointer interactions */
         }
         .progress-bar {
-            height: 6px;
-            background-color: #0075b4;
+            height: 8px;
+            background-color: #00a3a1;
             width: 0;
-            border-radius: 3px;
+            border-radius: 4px;
         }
         .volume-container {
             display: flex;
@@ -357,7 +504,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             flex-grow: 1;
         }
         .volume-label {
-            font-size: 12px;
+            font-size: 1.2rem;
             color: #333;
             margin-right: 8px;
             font-weight: bold;
@@ -366,7 +513,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         .volume-control {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             width: 100%;
             padding: 3px;
         }
@@ -378,13 +525,13 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         .volume-slider-container {
             width: 100%;
             flex-grow: 1;
-            background-color: #e0f0ff;
+            background-color: #e0e0e0;
             height: 4px;
             position: relative;
             border-radius: 2px;
         }
         .volume-level {
-            background-color: #0075b4;
+            background-color: #00a3a1;
             height: 100%;
             width: 70%;
             border-radius: 2px;
@@ -399,76 +546,6 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             opacity: 0;
             cursor: pointer;
         }
-        .answer-paragraph-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            background-color: rgba(99, 97, 97, 0.95);
-            border-top: 1px solid #e0e0e0;
-            border-bottom: 1px solid #e0e0e0;
-            display: none;
-            z-index: 2;
-            transition: transform 0.3s ease;
-            max-height: 460px;
-            overflow-y: auto;
-        }
-        .answer-paragraph-inner {
-            max-width: 90%;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .transcript-section {
-            margin-bottom: 1.5rem;
-            background-color: #fff;
-            border-radius: 4px;
-            border: 1px solid #e0e0e0;
-            overflow-y: auto;
-        }
-        .transcript-title {
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #333;
-            font-size: 1.2rem;
-            text-align: center;
-        }
-        .transcript-text {
-            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 1rem;
-            font-weight: 400;
-            line-height: 1.5;
-            text-align: left;
-            margin-bottom: 1rem;
-            white-space: pre-wrap;
-        }
-        .score-display {
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        .answer-paragraph {
-            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 1rem;
-            font-weight: 400;
-            line-height: 1.5;
-            text-align: left;
-            margin: 0;
-            background-color: white;
-            box-shadow: none;
-            border-radius: 3px;
-            display: block;
-            border: 1px solid #e0e0e0;
-            overflow-y: auto;
-            max-height: 200px;
-        }
         .script-highlight {
             color: #b40000;
             font-weight: normal;
@@ -480,24 +557,31 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             margin: 0 2px;
         }
         .answer-item {
-            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: normal;
-            line-height: 1.6;
+            line-height: 1.4;
             text-align: left;
             margin: 0;
             color: #333;
             display: flex;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 5px;
+            justify-content: flex-start;
+            gap: 8px;
             letter-spacing: 0.4px;
+            padding: 4px 8px;
+            width: 100%;
+            max-width: 400px;
         }
         .answers-list {
             padding: 5px;
             background: white;
             border-radius: 2px;
             margin: 5px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: flex-start;
         }
         @media (max-width: 768px) {
             .main-content {
@@ -567,8 +651,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                             </div>
                         </div>
                         <div style="display: none;">
-                            <span id="start-time">{{START_TIME}}</span>
-                            <span id="end-time">{{END_TIME}}</span>
+                            <span id="time-segments">{{TIME_SEGMENTS}}</span>
                         </div>
                     </div>
                     <div class="select-container">
@@ -576,18 +659,6 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     </div>
                     <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
                 </form>
-            </div>
-        </div>
-        <div class="answer-paragraph-container" id="answer-paragraph-container" style="display: none;">
-            <div class="answer-paragraph-inner">
-                <div class="transcript-section">
-                    <div class="transcript-title">スクリプト</div>
-                    <div id="transcript-paragraph" class="transcript-text">{{SCRIPT_TEXT}}</div>
-                </div>
-                <div class="your-answer-section">
-                    <div class="score-display" id="score-display"></div>
-                    <div id="answer-paragraph" class="answer-paragraph"></div>
-                </div>
             </div>
         </div>
     </div>
@@ -603,15 +674,17 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
 
         const correctAnswers = JSON.parse('{{CORRECT_ANSWERS}}');
         let selectedAnswers = new Array(correctAnswers.length).fill('');
+        let originalDropdowns = []; // Store original dropdowns for restoration
         
         function calculateResults() {
-            const totalQuestions = document.querySelectorAll('.answer-select').length;
+            const totalQuestions = document.querySelectorAll('.custom-dropdown').length;
             let correctCount = 0;
             const answers = {};
             
-            document.querySelectorAll('.answer-select').forEach((select, index) => {
-                const userAnswer = select.value.trim();
-                const correctAnswer = select.getAttribute('data-correct');
+            document.querySelectorAll('.custom-dropdown').forEach((dropdown, index) => {
+                const button = dropdown.querySelector('.dropdown-button');
+                const userAnswer = button.getAttribute('data-value') || '';
+                const correctAnswer = dropdown.getAttribute('data-correct');
                 selectedAnswers[index] = userAnswer;
                 
                 const isCorrect = correctAnswer === userAnswer;
@@ -636,100 +709,303 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         }
 
         function updateDisplay(result) {
-            const answerParagraph = document.getElementById('answer-paragraph');
-            const answerContainer = document.getElementById('answer-paragraph-container');
-            const scoreDisplay = document.getElementById('score-display');
-            
-            scoreDisplay.textContent = result.message;
-            
-            let answerHtml = '';
-            document.querySelectorAll('.answer-select').forEach((select, index) => {
-                const number = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'][index];
-                const userAnswer = selectedAnswers[index];
-                const correctAnswer = select.getAttribute('data-correct');
-                const isCorrect = correctAnswer === userAnswer;
-                
-                select.classList.remove('correct', 'incorrect');
-                if (state.showAnswer) {
-                    select.classList.add(isCorrect ? 'correct' : 'incorrect');
-                    select.disabled = true;
-                } else {
-                    select.disabled = false;
-                }
-                
-                answerHtml += '<div class="answer-item-result">' + number + ' ';
-                
-                if (userAnswer) {
-                    if (isCorrect) {
-                        answerHtml += '<span class="correct-answer">' + userAnswer + '</span> ✓';
-                    } else {
-                        answerHtml += '<span class="wrong-answer">' + userAnswer + '</span> → ' +
-                                     '<span class="correct-answer">' + correctAnswer + '</span> ✗';
-                    }
-                } else {
-                    answerHtml += '<span class="no-answer">未回答</span> → ' +
-                                 '<span class="correct-answer">' + correctAnswer + '</span>';
-                }
-                
-                answerHtml += '</div>';
-            });
-            
-            answerParagraph.innerHTML = answerHtml;
-            
             if (state.showAnswer) {
-                answerContainer.style.display = 'block';
-            } else {
-                answerContainer.style.display = 'none';
+                // Replace dropdowns with text display in the answers list (like template 18)
+                const dropdowns = document.querySelectorAll('.custom-dropdown');
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const dropdown = dropdowns[i];
+                    const userAnswer = selectedAnswers[i];
+                    const correctAnswer = dropdown.getAttribute('data-correct');
+                    const isCorrect = correctAnswer === userAnswer;
+                    
+                    const replacementSpan = document.createElement('span');
+                    replacementSpan.className = 'answer-replacement';
+                    
+                    if (userAnswer) {
+                        if (isCorrect) {
+                            replacementSpan.innerHTML = '<span class="correct-answer">' + userAnswer + '</span>';
+                        } else {
+                            replacementSpan.innerHTML = '<span class="wrong-answer">' + userAnswer + '</span> <span class="correct-answer">' + correctAnswer + '</span>';
+                        }
+                    } else {
+                        replacementSpan.innerHTML = '<span class="wrong-answer">未回答</span> <span class="correct-answer">' + correctAnswer + '</span>';
+                    }
+                    
+                    // Replace the dropdown with the text display
+                    dropdown.parentNode.replaceChild(replacementSpan, dropdown);
+                }
             }
         }
 
-        // Add change event listener to each dropdown
-        document.querySelectorAll('.answer-select').forEach((select, index) => {
-            select.addEventListener('change', function() {
-                selectedAnswers[index] = this.value;
-                if (state.showAnswer) {
-                    const result = calculateResults();
-                    updateDisplay(result);
+        // Store original dropdowns immediately when page loads
+        const initialDropdowns = document.querySelectorAll('.custom-dropdown');
+        for (let i = 0; i < initialDropdowns.length; i++) {
+            originalDropdowns.push(initialDropdowns[i].cloneNode(true));
+        }
+
+        // Add event listeners to each custom dropdown
+        document.querySelectorAll('.custom-dropdown').forEach((dropdown, index) => {
+            const button = dropdown.querySelector('.dropdown-button');
+            const options = dropdown.querySelectorAll('.dropdown-option');
+            
+            // Toggle dropdown
+            button.addEventListener('click', function() {
+                const isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show');
+                // Close all other dropdowns
+                document.querySelectorAll('.dropdown-options').forEach(opt => {
+                    opt.classList.remove('show', 'dropup');
+                });
+                document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('open');
+                });
+                // Toggle current dropdown
+                if (!isOpen) {
+                    const dropdownOptions = this.parentNode.querySelector('.dropdown-options');
+                    
+                    // First show dropdown to get accurate measurements
+                    dropdownOptions.classList.add('show');
+                    this.parentNode.classList.add('open');
+                    
+                    // Now check if dropdown will overflow and adjust direction
+                    const buttonRect = this.getBoundingClientRect();
+                    const viewportHeight = window.innerHeight;
+                    const dropdownRect = dropdownOptions.getBoundingClientRect();
+                    const dropdownHeight = dropdownRect.height;
+                    const spaceBelow = viewportHeight - buttonRect.bottom;
+                    const spaceAbove = buttonRect.top;
+                    
+                    // If not enough space below, show dropdown upward regardless of space above
+                    // Add 20px margin for better UX
+                    if (spaceBelow < (dropdownHeight + 20)) {
+                        dropdownOptions.classList.add('dropup');
+                    } else {
+                        dropdownOptions.classList.remove('dropup');
+                    }
                 }
             });
+            
+            // Handle option selection
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    const selectedValue = this.getAttribute('data-value');
+                    const selectedText = this.innerHTML;
+                    const dropdown = this.parentNode.parentNode;
+                    const button = dropdown.querySelector('.dropdown-button');
+                    
+                    // Update button text
+                    button.innerHTML = selectedText;
+                    button.setAttribute('data-value', selectedValue);
+                    
+                    // Close dropdown
+                    this.parentNode.classList.remove('show');
+                    this.parentNode.parentNode.classList.remove('open');
+                    
+                    // Update selected answers
+                    selectedAnswers[index] = selectedValue;
+                    
+                    if (state.showAnswer) {
+                        const result = calculateResults();
+                        updateDisplay(result);
+                    }
+                });
+            });
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-dropdown')) {
+                document.querySelectorAll('.dropdown-options').forEach(opt => {
+                    opt.classList.remove('show', 'dropup');
+                });
+                document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('open');
+                });
+            }
         });
 
-        function getGrade() {
-            const answerContainer = document.getElementById('answer-paragraph-container');
-            const showFlag = document.getElementById('showAnswerFlag');
-            const audioElement = document.getElementById('audio-player');
-            const startTimeElement = document.getElementById('start-time');
+        // Listen for messages from parent (Check button)
+        window.addEventListener('message', function(event) {
+            console.log('🔄 Received message:', event.data);
             
-            const startTime = parseFloat(startTimeElement.textContent) || 0;
-            const isVisible = answerContainer.style.display === 'block';
-
-            if (isVisible) {
-                // Hide answers and reset audio
-                answerContainer.style.display = 'none';
-                showFlag.value = 'false';
-                state.showAnswer = false;
-                
-                // Reset to start time and play with delay
-                audioElement.currentTime = startTime;
-                audioPlayer.startWithDelay();
-            } else {
-                // First submit - just show answers and pause audio
-                const result = calculateResults();
-                updateDisplay(result);
-                answerContainer.style.display = 'block';
-                showFlag.value = 'true';
-                state.showAnswer = true;
-                
-                // Just pause the audio without resetting
-                audioElement.pause();
+            // Handle JSChannel messages (from EdX)
+            if (event.data && event.data.method === 'JSInput::getGrade') {
+                console.log('🔄 Processing JSChannel getGrade - showing answers');
+                getGrade();
+                return;
             }
+            
+            // Process postMessage from parent window or problem.html
+            if (event.source !== window.parent && event.source !== window) {
+                return;
+            }
+            
+            console.log('🔄 Received postMessage from parent:', event.data);
+            console.log('🔄 Message type:', event.data?.type);
+            
+            if (event.data && event.data.type === 'problem.check') {
+                console.log('🔄 Processing problem.check - resetting quiz');
+                // Reset quiz state
+                resetQuiz();
+            }
+            
+            if (event.data && event.data.type === 'problem.submit') {
+                console.log('🔄 Processing problem.submit - action:', event.data.action);
+                
+                if (event.data.action === 'check') {
+                    console.log('🔄 Processing problem.submit with action=check - showing answers');
+                    // Trigger quiz submission when Check button is clicked
+                    getGrade();
+                } else if (event.data.action === 'reset') {
+                    console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
+                    // Reset quiz when reset action is received
+                    resetQuiz();
+                }
+            }
+        });
 
+        function resetQuiz() {
+            console.log('🔄 Starting reset process...');
+            
+            // Restore original dropdowns
+            const replacements = document.querySelectorAll('.answer-replacement');
+            for (let i = 0; i < replacements.length; i++) {
+                const replacement = replacements[i];
+                if (originalDropdowns[i]) {
+                    const restoredDropdown = originalDropdowns[i].cloneNode(true);
+                    const button = restoredDropdown.querySelector('.dropdown-button');
+                    if (button) {
+                        button.setAttribute('data-value', '');
+                        button.innerHTML = '';
+                        // Reset width to min-width
+                        button.style.width = '100px';
+                        // Also reset the dropdown container width
+                        restoredDropdown.style.width = '100px';
+                    }
+                    replacement.parentNode.replaceChild(restoredDropdown, replacement);
+                }
+            }
+            
+            // Clear selected answers
+            selectedAnswers = [];
+            for (let j = 0; j < correctAnswers.length; j++) {
+                selectedAnswers.push('');
+            }
+            
+            // Reset state completely
+            state.answer = '';
+            state.score = 0;
+            state.showAnswer = false;
+            
+            // Reset audio player and start with delay (like initial load)
+            if (audioPlayer) {
+                audioPlayer.startWithDelay();
+            }
+            
+            // Re-attach event listeners for custom dropdowns
+            const newDropdowns = document.querySelectorAll('.custom-dropdown');
+            for (let k = 0; k < newDropdowns.length; k++) {
+                const dropdown = newDropdowns[k];
+                const button = dropdown.querySelector('.dropdown-button');
+                const options = dropdown.querySelectorAll('.dropdown-option');
+                
+                // Toggle dropdown
+                button.addEventListener('click', function() {
+                    const isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show');
+                    // Close all other dropdowns
+                    document.querySelectorAll('.dropdown-options').forEach(opt => {
+                        opt.classList.remove('show', 'dropup');
+                    });
+                    document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('open');
+                    });
+                    // Toggle current dropdown
+                    if (!isOpen) {
+                        const dropdownOptions = this.parentNode.querySelector('.dropdown-options');
+                        
+                        // First show dropdown to get accurate measurements
+                        dropdownOptions.classList.add('show');
+                        this.parentNode.classList.add('open');
+                        
+                        // Now check if dropdown will overflow and adjust direction
+                        const buttonRect = this.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        const dropdownRect = dropdownOptions.getBoundingClientRect();
+                        const dropdownHeight = dropdownRect.height;
+                        const spaceBelow = viewportHeight - buttonRect.bottom;
+                        const spaceAbove = buttonRect.top;
+                        
+                        // If not enough space below, show dropdown upward regardless of space above
+                        // Add 20px margin for better UX
+                        if (spaceBelow < (dropdownHeight + 20)) {
+                            dropdownOptions.classList.add('dropup');
+                        } else {
+                            dropdownOptions.classList.remove('dropup');
+                        }
+                    }
+                });
+                
+                // Handle option selection
+                options.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const selectedValue = this.getAttribute('data-value');
+                        const selectedText = this.innerHTML;
+                        const dropdown = this.parentNode.parentNode;
+                        const button = dropdown.querySelector('.dropdown-button');
+                        
+                        // Update button text
+                        button.innerHTML = selectedText;
+                        button.setAttribute('data-value', selectedValue);
+                        
+                        // Close dropdown
+                        this.parentNode.classList.remove('show');
+                        this.parentNode.parentNode.classList.remove('open');
+                        
+                        // Update selected answers
+                        const blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
+                        selectedAnswers[blankNumber] = selectedValue;
+                        
+                        if (state.showAnswer) {
+                            const result = calculateResults();
+                            updateDisplay(result);
+                        }
+                    });
+                });
+            }
+            
+            console.log('🔄 Quiz reset completed via problem.check message');
+        }
+
+        function getGrade() {
+            console.log('🎯 getGrade() called - Processing quiz submission');
+            
             const result = calculateResults();
-            return JSON.stringify({
-                edxResult: None,
-                edxScore: result.rawScore,
-                edxMessage: result.message
-            });
+            console.log('📊 Quiz results:', result);
+            
+            // Always show answer when submitted (like template 18)
+            state.showAnswer = true;
+            updateDisplay(result);
+            
+            // Pause audio when showing answers
+            const audioElement = document.getElementById('audio-player');
+            audioElement.pause();
+            
+            // Return data to EdX (prevent reload)
+            try {
+                const returnValue = {
+                    edxResult: None,
+                    edxScore: result.rawScore,
+                    edxMessage: result.message
+                };
+                
+                return JSON.stringify(returnValue);
+            } catch (error) {
+                console.error('Error in return value:', error);
+                return JSON.stringify({
+                    edxResult: None,
+                    edxScore: 0,
+                    edxMessage: 'Error occurred'
+                });
+            }
         }
 
         function getState() {
@@ -757,20 +1033,30 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         const answers = JSON.parse(state.answer);
                         Object.entries(answers).forEach(([index, value]) => {
                             selectedAnswers[index] = value;
-                            const select = document.querySelectorAll('.answer-select')[index];
-                            if (select) {
-                                select.value = value;
+                            const dropdown = document.querySelectorAll('.custom-dropdown')[index];
+                            if (dropdown && value) {
+                                const button = dropdown.querySelector('.dropdown-button');
+                                const options = dropdown.querySelectorAll('.dropdown-option');
+                                
+                                // Find the option text for this value
+                                let selectedText = '';
+                                for (let i = 0; i < options.length; i++) {
+                                    if (options[i].getAttribute('data-value') === value) {
+                                        selectedText = options[i].innerHTML;
+                                        break;
+                                    }
+                                }
+                                
+                                if (selectedText && button) {
+                                    button.innerHTML = selectedText;
+                                    button.setAttribute('data-value', value);
+                                }
                             }
                         });
 
                         const result = calculateResults();
                         updateDisplay(result);
                         
-                        document.getElementById('answer-paragraph-container').style.display = 
-                            state.showAnswer ? 'block' : 'none';
-                        document.getElementById('showAnswerFlag').value = 
-                            state.showAnswer ? 'true' : 'false';
-                            
                         // If showing answers, just pause audio without resetting
                         if (state.showAnswer) {
                             const audioElement = document.getElementById('audio-player');
@@ -799,14 +1085,6 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             channel.bind('setState', setState);
         }
         
-        // Listen for problem.submit messages with action 'save'
-        window.addEventListener('message', function(event) {
-            if (event.data && event.data.type === 'problem.submit' && event.data.action === 'save') {
-                // Save current state when navigating away
-                const result = calculateResults();
-                console.log('Saving state before navigation:', result);
-            }
-        });
 
         // Audio player functionality
         function setupAudioPlayer() {
@@ -815,15 +1093,72 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             const progressBar = document.getElementById('progress-bar');
             const volumeSlider = document.getElementById('volume-slider');
             const volumeLevel = document.getElementById('volume-level');
-            const startTimeElement = document.getElementById('start-time');
-            const endTimeElement = document.getElementById('end-time');
+            const timeSegmentsElement = document.getElementById('time-segments');
             const playerStatus = document.getElementById('player-status');
             
-            const startTime = parseFloat(startTimeElement.textContent) || 0;
-            const endTime = parseFloat(endTimeElement.textContent) || 0;
+            // Parse time segments from input (format: "0.04-0.09;0.21-0.30")
+            function parseTimeSegments(timeString) {
+                if (!timeString || timeString.trim() === '') {
+                    return [];
+                }
+                
+                const segments = [];
+                const segmentStrings = timeString.split(';');
+                
+                segmentStrings.forEach((segmentStr, index) => {
+                    const parts = segmentStr.split('-');
+                    
+                    if (parts.length === 2) {
+                        // Parse time format: 0.04 = 4 seconds, 1.21 = 1 minute 21 seconds
+                        const parseTime = (timeStr) => {
+                            const time = parseFloat(timeStr.trim());
+                            if (isNaN(time)) return 0;
+                            
+                            if (timeStr.includes('.')) {
+                                const [minutes, secondsPart] = timeStr.split('.');
+                                const minutesNum = parseInt(minutes) || 0;
+                                const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
+                                return minutesNum * 60 + secondsNum;
+                            } else {
+                                return time;
+                            }
+                        };
+                        
+                        const start = parseTime(parts[0]);
+                        const end = parseTime(parts[1]);
+                        
+                        if (!isNaN(start) && !isNaN(end) && start >= 0 && end > start) {
+                            segments.push({ start, end });
+                        }
+                    }
+                });
+                
+                return segments;
+            }
+            
+            const timeSegments = parseTimeSegments(timeSegmentsElement.textContent || '');
+            let currentSegmentIndex = 0;
             let isPlaying = false;
-            let countdownInterval = null;
-            let isFirstLoad = true;
+            let totalDuration = 0;
+            let isTransitioning = false; // Flag to prevent multiple transitions
+            let countdownInterval = null; // Store countdown interval reference
+            
+            // Calculate total duration of all segments
+            if (timeSegments.length > 0) {
+                totalDuration = timeSegments.reduce((total, segment) => total + (segment.end - segment.start), 0);
+            } else {
+                // Fallback to single time range from timeSegmentsElement
+                const timeString = timeSegmentsElement.textContent || '0-0';
+                const parts = timeString.split('-');
+                if (parts.length === 2) {
+                    const startTime = parseFloat(parts[0]) || 0;
+                    const endTime = parseFloat(parts[1]) || 0;
+                    if (endTime > startTime) {
+                        timeSegments.push({ start: startTime, end: endTime });
+                        totalDuration = endTime - startTime;
+                    }
+                }
+            }
             
             // Update volume level display based on slider value
             function updateVolumeDisplay() {
@@ -848,26 +1183,25 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 updateVolumeDisplay();
             });
             
-            // Start countdown and auto-play
-            function startCountdown() {
-                // Only start countdown on first load or if explicitly requested
-                if (!isFirstLoad) {
-                    return;
-                }
+            // Initialize with 5-second delay
+            function initializePlayer() {
+                if (timeSegments.length === 0) return;
                 
-                // Clear any existing countdown
+                // Clear any existing countdown interval
                 if (countdownInterval) {
                     clearInterval(countdownInterval);
+                    countdownInterval = null;
                 }
                 
-                // Set to start time
-                audioElement.currentTime = startTime;
+                // Set to first segment start time
+                currentSegmentIndex = 0;
+                audioElement.currentTime = timeSegments[0].start;
                 
                 // Update status to show countdown
-                playerStatus.textContent = 'Current Status: Starting in 3s...';
+                playerStatus.textContent = 'Current Status: Starting in 10s...';
                 
                 // Countdown timer
-                let countdown = 3;
+                let countdown = 10;
                 countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
@@ -875,60 +1209,103 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     } else {
                         clearInterval(countdownInterval);
                         countdownInterval = null;
-                        
-                        // Function to try playing with multiple retries
-                        let retryCount = 0;
-                        const maxRetries = 3;
-                        
-                        const tryPlayWithRetry = () => {
-                            audioElement.play()
-                                .then(() => {
-                                    isPlaying = true;
-                                    playerStatus.textContent = 'Current Status: Playing';
-                                    isFirstLoad = false; // Set flag to false after first successful play
-                                })
-                                .catch((error) => {
-                                    console.error('Error playing audio (attempt ' + (retryCount + 1) + '):', error);
-                                    retryCount++;
-                                    
-                                    if (retryCount < maxRetries) {
-                                        setTimeout(() => {
-                                            tryPlayWithRetry();
-                                        }, retryCount * 500);
-                                    } else {
-                                        playerStatus.textContent = 'Current Status: Error playing audio';
-                                        isFirstLoad = false; // Set flag to false even if play fails
-                                    }
-                                });
-                        };
-                        
-                        tryPlayWithRetry();
+                        // Auto-play when countdown reaches 0
+                        playNextSegment();
                     }
                 }, 1000);
             }
             
-            // Update progress bar
-            function updateProgress() {
-                if (audioElement.duration) {
-                    // Calculate relative to the start/end times
-                    const currentRelative = audioElement.currentTime - startTime;
-                    const durationRelative = (endTime > 0 ? endTime : audioElement.duration) - startTime;
+            // Play the current segment
+            function playNextSegment() {
+                if (currentSegmentIndex >= timeSegments.length) {
+                    // All segments played, stop and reset to first segment
+                    currentSegmentIndex = 0;
+                    audioElement.currentTime = timeSegments[0].start;
+                    audioElement.pause();
+                    isPlaying = false;
+                    playerStatus.textContent = 'Current Status: Completed';
                     
-                    // Update progress bar width
-                    const progressPercent = (currentRelative / durationRelative) * 100;
-                    progressBar.style.width = Math.max(0, Math.min(100, progressPercent)) + '%';
+                    // Force update status to ensure it's set correctly
+                    setTimeout(() => {
+                        if (playerStatus.textContent !== 'Current Status: Completed') {
+                            playerStatus.textContent = 'Current Status: Completed';
+                        }
+                    }, 50);
+                    return;
                 }
                 
-                // Check if we've reached the end time
-                if (endTime > 0 && audioElement.currentTime >= endTime) {
-                    audioElement.pause();
-                    audioElement.currentTime = startTime;
-                    isPlaying = false;
-                    playerStatus.textContent = 'Current Status: Paused';
+                const currentSegment = timeSegments[currentSegmentIndex];
+                audioElement.currentTime = currentSegment.start;
+                
+                audioElement.play()
+                    .then(function() {
+                        isPlaying = true;
+                        playerStatus.textContent = 'Current Status: Playing';
+                    })
+                    .catch(function(error) {
+                        console.error('Error playing audio:', error);
+                        isPlaying = false;
+                        playerStatus.textContent = 'Current Status: Error';
+                    });
+            }
+            
+            // Update progress bar
+            function updateProgress() {
+                if (audioElement.duration && timeSegments.length > 0) {
+                    const currentTime = audioElement.currentTime;
+                    const currentSegment = timeSegments[currentSegmentIndex];
+                    
+                    // Don't update if already completed
+                    if (playerStatus.textContent === 'Current Status: Completed') {
+                        return;
+                    }
+                    
+                    // Calculate progress within current segment
+                    if (currentTime >= currentSegment.start && currentTime <= currentSegment.end) {
+                        const segmentProgress = (currentTime - currentSegment.start) / (currentSegment.end - currentSegment.start);
+                        
+                        // Calculate total progress across all segments
+                        let totalElapsed = 0;
+                        for (let i = 0; i < currentSegmentIndex; i++) {
+                            totalElapsed += (timeSegments[i].end - timeSegments[i].start);
+                        }
+                        totalElapsed += (currentTime - currentSegment.start);
+                        
+                        const progressPercent = Math.min(100, Math.max(0, (totalElapsed / totalDuration) * 100));
+                        progressBar.style.width = progressPercent + '%';
+                    }
+                    
+                    // Check if we've reached the end of current segment
+                    if (currentTime >= currentSegment.end && !isTransitioning) {
+                        isTransitioning = true; // Prevent multiple transitions
+                        audioElement.pause();
+                        currentSegmentIndex++;
+                        
+                        if (currentSegmentIndex < timeSegments.length) {
+                            // Move to next segment
+                            setTimeout(() => {
+                                isTransitioning = false; // Reset flag
+                                playNextSegment();
+                            }, 100); // Small delay for smooth transition
+                        } else {
+                            // All segments completed
+                            isPlaying = false;
+                            playerStatus.textContent = 'Current Status: Completed';
+                            currentSegmentIndex = 0; // Reset for next play
+                            isTransitioning = false; // Reset flag
+                            
+                            // Force update status to ensure it's set correctly
+                            setTimeout(() => {
+                                if (playerStatus.textContent !== 'Current Status: Completed') {
+                                    playerStatus.textContent = 'Current Status: Completed';
+                                }
+                            }, 50);
+                        }
+                    }
                 }
             }
             
-            // Remove click handler for progress bar
+            // Disable seeking by click; make progress bar non-interactive
             progressContainer.style.pointerEvents = 'none';
             
             // Update progress during playback
@@ -936,16 +1313,42 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             
             // When metadata is loaded, set up the player
             audioElement.addEventListener('loadedmetadata', () => {
-                // If endTime is not set or is greater than duration, use full duration
-                if (endTime <= 0 || endTime > audioElement.duration) {
-                    endTime = audioElement.duration;
+                // Get actual duration of the audio file
+                const actualDuration = audioElement.duration;
+                
+                // Validate and adjust time segments
+                if (timeSegments.length > 0) {
+                    timeSegments.forEach((segment, index) => {
+                        if (segment.end > actualDuration) {
+                            segment.end = actualDuration;
+                        }
+                        if (segment.start > actualDuration) {
+                            segment.start = 0;
+                            segment.end = 0;
+                        }
+                    });
+                    
+                    // Remove invalid segments
+                    const validSegments = timeSegments.filter(segment => segment.end > segment.start);
+                    timeSegments.length = 0;
+                    timeSegments.push(...validSegments);
+                    
+                    // Recalculate total duration
+                    totalDuration = timeSegments.reduce((total, segment) => total + (segment.end - segment.start), 0);
+                    
+                } else {
+                    // Fallback to full audio
+                    timeSegments.push({ start: 0, end: actualDuration });
+                    totalDuration = actualDuration;
                 }
                 
-                // Set to start time
-                audioElement.currentTime = startTime;
+                // Set to first segment start time
+                if (timeSegments.length > 0) {
+                    audioElement.currentTime = timeSegments[0].start;
+                }
                 
-                // Start countdown after metadata is loaded
-                startCountdown();
+                // Initialize player with delay
+                initializePlayer();
             });
             
             // Handle play event
@@ -960,50 +1363,30 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 playerStatus.textContent = 'Current Status: Paused';
             });
             
-            // Handle error event
-            audioElement.addEventListener('error', (e) => {
-                console.error('Audio error:', e);
-                playerStatus.textContent = 'Current Status: Error loading audio';
-            });
-            
             // Set initial volume
             audioElement.volume = volumeSlider.value / 100;
             updateVolumeDisplay();
             
-            // Modify visibility change handler
-            document.addEventListener('visibilitychange', () => {
-                // Don't do anything when switching tabs
-                // This allows audio to continue playing in background
-            });
-
-            // Modify window focus handler
-            window.addEventListener('focus', () => {
-                // Don't auto-start when window gains focus
-                // But if audio was playing, it will continue playing
-            });
-
-            // Handle page unload/close
-            window.addEventListener('beforeunload', () => {
-                if (audioElement) {
-                    audioElement.pause();
-                }
-            });
-            
-            // Function to start with delay
+            // Function to update player status with countdown
             function startWithDelay() {
-                // Clear any existing countdown
+                if (timeSegments.length === 0) return;
+                
+                // Clear any existing countdown interval
                 if (countdownInterval) {
                     clearInterval(countdownInterval);
+                    countdownInterval = null;
                 }
                 
-                // Reset to start time
-                audioElement.currentTime = startTime;
+                // Reset to first segment
+                currentSegmentIndex = 0;
+                isTransitioning = false; // Reset transition flag
+                audioElement.currentTime = timeSegments[0].start;
                 
                 // Update status with countdown
-                playerStatus.textContent = 'Current Status: Starting in 3s...';
+                playerStatus.textContent = 'Current Status: Starting in 10s...';
                 
                 // Countdown timer
-                let countdown = 3;
+                let countdown = 10;
                 countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
@@ -1012,32 +1395,33 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         clearInterval(countdownInterval);
                         countdownInterval = null;
                         // Auto-play when countdown reaches 0
-                        audioElement.play()
-                            .then(function() {
-                                isPlaying = true;
-                                playerStatus.textContent = 'Current Status: Playing';
-                            })
-                            .catch(function(error) {
-                                console.error('Error playing audio:', error);
-                                playerStatus.textContent = 'Current Status: Error playing audio';
-                            });
+                        playNextSegment();
                     }
                 }, 1000);
             }
-
-            // Return functions for external use
+            
+            // Expose the functions
             return {
-                startCountdown,
                 startWithDelay,
                 resetToStart: () => {
+                    // Clear any existing countdown interval
                     if (countdownInterval) {
                         clearInterval(countdownInterval);
                         countdownInterval = null;
                     }
-                    audioElement.currentTime = startTime;
+                    
+                    if (timeSegments.length > 0) {
+                        currentSegmentIndex = 0;
+                        audioElement.currentTime = timeSegments[0].start;
+                    }
                     audioElement.pause();
-                    isPlaying = false;
                     playerStatus.textContent = 'Current Status: Paused';
+                },
+                getTimeRange: () => {
+                    if (timeSegments.length === 1) {
+                        return { startTime: timeSegments[0].start, endTime: timeSegments[0].end };
+                    }
+                    return { segments: timeSegments, totalDuration: totalDuration };
                 }
             };
         }

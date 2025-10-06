@@ -28,80 +28,98 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             height: auto;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            padding: 1.5rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .content-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            gap: 0;
         }
         .main-content {
             display: flex;
-            gap: 30px;
-            align-items: flex-start;
+            gap: 0;
+            height: auto;
         }
-        .left-column {
-            flex: 1;
+        .left-section {
+            flex: 6;
+            background: white;
+        }
+        .right-section {
+            flex: 4;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            background: white;
+            padding: 10px;
+            padding-left: 0;
         }
-        .right-column {
-            flex: 0 0 40%;
+        .content-wrapper {
+            background: white;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 0;
         }
         .instructions {
-            font-size: 1.2rem;
+            padding: 10px;
+            font-size: 1.1rem;
             line-height: 1.5;
             color: #333;
             font-weight: bold;
             font-style: italic;
-            margin: 0 0 20px 0;
-            letter-spacing: 0.3px;
+            margin: 0;
+            position: relative;
+            padding-left: 19px;
+        }
+        .instructions:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #0075b4;
+        }
+        .image-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+        }
+        .quiz-image {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
         }
         .question-text {
             font-size: 1.2rem;
-            padding: 15px 0;
+            padding: 10px;
             color: #333;
-            font-weight: normal;
+            font-weight: bold;
             margin: 0;
-            line-height: 1.6;
-            letter-spacing: 0.4px;
+            position: relative;
+            padding-left: 19px;
         }
-        .image-container {
-            margin: 20px 0;
-            text-align: center;
-        }
-        .question-image {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            object-fit: contain;
+        .question-text:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #0075b4;
         }
         .audio-container {
             margin-bottom: 10px;
-            width: 100%;
+            width: 90%;
         }
         .custom-audio-player {
             width: 100%;
-            max-width: 100%;
-            margin: 0;
+            max-width: 500px;
+            margin: 0 auto;
             background-color: white;
             border-radius: 4px;
-            padding: 10px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             border: 1px solid #e0e0e0;
-            transform: scale(0.7);
-            transform-origin: top left;
         }
         .options-container {
             margin: 0;
@@ -110,7 +128,21 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             gap: 8px;
             padding: 0;
             background: transparent;
-            width: 100%;
+            max-width: 600px;
+        }
+        .options-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .options-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .options-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .options-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
         .option-button {
             appearance: none;
@@ -161,8 +193,8 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             color: #333;
         }
         .option-button.selected::before {
-            background: #333;
-            border-color: #333;
+            background: #f44336;
+            border-color: #f44336;
             content: '✓';
             color: white;
             display: flex;
@@ -203,26 +235,6 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             font-size: 14px;
             font-weight: bold;
         }
-        .correct {
-            color: #2e7d32;
-        }
-        .incorrect {
-            color: #b40000;
-        }
-        .correct-answer {
-            color: #2e7d32;
-            font-weight: bold;
-            border-radius: 3px;
-            display: inline-block;
-            margin: 0;
-        }
-        .wrong-answer {
-            color: #b40000;
-            text-decoration: line-through;
-            border-radius: 3px;
-            display: inline-block;
-            margin: 0;
-        }
         .player-status {
             font-weight: bold;
             color: #333;
@@ -240,7 +252,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
         .controls-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             padding: 3px 0;
         }
         .progress-container {
@@ -275,7 +287,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
         .volume-control {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
             padding: 3px;
         }
@@ -341,10 +353,14 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             font-weight: bold;
         }
         .success {
+            background-color: #ecf3ec;
             color: #2e7d32;
+            border: 1px solid #c5e0c5;
         }
         .error {
+            background-color: #f9ecec;
             color: #b40000;
+            border: 1px solid #ebccd1;
         }
         .answer-feedback {
             margin-top: 0.5rem;
@@ -356,6 +372,58 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             padding: 0.25rem;
             border-radius: 3px;
         }
+        .correct {
+            color: #2e7d32;
+            background-color: #ecf3ec;
+        }
+        .incorrect {
+            color: #b40000;
+            background-color: #f9ecec;
+        }
+        .correct-answer {
+            color: #2e7d32;
+            font-weight: bold;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 0;
+        }
+        .wrong-answer {
+            color: #b40000;
+            text-decoration: line-through;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 0;
+        }
+        .answer-feedback {
+            margin-top: 0.5rem;
+            font-size: 1.0rem;
+        }
+        .answer-feedback span {
+            display: block;
+            margin: 0.25rem 0;
+            padding: 0.25rem;
+            border-radius: 3px;
+        }
+        .correct {
+            color: #2e7d32;
+        }
+        .incorrect {
+            color: #b40000;
+        }
+        .correct-answer {
+            color: #2e7d32;
+            font-weight: bold;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 0;
+        }
+        .wrong-answer {
+            color: #b40000;
+            text-decoration: line-through;
+            border-radius: 3px;
+            display: inline-block;
+            margin: 0;
+        }
         
         /* Furigana styling */
         ruby {
@@ -366,50 +434,109 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             font-size: 0.6em;
             color: #666;
         }
-        @media (max-width: 1024px) {
-            .options-container {
-                max-width: 500px;
-            }
-        }
         
+        .answer-paragraph-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            background-color: rgba(99, 97, 97, 0.95);
+            border-top: 1px solid #e0e0e0;
+            display: none;
+            z-index: 2;
+        }
+        .answer-paragraph-inner {
+            max-width: 90%;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 4px 4px 0 0;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .transcript-section {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background-color: #fff;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        .transcript-title {
+            font-weight: bold;
+            margin-bottom: 0.8rem;
+            color: #333;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .transcript-text {
+            line-height: 1.6;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        .score-display {
+            font-weight: bold;
+            margin-bottom: 0.8rem;
+            color: #333;
+        }
+        .answer-paragraph {
+            margin: 0;
+            padding: 0.8rem;
+            background-color: #ffffff;
+            line-height: 1.6;
+            border-radius: 3px;
+            font-size: 1rem;
+            border: 1px solid #e0e0e0;
+        }
+        .script-highlight {
+            color: #b40000;
+            font-weight: normal;
+        }
+        .no-answer {
+            color: #666;
+            border-bottom: 2px solid #666;
+            padding: 0 4px;
+            margin: 0 2px;
+        }
+        .select-answer-header {
+            font-size: 1rem;
+            color: #333;
+            margin: 0;
+            padding: 5px 0;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 1;
+            border-bottom: 1px solid #e0e0e0;
+        }
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-                gap: 10px;
-            }
-            .content-wrapper {
-                gap: 8px;
-            }
             .main-content {
                 flex-direction: column;
                 gap: 20px;
             }
-            .left-column, .right-column {
+            .left-section,
+            .right-section {
+                flex: none;
                 width: 100%;
             }
-            .options-container {
-                width: 100%;
-                max-width: 100%;
+            .content-wrapper {
+                gap: 15px;
+                padding: 15px;
             }
-            .option-button {
-                width: 100%;
-                padding: 12px 16px;
+            .image-container {
+                padding: 5px;
             }
-            .question-image {
-                max-height: 250px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .options-container {
-                gap: 6px;
-            }
-            .option-button {
-                padding: 10px 12px;
-                font-size: 1.2rem;
-            }
-            .question-image {
+            .quiz-image {
                 max-height: 200px;
+            }
+            .options-container {
+                width: 100%;
+            }
+            .option-button {
+                width: 100%;
             }
         }
     </style>
@@ -417,18 +544,20 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
 <body>
     <div class="container">
         <div class="main-content">
-            <div class="left-column">
+            <div class="left-section">
                 <div class="content-wrapper">
                     <div class="instructions" id="quiz-instructions">
                         {{INSTRUCTIONS}}
                     </div>
+                    {{#if IMAGE_FILE}}
+                    <div class="image-container">
+                        <img src="{{IMAGE_FILE}}" alt="Quiz illustration" class="quiz-image">
+                    </div>
+                    {{/if}}
                     <div class="question-text">{{QUESTION_TEXT}}</div>
-                    
-                    {{IMAGE_HTML}}
                 </div>
             </div>
-            
-            <div class="right-column">
+            <div class="right-section">
                 <form id="quizForm" onsubmit="return false;">
                     <div class="audio-container">
                         <audio id="audio-player" class="audio-player">
@@ -461,10 +590,23 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                         </div>
                     </div>
                     <div class="options-container" id="options-container">
+                        <div class="select-answer-header">回答を選択してください</div>
                         {{OPTIONS}}
                     </div>
                     <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
                 </form>
+            </div>
+        </div>
+        <div class="answer-paragraph-container" id="answer-paragraph-container" style="display: none;">
+            <div class="answer-paragraph-inner">
+                <div class="transcript-section">
+                    <div class="transcript-title">スクリプト</div>
+                    <div id="transcript-paragraph" class="transcript-text">{{SCRIPT_TEXT}}</div>
+                </div>
+                <div class="your-answer-section">
+                    <div class="score-display" id="score-display"></div>
+                    <div id="answer-paragraph" class="answer-paragraph"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -594,7 +736,6 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     return segments;
                 }
                 
-                
                 const timeSegments = parseTimeSegments(startTimeElement.textContent || '');
                 let currentSegmentIndex = 0;
                 let isPlaying = false;
@@ -614,7 +755,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                         totalDuration = endTime - startTime;
                     }
                 }
-                
+
                 // Update volume level display based on slider value
                 function updateVolumeDisplay() {
                     const volume = volumeSlider.value;
@@ -637,8 +778,8 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     audioElement.volume = volume;
                     updateVolumeDisplay();
                 });
-                
-                // Initialize with 10-second delay
+
+                // Initialize with 5-second delay
                 function initializePlayer() {
                     if (timeSegments.length === 0) return;
                     
@@ -653,10 +794,10 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     audioElement.currentTime = timeSegments[0].start;
                     
                     // Update status to show countdown
-                    playerStatus.textContent = 'Current Status: Starting in 10s...';
+                    playerStatus.textContent = 'Current Status: Starting in 5s...';
                     
                     // Countdown timer
-                    let countdown = 10;
+                    let countdown = 5;
                     countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
@@ -797,7 +938,6 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                         totalDuration = actualDuration;
                     }
                     
-                    
                     // Set to first segment start time
                     if (timeSegments.length > 0) {
                         audioElement.currentTime = timeSegments[0].start;
@@ -817,6 +957,12 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 audioElement.addEventListener('pause', () => {
                     isPlaying = false;
                     playerStatus.textContent = 'Current Status: Paused';
+                });
+                
+                // Handle error event
+                audioElement.addEventListener('error', (e) => {
+                    console.error('Audio error:', e);
+                    playerStatus.textContent = 'Current Status: Error loading audio';
                 });
                 
                 // Set initial volume
@@ -839,10 +985,10 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     audioElement.currentTime = timeSegments[0].start;
                     
                     // Update status with countdown
-                    playerStatus.textContent = 'Current Status: Starting in 10s...';
+                    playerStatus.textContent = 'Current Status: Starting in 5s...';
                     
                     // Countdown timer
-                    let countdown = 10;
+                    let countdown = 5;
                     countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
@@ -882,6 +1028,19 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 };
             }
 
+            // Initialize EdX integration
+            var channel;
+            if (window.parent !== window) {
+                channel = Channel.build({
+                    window: window.parent,
+                    origin: '*',
+                    scope: 'JSInput'
+                });
+            }
+
+            // Initialize audio player
+            const audioPlayer = setupAudioPlayer();
+
             // Listen for messages from parent (Check button)
             window.addEventListener('message', function(event) {
                 console.log('🔄 Received message:', event.data);
@@ -912,18 +1071,21 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 }
             });
 
-            // Initialize EdX integration
-            var channel;
-            if (window.parent !== window) {
-                channel = Channel.build({
-                    window: window.parent,
-                    origin: '*',
-                    scope: 'JSInput'
-                });
-            }
+            // Add event listener for when audio is ready to play
+            const audioElement = document.getElementById('audio-player');
+            audioElement.addEventListener('canplaythrough', () => {
+                console.log('Audio is ready to play');
+            });
 
-            // Initialize audio player
-            const audioPlayer = setupAudioPlayer();
+            // Add event listener for when audio starts loading
+            audioElement.addEventListener('loadstart', () => {
+                console.log('Audio started loading');
+            });
+
+            // Add event listener for when audio finishes loading
+            audioElement.addEventListener('loadeddata', () => {
+                console.log('Audio data loaded');
+            });
 
             function getGrade() {
                 // Always show answer when submitted
@@ -983,6 +1145,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             }
             
             function updateCompletionStatus(result) {
+                console.log('🚀 Starting completion API call...');
                 
                 // Get CSRF token
                 let csrfToken = '';
@@ -1000,15 +1163,18 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                             const token = getToken();
                             if (token) {
                                 csrfToken = token;
+                                console.log('🔑 Found CSRF token:', token.substring(0, 8) + '...');
                                 break;
                             }
                         } catch (e) {}
                     }
                     
                     if (!csrfToken) {
+                        console.log('⚠️ No CSRF token found - using fallback');
                         csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
                     }
                 } catch (e) {
+                    console.log('❌ CSRF token search failed:', e.message);
                     csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
                 }
                 
@@ -1020,14 +1186,22 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                         const blockMatch = parentUrl.match(/block-v1:([^\/\?\&]+)/);
                         if (blockMatch) {
                             blockId = blockMatch[0];
+                            console.log('🎯 Found block ID from parent:', blockId);
                         }
                     }
                 } catch (e) {
+                    console.log('⚠️ Cannot access parent URL, using fallback block ID');
                 }
                 
                 // Always mark as complete when user submits
                 const completionStatus = 1.0;
                 
+                console.log('📡 Calling completion API with:', {
+                    block_key: blockId,
+                    completion: completionStatus,
+                    score: result.rawScore,
+                    note: 'COMPLETE'
+                });
                 
                 // ✅ CALL COMPLETION API
                 fetch('/courseware/mark_block_completion/', {
@@ -1042,6 +1216,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     })
                 })
                 .then(response => {
+                    console.log('📈 API Response status:', response.status);
                     if (response.ok) {
                         return response.json();
                     } else {
@@ -1049,8 +1224,13 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     }
                 })
                 .then(data => {
+                    console.log('✅ COMPLETION API SUCCESS:', data);
+                    if (data.saved_to_blockcompletion) {
+                        console.log('🎉 Progress page will update with new completion!');
+                    }
                 })
                 .catch(error => {
+                    console.log('❌ Completion API Error:', error.message);
                 });
             }
 
@@ -1126,6 +1306,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 if (event.data && event.data.type === 'problem.submit' && event.data.action === 'save') {
                     // Save current state when navigating away
                     const result = calculateResults();
+                    console.log('Saving state before navigation:', result);
                 }
             });
         })();
@@ -1134,42 +1315,40 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
 </html>`;
 
 export const getListenSingleChoiceTemplate = (questionText, optionsString, audioFile, timeSegments = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '') => {
-    console.log('🔍 Template 39 Debug:', {
-        questionText,
-        optionsString,
-        audioFile,
-        timeSegments,
-        instructions,
-        scriptText,
-        imageFile
-    });
-    
+    // Import the updated template from template_39_listen_single_choice1.js
+    const { getListenSingleChoiceTemplate: getTemplate } = require('./template_39_listen_single_choice1.js');
+    return getTemplate(questionText, optionsString, audioFile, timeSegments, instructions, scriptText, imageFile);
     // Split the options string and trim each option
     const options = optionsString.split(',').map(opt => opt.trim());
-    console.log('🔍 Parsed options:', options);
     
     // First option is correct, sort others alphabetically
     const correctAnswer = options[0];
     const sortedOptions = [...options].sort((a, b) => a.localeCompare(b, 'ja'));
-    console.log('🔍 Sorted options:', sortedOptions);
     
     // Generate options HTML - directly use the options without adding empty choice
     const optionsHtml = sortedOptions.map(option => 
         '<button type="button" class="option-button" data-value="' + option + '">' + convertFurigana(option) + '</button>'
     ).join('');
-    console.log('🔍 Generated options HTML:', optionsHtml);
     
     // Process script text to highlight quoted text in red and convert furigana
     const processedScriptText = scriptText
         .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>')
         .replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
     
-    // Handle image display
-    const imageHtml = imageFile ? 
-        `<div class="image-container">
-            <img src="${imageFile}" alt="Question Image" class="question-image">
-        </div>` : '';
-
+    // Add time display to the audio player
+    const timeDisplay = `
+        <div class="time-display" style="text-align: center; margin-top: 5px; font-size: 12px; color: #666;">
+            再生区間: ${formatTime(startTime)} - ${formatTime(endTime)}
+        </div>
+    `;
+    
+    // Helper function to format time
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return minutes + ':' + (secs < 10 ? '0' : '') + secs;
+    }
+    
     return listenSingleChoiceTemplate
         .replace('{{QUESTION_TEXT}}', convertFurigana(questionText))
         .replace('{{OPTIONS}}', optionsHtml)
@@ -1179,5 +1358,7 @@ export const getListenSingleChoiceTemplate = (questionText, optionsString, audio
         .replace('{{END_TIME}}', '') // Not used anymore
         .replace('{{INSTRUCTIONS}}', convertFurigana(instructions))
         .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
-        .replace('{{IMAGE_HTML}}', imageHtml);
+        .replace('{{#if IMAGE_FILE}}', imageFile ? '' : '<!--')
+        .replace('{{/if}}', imageFile ? '' : '-->')
+        .replace('{{IMAGE_FILE}}', imageFile || '');
 }; 

@@ -537,6 +537,27 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
                   </Form.Text>
                 </Form.Group>
               </Form.Row>
+              <Form.Group>
+                <Form.Label>Time Segments (Advanced)</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={quizData.timeSegmentsString}
+                  onChange={(e) => {
+                    setQuizData(prev => ({
+                      ...prev,
+                      timeSegmentsString: e.target.value
+                    }));
+                  }}
+                  placeholder="Enter time segments (e.g., 0.04-0.09;0.21-0.30)"
+                />
+                <Form.Text>
+                  Advanced: Multiple time segments separated by semicolon. Format: "start-end;start-end".
+                  <br />
+                  Example: "0.04-0.09;0.21-0.30" for two segments.
+                  <br />
+                  <strong>Note:</strong> This overrides Start Time and End Time fields.
+                </Form.Text>
+              </Form.Group>
             </>
           )}
 
@@ -834,40 +855,73 @@ const generateQuizTemplate = (templateId, quizData) => {
             .replace('{{END_TIME}}', quizData.endTime || 0);
 
       case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE: // Listen and Choose Quiz
+      // Use timeSegmentsString if available, otherwise convert startTime and endTime
+      const timeSegments39 = quizData.timeSegmentsString || 
+        (quizData.startTime && quizData.endTime 
+          ? `${quizData.startTime}-${quizData.endTime}` 
+          : '0-0');
+      
+      // Apply furigana conversion to paragraphText, blankOptions, and scriptText
+      const processedParagraphText39 = convertFurigana(quizData.paragraphText);
+      const processedBlankOptions39 = convertFurigana(quizData.blankOptions);
+      const processedScriptText39 = convertFurigana(quizData.scriptText || '');
+      const processedInstructions39 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
+      
       return getListenSingleChoiceTemplate(
-          quizData.paragraphText,
-          quizData.blankOptions,
+        processedParagraphText39,
+        processedBlankOptions39,
+        quizData.audioFile || '',
+        timeSegments39,
+        processedInstructions39,
+        processedScriptText39,
+        quizData.imageFile || ''
+      );
+
+      case TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE: // Listen and Choose Quiz
+        // Use timeSegmentsString if available, otherwise convert startTime and endTime
+        const timeSegments47 = quizData.timeSegmentsString || 
+          (quizData.startTime && quizData.endTime 
+            ? `${quizData.startTime}-${quizData.endTime}` 
+            : '0-0');
+        
+        // Apply furigana conversion to paragraphText, blankOptions, and scriptText
+        const processedParagraphText47 = convertFurigana(quizData.paragraphText);
+        const processedBlankOptions47 = convertFurigana(quizData.blankOptions);
+        const processedScriptText47 = convertFurigana(quizData.scriptText || '');
+        const processedInstructions47 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
+        
+        return getListenSingleChoiceTemplate(
+          processedParagraphText47,
+          processedBlankOptions47,
           quizData.audioFile || '',
-          quizData.startTime || 0,
-          quizData.endTime || 0,
-          quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
-          quizData.scriptText || '',
+          timeSegments47,
+          processedInstructions47,
+          processedScriptText47,
           quizData.imageFile || ''
         );
 
-      case TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE: // Listen and Choose Quiz
-        return getListenSingleChoiceTemplate(
-            quizData.paragraphText,
-            quizData.blankOptions,
-            quizData.audioFile || '',
-            quizData.startTime || 0,
-            quizData.endTime || 0,
-            quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
-            quizData.scriptText || '',
-            quizData.imageFile || ''
-          );
-
       case TEMPLATE_IDS.ID43_LISTEN_FILL_BLANK_2: // Listen and Choose Quiz
+        // Use timeSegmentsString if available, otherwise convert startTime and endTime
+        const timeSegments43 = quizData.timeSegmentsString || 
+          (quizData.startTime && quizData.endTime 
+            ? `${quizData.startTime}-${quizData.endTime}` 
+            : '0-0');
+        
+        // Apply furigana conversion to paragraphText, blankOptions, and scriptText
+        const processedParagraphText43 = convertFurigana(quizData.paragraphText);
+        const processedBlankOptions43 = convertFurigana(quizData.blankOptions);
+        const processedScriptText43 = convertFurigana(quizData.scriptText || '');
+        const processedInstructions43 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
+        
         return getListenSingleChoiceTemplate(
-            quizData.paragraphText,
-            quizData.blankOptions,
-            quizData.audioFile || '',
-            quizData.startTime || 0,
-            quizData.endTime || 0,
-            quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
-            quizData.scriptText || '',
-            quizData.imageFile || ''
-          );
+          processedParagraphText43,
+          processedBlankOptions43,
+          quizData.audioFile || '',
+          timeSegments43,
+          processedInstructions43,
+          processedScriptText43,
+          quizData.imageFile || ''
+        );
 
     case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
       // Use timeSegmentsString if available, otherwise convert startTime and endTime
@@ -927,31 +981,53 @@ const generateQuizTemplate = (templateId, quizData) => {
       );
 
     case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER:
+      // Use timeSegmentsString if available, otherwise convert startTime and endTime
+      const timeSegments63 = quizData.timeSegmentsString || 
+        (quizData.startTime && quizData.endTime 
+          ? `${quizData.startTime}-${quizData.endTime}` 
+          : '0-0');
+      
+      // Apply furigana conversion to paragraphText, answerContent, and scriptText
+      const processedParagraphText63 = convertFurigana(quizData.paragraphText);
+      const processedAnswerContent63 = convertFurigana(quizData.answerContent || '');
+      const processedScriptText63 = convertFurigana(quizData.scriptText || '');
+      const processedInstructions63 = convertFurigana(quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。');
+      
       return getListenImageSelectMultipleAnswerTemplate(
-        quizData.paragraphText,
+        processedParagraphText63,
         quizData.correctAnswers || '', // Use correctAnswers as the second parameter
         quizData.audioFile || '',
-        quizData.startTime || 0,
-        quizData.endTime || 0,
-        quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
-        quizData.scriptText || '',
+        timeSegments63,
+        processedInstructions63,
+        processedScriptText63,
         quizData.imageFile || '',
-        quizData.answerContent || '',
+        processedAnswerContent63,
         quizData.blankOptions || ''  // Pass the blank options as the last parameter
       );
 
 
     case TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER:
+        // Use timeSegmentsString if available, otherwise convert startTime and endTime
+        const timeSegments64 = quizData.timeSegmentsString || 
+          (quizData.startTime && quizData.endTime 
+            ? `${quizData.startTime}-${quizData.endTime}` 
+            : '0-0');
+        
+        // Apply furigana conversion to paragraphText, answerContent, and scriptText
+        const processedParagraphText64 = convertFurigana(quizData.paragraphText);
+        const processedAnswerContent64 = convertFurigana(quizData.answerContent || '');
+        const processedScriptText64 = convertFurigana(quizData.scriptText || '');
+        const processedInstructions64 = convertFurigana(quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。');
+        
         return getListenImageSelectMultipleAnswerTemplate(
-          quizData.paragraphText,
+          processedParagraphText64,
           quizData.correctAnswers || '', // Use correctAnswers as the second parameter
           quizData.audioFile || '',
-          quizData.startTime || 0,
-          quizData.endTime || 0,
-          quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
-          quizData.scriptText || '',
+          timeSegments64,
+          processedInstructions64,
+          processedScriptText64,
           quizData.imageFile || '',
-          quizData.answerContent || '',
+          processedAnswerContent64,
           quizData.blankOptions || ''  // Pass the blank options as the last parameter
         );
 
@@ -1627,7 +1703,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           images: String(quiz.images || ''), // Add mapping for images column
           startTime: parseFloat(quiz.startTime) || 0,
           endTime: parseFloat(quiz.endTime) || 0,
-          timeSegmentsString: String(quiz.timeSegmentsString || quiz.timeSegments || ''), // Add timeSegmentsString
+          timeSegmentsString: String(quiz.timeSegmentsString || quiz.timeSegments || quiz['startTime/endTime'] || ''), // Add timeSegmentsString with fallback
           timeLimit: parseInt(quiz.timeLimit) || 60, // Default to 60 seconds
           published: quiz.published !== 'false',
           correctAnswers: String(quiz.correctAnswers || ''),
@@ -1647,13 +1723,17 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           endTime: quizData.endTime,
           timeSegmentsString: quizData.timeSegmentsString,
           audioFile: quizData.audioFile,
+          imageFile: quizData.imageFile,
           problemTypeId: quizData.problemTypeId,
           originalStartTime: quiz.startTime,
           originalEndTime: quiz.endTime,
           hasStartTimeEndTime: !!quiz['startTime/endTime'],
           startTimeEndTimeValue: quiz['startTime/endTime'],
           hasTimeSegments: !!quiz.timeSegments,
-          timeSegmentsValue: quiz.timeSegments
+          timeSegmentsValue: quiz.timeSegments,
+          // Special handling for template 63
+          isTemplate63: quizData.problemTypeId === 63,
+          template63TimeSegments: quizData.problemTypeId === 63 ? quizData.timeSegmentsString : 'N/A'
         });
 
         // Create quiz using existing createQuiz function
@@ -1781,9 +1861,9 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               <br />
               • startTime/endTime (format: "0.34-0.50" = 34s to 50s)
               <br />
-              • timeSegments (format: "0.04-0.09;0.21-0.30" = multiple segments for ID 40)
+              • timeSegments (format: "0.04-0.09;0.21-0.30" = multiple segments for ID 40 and 63)
               <br />
-              <strong>Problem Type IDs:</strong> 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 20 (Drag Drop), etc.
+              <strong>Problem Type IDs:</strong> 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 63 (Listen Image Select Multiple Answer), 20 (Drag Drop), etc.
             </Form.Text>
           </Form.Group>
 
@@ -1945,7 +2025,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
     const sampleData = [
       {
         problemTypeId: '39',
-        unitTitle: 'Sample Quiz 1',
+        unitTitle: 'Sample Quiz 1 - Listen Single Choice with Image',
         paragraphText: '男の人は何と言いましたか。',
         blankOptions: 'はい、分かりました,いいえ、分かりません,すみません',
         scriptText: '男：はい、分かりました。',
@@ -1954,6 +2034,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
         imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
         'startTime/endTime': '0.34-0.50',
         timeSegments: '0.04-0.09;0.21-0.30',
+        timeSegmentsString: '0.04-0.09;0.21-0.30',
         timeLimit: '60', // 60 seconds
         published: 'true'
       },
@@ -1981,6 +2062,8 @@ A:そうですか。`,
         audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
         imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
         'startTime/endTime': '0.34-0.50',
+        timeSegments: '0.04-0.09;0.21-0.30',
+        timeSegmentsString: '0.04-0.09;0.21-0.30',
         timeLimit: '60',
         published: 'true'
       },

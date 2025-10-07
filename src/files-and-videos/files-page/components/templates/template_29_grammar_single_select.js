@@ -795,7 +795,13 @@ export const getGrammarSingleSelectTemplate29 = (questionText, optionsString, in
   // Supports both Japanese comma (，) and English comma (,)
   // First option is always the correct answer
   // Process questionText to underline text in quotes and convert furigana
-  const processedQuestionText = questionText
+  // First, handle newlines and normalize the text
+  const normalizedQuestionText = questionText
+    .replace(/\n/g, '<br>')  // Convert newlines to HTML breaks
+    .replace(/\r/g, '');     // Remove carriage returns
+  
+  // Then process quotes for underlining
+  const processedQuestionText = normalizedQuestionText
     .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
   const finalQuestionText = convertFurigana(processedQuestionText);
 

@@ -1058,6 +1058,11 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             const audioElement = document.getElementById('audio-player');
             audioElement.pause();
             
+            // Also pause countdown if it's running
+            if (audioPlayer && audioPlayer.pauseCountdown) {
+                audioPlayer.pauseCountdown();
+            }
+            
             // Send script text to parent for popup display (like template 29)
             try {
                 // Get script text from the template - use a safer approach
@@ -1163,6 +1168,11 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         if (state.showAnswer) {
                             const audioElement = document.getElementById('audio-player');
                             audioElement.pause();
+                            
+                            // Also pause countdown if it's running
+                            if (audioPlayer && audioPlayer.pauseCountdown) {
+                                audioPlayer.pauseCountdown();
+                            }
                         }
                     } catch (e) {
                         console.error('Error parsing answers:', e);
@@ -1519,9 +1529,22 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             }
             
             
+            // Function to pause countdown
+            function pauseCountdown() {
+                // Clear any existing countdown interval
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                
+                // Update status to paused
+                playerStatus.textContent = 'Current Status: Paused';
+            }
+            
             // Expose the functions
             return {
                 startWithDelay,
+                pauseCountdown,
                 resetToStart: () => {
                     // Clear any existing countdown interval
                     if (countdownInterval) {

@@ -1159,7 +1159,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         const result = calculateResults();
                         updateDisplay(result);
                         
-                        // If showing answers, just pause audio without resetting
+                        // If showing answers, just pause audio
                         if (state.showAnswer) {
                             const audioElement = document.getElementById('audio-player');
                             audioElement.pause();

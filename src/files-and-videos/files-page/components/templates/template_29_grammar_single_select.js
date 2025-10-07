@@ -120,11 +120,12 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
         .option-button.selected {
             background: transparent;
             border: none;
-            color: #333;
+            color: #000;
+            font-weight: bold;
         }
         .option-button.selected::before {
-            background: #f44336;
-            border-color: #f44336;
+            background: #000;
+            border-color: #000;
             content: '✓';
             color: white;
             display: flex;

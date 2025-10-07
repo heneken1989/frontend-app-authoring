@@ -1,6 +1,14 @@
 // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
 function convertFurigana(text) {
-    return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+    // First convert Japanese parentheses: 毎日（まいにち） -> <ruby>毎日<rt>まいにち</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)（([^）]+)）/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    });
+    // Then convert regular parentheses: 車(くるま) -> <ruby>車<rt>くるま</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)\(([^)]+)\)/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    });
+    return text;
 }
 
 export const getListenImageSelectMultipleAnswerTemplate = (questionText, correctAnswers, audioFile, timeSegmentsString = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
@@ -68,7 +76,9 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
                 });
                 
                 const optionsHtml = uniqueOptions.map(option => {
-                    return `<div class="dropdown-option" data-value="${option}">${option}</div>`;
+                    // Apply furigana conversion to each option
+                    const optionWithFurigana = convertFurigana(option);
+                    return `<div class="dropdown-option" data-value="${option}">${optionWithFurigana}</div>`;
                 }).join('');
                 
                 const dropdown = `
@@ -98,10 +108,26 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
         ).join('\n');
     }
 
-    // Process script text to highlight quoted text in red and convert furigana
-    const processedScriptText = scriptText
-        .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>')
-        .replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+    // Process script text to highlight quoted text in red and convert furigana (like template 29)
+    console.log('🔍 Original scriptText:', scriptText);
+    
+    // First, handle newlines and normalize the text
+    const normalizedScriptText = scriptText
+        .replace(/\n/g, '<br>')  // Convert newlines to HTML breaks
+        .replace(/\r/g, '');     // Remove carriage returns
+    
+    console.log('🔍 Normalized scriptText:', normalizedScriptText);
+    
+    // Then process quotes for highlighting
+    const processedScriptText = normalizedScriptText
+        .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
+    
+    console.log('🔍 Processed scriptText:', processedScriptText);
+    
+    // Convert furigana
+    const finalScriptText = convertFurigana(processedScriptText);
+    
+    console.log('🔍 Final scriptText with furigana:', finalScriptText);
     
     // Extract the first line as the question text and apply furigana
     const firstLine = convertFurigana(processedLines[0] || questionText);
@@ -112,7 +138,7 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
         .replace('{{AUDIO_FILE}}', audioFile || '')
         .replace('{{TIME_SEGMENTS}}', timeSegmentsString || '0-0')
         .replace('{{INSTRUCTIONS}}', convertFurigana(instructions))
-        .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
+        .replace('{{SCRIPT_TEXT}}', scriptText || '')
         .replace('{{CORRECT_ANSWERS}}', JSON.stringify(correctAnswersArray));
 
     // Handle image file
@@ -147,7 +173,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             margin: 0;
             padding: 0;
             color: #414141;
-            height: auto;
+            height: 620px;
             position: relative;
             overflow-y: auto;
             background-color: white;
@@ -155,7 +181,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         }
         .container {
             position: relative;
-            height: auto;
+            height: 620px;
             display: flex;
             flex-direction: column;
             gap: 0;
@@ -163,7 +189,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             max-height: 620px;
             overflow-y: auto;
             font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: 400;
             line-height: 1.5;
             text-align: left;
@@ -171,7 +197,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         .main-content {
             display: flex;
             gap: 0;
-            height: auto;
+            height: 100%;
             background-color: white;
             overflow-y: auto;
         }
@@ -179,7 +205,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             flex: 6;
             background: white;
             overflow-y: auto;
-            max-height: 620px;
+            height: 100%;
         }
         .right-section {
             flex: 4;
@@ -188,7 +214,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             background: white;
             padding-left: 0;
             overflow-y: auto;
-            max-height: 620px;
+            height: 100%;
         }
         .content-wrapper {
             background: white;
@@ -196,6 +222,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             gap: 0;
+            height: 100%;
         }
         .instructions {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -295,11 +322,11 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
             font-size: 1.2rem !important; 
             font-weight: normal !important; 
-            line-height: 1.2 !important; 
+            line-height: 1.3 !important; 
             text-align: left !important; 
             width: auto !important; 
             min-width: 120px !important; 
-            height: 40px !important;
+            height: auto !important;
             min-height: 40px !important;
             border: 1px solid #666 !important; 
             border-radius: 4px !important; 
@@ -313,13 +340,14 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             display: inline-flex !important;
             align-items: center !important;
             justify-content: flex-start !important;
-            padding: 0 50px 0 16px !important; 
+            padding: 6px 50px 6px 16px !important; 
             transition: all 0.3s ease !important;
             box-sizing: border-box !important;
             margin: 0 !important;
             outline: none !important;
             letter-spacing: 0.4px !important;
-            white-space: nowrap !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
         }
         .dropdown-button:hover {
             background-color: #0075b4;
@@ -332,9 +360,8 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             min-width: 100%;
             width: auto;
             background: white;
-            border: 1px solid #666;
-            border-top: none;
-            border-radius: 0 0 4px 4px;
+            border: 2px solid #0075b4;
+            border-radius: 4px;
             z-index: 1000;
             display: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -342,10 +369,20 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         .dropdown-options.dropup {
             top: auto;
             bottom: 100%;
-            border-top: 1px solid #666;
-            border-bottom: none;
-            border-radius: 4px 4px 0 0;
+            border: 2px solid #0075b4;
+            border-radius: 4px;
             box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+        .dropdown-options.balanced {
+            position: absolute;
+            z-index: 1001;
+            border: 2px solid #0075b4;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            top: 50%;
+            transform: translateY(-50%);
         }
         .dropdown-options.show {
             display: block;
@@ -380,16 +417,22 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         .dropdown-option:last-child {
             border-bottom: none;
         }
-        /* Furigana styling for dropdown - Simple approach */
+        /* Furigana styling for dropdown - Simple approach like template 18 */
         .dropdown-button ruby, .dropdown-option ruby {
-            font-size: 1em;
+            font-size: 1.2rem;
         }
         .dropdown-button rt, .dropdown-option rt {
             font-size: 0.6em;
             color: #666;
         }
+        .dropdown-button ruby {
+            vertical-align: baseline;
+        }
+        .dropdown-button rt {
+            vertical-align: baseline;
+        }
         
-        /* Furigana styling */
+        /* Furigana styling - Simple approach like template 18 */
         ruby {
             font-size: 1.2rem;
         }
@@ -440,8 +483,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             border-radius: 4px; 
             background-color: #4caf50; 
             display: inline-block; 
-            margin: 2px;
+            margin: 2px 4px 2px 0;
             letter-spacing: 0.4px;
+            white-space: nowrap;
         }
         .correct-answer rt { color: #fff !important; }
         .wrong-answer { 
@@ -455,11 +499,16 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             border-radius: 4px; 
             background-color: #f44336; 
             display: inline-block; 
-            margin: 2px;
+            margin: 2px 4px 2px 0;
             letter-spacing: 0.4px;
+            white-space: nowrap;
         }
         .wrong-answer rt { color: #fff !important; }
-        .answer-replacement { display: inline-block; }
+        .answer-replacement { 
+            display: inline-block; 
+            width: 100%;
+            white-space: nowrap;
+        }
         /* Keep rest of the existing styles */
         .player-status {
             font-weight: bold;
@@ -633,7 +682,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                             Your browser does not support the audio element.
                         </audio>
                         <div class="custom-audio-player">
-                            <div id="player-status" class="player-status">Current Status: Playing</div>
+                            <div id="player-status" class="player-status">Current Status: Starting in 10s...</div>
                             <div class="controls-row">
                                 <div id="progress-container" class="progress-container">
                                     <div id="progress-bar" class="progress-bar"></div>
@@ -652,6 +701,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         </div>
                         <div style="display: none;">
                             <span id="time-segments">{{TIME_SEGMENTS}}</span>
+                            <span id="script-text-hidden">{{SCRIPT_TEXT}}</span>
                         </div>
                     </div>
                     <div class="select-container">
@@ -664,6 +714,25 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
     </div>
 
     <script>
+        // Function to encode script text for safe transmission (like template 29)
+        function encodeScriptText(text) {
+            if (!text) return '';
+            
+            // Script text already has underline styling from template processing
+            // Just encode special characters for safe transmission
+            return text
+                .replace(/\\\\/g, '\\\\\\\\')  // Escape backslashes first
+                .replace(/"/g, '\\\\"')    // Escape double quotes
+                .replace(/'/g, "\\\\'")    // Escape single quotes
+                .replace(/\\n/g, '\\\\n')   // Escape newlines
+                .replace(/\\r/g, '\\\\r')   // Escape carriage returns
+                .replace(/\\t/g, '\\\\t')   // Escape tabs
+                .replace(/「/g, '\\\\u300c') // Escape Japanese opening bracket
+                .replace(/」/g, '\\\\u300d') // Escape Japanese closing bracket
+                .replace(/（/g, '\\\\u3008') // Escape Japanese opening parenthesis
+                .replace(/）/g, '\\\\u3009'); // Escape Japanese closing parenthesis
+        }
+        
     (function() {
         var state = {
             answer: '',
@@ -753,7 +822,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 const isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show');
                 // Close all other dropdowns
                 document.querySelectorAll('.dropdown-options').forEach(opt => {
-                    opt.classList.remove('show', 'dropup');
+                    opt.classList.remove('show', 'dropup', 'balanced');
+                    opt.style.top = '';
+                    opt.style.height = '';
                 });
                 document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
                     dropdown.classList.remove('open');
@@ -766,20 +837,15 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     dropdownOptions.classList.add('show');
                     this.parentNode.classList.add('open');
                     
-                    // Now check if dropdown will overflow and adjust direction
-                    const buttonRect = this.getBoundingClientRect();
-                    const viewportHeight = window.innerHeight;
-                    const dropdownRect = dropdownOptions.getBoundingClientRect();
-                    const dropdownHeight = dropdownRect.height;
-                    const spaceBelow = viewportHeight - buttonRect.bottom;
-                    const spaceAbove = buttonRect.top;
+                    // Check if we have more than 4 options - if so, balance the dropdown
+                    const optionCount = dropdownOptions.querySelectorAll('.dropdown-option').length;
                     
-                    // If not enough space below, show dropdown upward regardless of space above
-                    // Add 20px margin for better UX
-                    if (spaceBelow < (dropdownHeight + 20)) {
-                        dropdownOptions.classList.add('dropup');
+                    if (optionCount > 4) {
+                        // For more than 4 options, use balanced mode
+                        dropdownOptions.classList.add('balanced');
                     } else {
-                        dropdownOptions.classList.remove('dropup');
+                        // For 4 or fewer options, use normal dropdown behavior
+                        dropdownOptions.classList.remove('balanced');
                     }
                 }
             });
@@ -792,13 +858,15 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     const dropdown = this.parentNode.parentNode;
                     const button = dropdown.querySelector('.dropdown-button');
                     
-                    // Update button text
+                    // Update button text with furigana
                     button.innerHTML = selectedText;
                     button.setAttribute('data-value', selectedValue);
                     
                     // Close dropdown
-                    this.parentNode.classList.remove('show');
+                    this.parentNode.classList.remove('show', 'balanced');
                     this.parentNode.parentNode.classList.remove('open');
+                    this.parentNode.style.top = '';
+                    this.parentNode.style.height = '';
                     
                     // Update selected answers
                     selectedAnswers[index] = selectedValue;
@@ -815,7 +883,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.custom-dropdown')) {
                 document.querySelectorAll('.dropdown-options').forEach(opt => {
-                    opt.classList.remove('show', 'dropup');
+                    opt.classList.remove('show', 'dropup', 'balanced');
+                    opt.style.top = '';
+                    opt.style.height = '';
                 });
                 document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
                     dropdown.classList.remove('open');
@@ -913,7 +983,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     const isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show');
                     // Close all other dropdowns
                     document.querySelectorAll('.dropdown-options').forEach(opt => {
-                        opt.classList.remove('show', 'dropup');
+                        opt.classList.remove('show', 'dropup', 'balanced');
+                        opt.style.top = '';
+                        opt.style.height = '';
                     });
                     document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
                         dropdown.classList.remove('open');
@@ -926,20 +998,15 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         dropdownOptions.classList.add('show');
                         this.parentNode.classList.add('open');
                         
-                        // Now check if dropdown will overflow and adjust direction
-                        const buttonRect = this.getBoundingClientRect();
-                        const viewportHeight = window.innerHeight;
-                        const dropdownRect = dropdownOptions.getBoundingClientRect();
-                        const dropdownHeight = dropdownRect.height;
-                        const spaceBelow = viewportHeight - buttonRect.bottom;
-                        const spaceAbove = buttonRect.top;
+                        // Check if we have more than 4 options - if so, balance the dropdown
+                        const optionCount = dropdownOptions.querySelectorAll('.dropdown-option').length;
                         
-                        // If not enough space below, show dropdown upward regardless of space above
-                        // Add 20px margin for better UX
-                        if (spaceBelow < (dropdownHeight + 20)) {
-                            dropdownOptions.classList.add('dropup');
+                        if (optionCount > 4) {
+                            // For more than 4 options, use balanced mode
+                            dropdownOptions.classList.add('balanced');
                         } else {
-                            dropdownOptions.classList.remove('dropup');
+                            // For 4 or fewer options, use normal dropdown behavior
+                            dropdownOptions.classList.remove('balanced');
                         }
                     }
                 });
@@ -952,13 +1019,15 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         const dropdown = this.parentNode.parentNode;
                         const button = dropdown.querySelector('.dropdown-button');
                         
-                        // Update button text
+                        // Update button text with furigana
                         button.innerHTML = selectedText;
                         button.setAttribute('data-value', selectedValue);
                         
                         // Close dropdown
-                        this.parentNode.classList.remove('show');
+                        this.parentNode.classList.remove('show', 'balanced');
                         this.parentNode.parentNode.classList.remove('open');
+                        this.parentNode.style.top = '';
+                        this.parentNode.style.height = '';
                         
                         // Update selected answers
                         const blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
@@ -988,6 +1057,39 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             // Pause audio when showing answers
             const audioElement = document.getElementById('audio-player');
             audioElement.pause();
+            
+            // Send script text to parent for popup display (like template 29)
+            try {
+                // Get script text from the template - use a safer approach
+                const scriptTextElement = document.getElementById('script-text-hidden');
+                const scriptText = scriptTextElement ? scriptTextElement.textContent : '';
+                
+                console.log('🔍 Script text from hidden element:', scriptText);
+                
+                // Encode script text to handle special characters (like template 29)
+                const encodedScriptText = encodeScriptText(scriptText);
+                
+                console.log('🔍 Encoded script text:', encodedScriptText);
+                
+                const quizData = {
+                    templateId: 63,
+                    scriptText: encodedScriptText
+                };
+                
+                // Store in localStorage for popup
+                localStorage.setItem('quizGradeSubmitted', JSON.stringify(quizData));
+                localStorage.setItem('quizGradeSubmittedTimestamp', Date.now().toString());
+                
+                // Send message to parent
+                if (window.parent) {
+                    window.parent.postMessage({
+                        type: 'quiz.data.ready',
+                        quizData: quizData
+                    }, '*');
+                }
+            } catch (error) {
+                console.error('Error sending script text to parent:', error);
+            }
             
             // Return data to EdX (prevent reload)
             try {
@@ -1096,6 +1198,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             const timeSegmentsElement = document.getElementById('time-segments');
             const playerStatus = document.getElementById('player-status');
             
+            // Set initial status to Starting countdown
+            playerStatus.textContent = 'Current Status: Starting in 10s...';
+            
             // Parse time segments from input (format: "0.04-0.09;0.21-0.30")
             function parseTimeSegments(timeString) {
                 if (!timeString || timeString.trim() === '') {
@@ -1185,7 +1290,10 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             
             // Initialize with 5-second delay
             function initializePlayer() {
-                if (timeSegments.length === 0) return;
+                if (timeSegments.length === 0) {
+                    playerStatus.textContent = 'Current Status: Ready';
+                    return;
+                }
                 
                 // Clear any existing countdown interval
                 if (countdownInterval) {
@@ -1351,6 +1459,13 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 initializePlayer();
             });
             
+            // Auto-start countdown when page loads (fallback if loadedmetadata doesn't fire)
+            setTimeout(() => {
+                if (timeSegments.length > 0 && !isPlaying) {
+                    initializePlayer();
+                }
+            }, 500); // Delay to ensure audio metadata is loaded
+            
             // Handle play event
             audioElement.addEventListener('play', () => {
                 isPlaying = true;
@@ -1369,7 +1484,10 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             
             // Function to update player status with countdown
             function startWithDelay() {
-                if (timeSegments.length === 0) return;
+                if (timeSegments.length === 0) {
+                    playerStatus.textContent = 'Current Status: Ready';
+                    return;
+                }
                 
                 // Clear any existing countdown interval
                 if (countdownInterval) {
@@ -1400,6 +1518,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 }, 1000);
             }
             
+            
             // Expose the functions
             return {
                 startWithDelay,
@@ -1413,9 +1532,15 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     if (timeSegments.length > 0) {
                         currentSegmentIndex = 0;
                         audioElement.currentTime = timeSegments[0].start;
+                        playerStatus.textContent = 'Current Status: Starting in 10s...';
+                        // Restart countdown after reset
+                        setTimeout(() => {
+                            initializePlayer();
+                        }, 100);
+                    } else {
+                        playerStatus.textContent = 'Current Status: Ready';
                     }
                     audioElement.pause();
-                    playerStatus.textContent = 'Current Status: Paused';
                 },
                 getTimeRange: () => {
                     if (timeSegments.length === 1) {

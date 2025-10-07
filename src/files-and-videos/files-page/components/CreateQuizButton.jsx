@@ -987,11 +987,11 @@ const generateQuizTemplate = (templateId, quizData) => {
           ? `${quizData.startTime}-${quizData.endTime}` 
           : '0-0');
       
-      // Apply furigana conversion to paragraphText, answerContent, and scriptText
+      // Apply furigana conversion to paragraphText, answerContent, and blankOptions (scriptText handled by template)
       const processedParagraphText63 = convertFurigana(quizData.paragraphText);
       const processedAnswerContent63 = convertFurigana(quizData.answerContent || '');
-      const processedScriptText63 = convertFurigana(quizData.scriptText || '');
       const processedInstructions63 = convertFurigana(quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。');
+      const processedBlankOptions63 = convertFurigana(quizData.blankOptions || '');
       
       return getListenImageSelectMultipleAnswerTemplate(
         processedParagraphText63,
@@ -999,10 +999,10 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.audioFile || '',
         timeSegments63,
         processedInstructions63,
-        processedScriptText63,
+        quizData.scriptText || '', // Pass original scriptText without furigana processing
         quizData.imageFile || '',
         processedAnswerContent63,
-        quizData.blankOptions || ''  // Pass the blank options as the last parameter
+        processedBlankOptions63  // Pass the processed blank options with furigana
       );
 
 
@@ -1013,11 +1013,12 @@ const generateQuizTemplate = (templateId, quizData) => {
             ? `${quizData.startTime}-${quizData.endTime}` 
             : '0-0');
         
-        // Apply furigana conversion to paragraphText, answerContent, and scriptText
+        // Apply furigana conversion to paragraphText, answerContent, scriptText, and blankOptions
         const processedParagraphText64 = convertFurigana(quizData.paragraphText);
         const processedAnswerContent64 = convertFurigana(quizData.answerContent || '');
         const processedScriptText64 = convertFurigana(quizData.scriptText || '');
         const processedInstructions64 = convertFurigana(quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。');
+        const processedBlankOptions64 = convertFurigana(quizData.blankOptions || '');
         
         return getListenImageSelectMultipleAnswerTemplate(
           processedParagraphText64,
@@ -1028,7 +1029,7 @@ const generateQuizTemplate = (templateId, quizData) => {
           processedScriptText64,
           quizData.imageFile || '',
           processedAnswerContent64,
-          quizData.blankOptions || ''  // Pass the blank options as the last parameter
+          processedBlankOptions64  // Pass the processed blank options with furigana
         );
 
     case TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT:

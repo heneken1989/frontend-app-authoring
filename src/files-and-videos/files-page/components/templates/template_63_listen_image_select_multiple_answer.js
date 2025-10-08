@@ -279,7 +279,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         }
         .custom-audio-player {
             width: 100%;
-            max-width: 350px;
+            max-width: 450px;
             margin: 0;
             background-color: white;
             border-radius: 4px;
@@ -289,6 +289,25 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             gap: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             border: 1px solid #e0e0e0;
+        }
+        .audio-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .audio-button {
+            background: #0075b4;
+            color: white;
+            border: 1px solid #0075b4;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            font-weight: bold;
+        }
+        .audio-button:hover {
+            background: #005a8b;
+            border-color: #005a8b;
         }
         .select-container {
             margin: 0;
@@ -513,10 +532,10 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         .player-status {
             font-weight: bold;
             color: #333;
-            margin-bottom: 5px;
+            margin: 0;
             text-align: left;
             font-size: 1.2rem;
-            padding-bottom: 10px;
+            padding: 0;
         }
         .divider {
             height: 1px;
@@ -666,12 +685,12 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     <div class="instructions" id="quiz-instructions">
                         {{INSTRUCTIONS}}
                     </div>
+                    <div class="question-text">{{QUESTION_TEXT}}</div>
                     {{#if IMAGE_FILE}}
                     <div class="image-container">
                         <img src="{{IMAGE_FILE}}" alt="Quiz illustration" class="quiz-image">
                     </div>
                     {{/if}}
-                    <div class="question-text">{{QUESTION_TEXT}}</div>
                 </div>
             </div>
             <div class="right-section">
@@ -682,7 +701,13 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                             Your browser does not support the audio element.
                         </audio>
                         <div class="custom-audio-player">
-                            <div id="player-status" class="player-status">Current Status: Starting in 10s...</div>
+                            <div class="controls-row" style="justify-content: space-between; align-items: center;">
+                                <div id="player-status" class="player-status" style="margin: 0; flex: 1;">Current Status: Starting in 10s...</div>
+                                <div class="audio-actions">
+                                    <button type="button" id="audio-stop-btn" class="audio-button">Stop</button>
+                                    <button type="button" id="audio-replay-btn" class="audio-button">Replay</button>
+                                </div>
+                            </div>
                             <div class="controls-row">
                                 <div id="progress-container" class="progress-container">
                                     <div id="progress-bar" class="progress-bar"></div>
@@ -1095,6 +1120,15 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             } catch (error) {
                 console.error('Error sending script text to parent:', error);
             }
+            
+            // Call completion API (like template 28)
+            setTimeout(() => {
+                try {
+                    updateCompletionStatus(result);
+                } catch (error) {
+                    console.error('Error in updateCompletionStatus:', error);
+                }
+            }, 100);
             
             // Return data to EdX (prevent reload)
             try {
@@ -1541,10 +1575,57 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 playerStatus.textContent = 'Current Status: Paused';
             }
             
+            // Function to stop playback and reset to segment start
+            function stopPlayback() {
+                // Pause audio and countdown
+                audioElement.pause();
+                pauseCountdown();
+                isPlaying = false;
+                isTransitioning = false;
+                // Reset to current segment start or first if none
+                if (timeSegments.length > 0) {
+                    const index = Math.min(Math.max(currentSegmentIndex, 0), timeSegments.length - 1);
+                    currentSegmentIndex = index;
+                    audioElement.currentTime = timeSegments[currentSegmentIndex].start;
+                }
+                playerStatus.textContent = 'Current Status: Paused';
+            }
+            
+            // Function to replay current segment from start
+            function replayCurrentSegment() {
+                // Cancel countdown if any
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                // Ensure valid index
+                if (timeSegments.length === 0) {
+                    playerStatus.textContent = 'Current Status: Ready';
+                    return;
+                }
+                if (currentSegmentIndex >= timeSegments.length) {
+                    currentSegmentIndex = 0;
+                }
+                isTransitioning = false;
+                audioElement.currentTime = timeSegments[currentSegmentIndex].start;
+                audioElement.play()
+                    .then(function() {
+                        isPlaying = true;
+                        playerStatus.textContent = 'Current Status: Playing';
+                    })
+                    .catch(function(error) {
+                        console.error('Error replaying audio:', error);
+                        isPlaying = false;
+                        playerStatus.textContent = 'Current Status: Error';
+                    });
+            }
+            
             // Expose the functions
             return {
                 startWithDelay,
                 pauseCountdown,
+                stopPlayback,
+                replayCurrentSegment,
                 resetToStart: () => {
                     // Clear any existing countdown interval
                     if (countdownInterval) {
@@ -1576,6 +1657,98 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
 
         const audioPlayer = setupAudioPlayer();
 
+        // Helper function to get cookies (from template 28)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Function to update completion status (from template 28)
+        function updateCompletionStatus(result) {
+            // Get CSRF token
+            let csrfToken = '';
+            try {
+                const tokenSources = [
+                    () => document.querySelector('[name=csrfmiddlewaretoken]')?.value,
+                    () => window.parent?.document?.querySelector('[name=csrfmiddlewaretoken]')?.value,
+                    () => getCookie('csrftoken'),
+                    () => document.querySelector('meta[name=csrf-token]')?.getAttribute('content'),
+                    () => window.parent?.document?.querySelector('meta[name=csrf-token]')?.getAttribute('content')
+                ];
+                
+                for (let getToken of tokenSources) {
+                    try {
+                        const token = getToken();
+                        if (token) {
+                            csrfToken = token;
+                            break;
+                        }
+                    } catch (e) {}
+                }
+                
+                if (!csrfToken) {
+                    csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
+                }
+            } catch (e) {
+                csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
+            }
+            
+            // Get block ID from parent URL
+            let blockId = 'block-v1:Manabi+N51+2026+type@vertical+block@aea91ffdf79346a2b9d03f6c570ad186';
+            try {
+                if (window.parent && window.parent.location) {
+                    const parentUrl = window.parent.location.href;
+                    const blockMatch = parentUrl.match(/block-v1:([^\/\?\&]+)/);
+                    if (blockMatch) {
+                        blockId = blockMatch[0];
+                    }
+                }
+            } catch (e) {
+                // Use fallback block ID
+            }
+            
+            // Always mark as complete when user submits
+            const completionStatus = 1.0;
+            
+            // ✅ CALL COMPLETION API
+            fetch('/courseware/mark_block_completion/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    'block_key': blockId,
+                    'completion': completionStatus
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('HTTP ' + response.status);
+                }
+            })
+            .then(data => {
+                // Success
+                console.log('✅ Quiz completion marked successfully');
+            })
+            .catch(error => {
+                // Error handling
+                console.error('❌ Error marking quiz completion:', error);
+            });
+        }
+
         // Add event listener for when audio is ready to play
         const audioElement = document.getElementById('audio-player');
         audioElement.addEventListener('canplaythrough', () => {
@@ -1591,6 +1764,24 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         audioElement.addEventListener('loadeddata', () => {
             console.log('Audio data loaded');
         });
+
+        // Wire up Stop and Replay buttons
+        const stopBtn = document.getElementById('audio-stop-btn');
+        const replayBtn = document.getElementById('audio-replay-btn');
+        if (stopBtn) {
+            stopBtn.addEventListener('click', function() {
+                if (audioPlayer && audioPlayer.stopPlayback) {
+                    audioPlayer.stopPlayback();
+                }
+            });
+        }
+        if (replayBtn) {
+            replayBtn.addEventListener('click', function() {
+                if (audioPlayer && audioPlayer.replayCurrentSegment) {
+                    audioPlayer.replayCurrentSegment();
+                }
+            });
+        }
     })();
     </script>
 </body>

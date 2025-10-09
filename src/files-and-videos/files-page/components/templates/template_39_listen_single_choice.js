@@ -664,37 +664,40 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     updateVolumeDisplay();
                 });
                 
-                // Initialize with 10-second delay
-                function initializePlayer() {
-                    if (timeSegments.length === 0) return;
-                    
-                    // Clear any existing countdown interval
-                    if (countdownInterval) {
+            // Initialize with 10-second delay (like template 63)
+            function initializePlayer() {
+                if (timeSegments.length === 0) {
+                    playerStatus.textContent = 'Current Status: Ready';
+                    return;
+                }
+                
+                // Clear any existing countdown interval
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                
+                // Set to first segment start time
+                currentSegmentIndex = 0;
+                audioElement.currentTime = timeSegments[0].start;
+                
+                // Update status to show countdown
+                playerStatus.textContent = 'Current Status: Starting in 10s...';
+                
+                // Countdown timer
+                let countdown = 10;
+                countdownInterval = setInterval(function() {
+                    countdown--;
+                    if (countdown > 0) {
+                        playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
+                    } else {
                         clearInterval(countdownInterval);
                         countdownInterval = null;
+                        // Auto-play when countdown reaches 0
+                        playNextSegment();
                     }
-                    
-                    // Set to first segment start time
-                    currentSegmentIndex = 0;
-                    audioElement.currentTime = timeSegments[0].start;
-                    
-                    // Update status to show countdown
-                    playerStatus.textContent = 'Current Status: Starting in 10s...';
-                    
-                    // Countdown timer
-                    let countdown = 10;
-                    countdownInterval = setInterval(function() {
-                        countdown--;
-                        if (countdown > 0) {
-                            playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
-                        } else {
-                            clearInterval(countdownInterval);
-                            countdownInterval = null;
-                            // Auto-play when countdown reaches 0
-                            playNextSegment();
-                        }
-                    }, 1000);
-                }
+                }, 1000);
+            }
                 
                 // Play the current segment
                 function playNextSegment() {
@@ -829,25 +832,42 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                         audioElement.currentTime = timeSegments[0].start;
                     }
                     
+                    // Ensure audio is paused before initializing (like template 63)
+                    audioElement.pause();
+                    playerStatus.textContent = 'Current Status: Ready';
+                    
                     // Initialize player with delay
                     initializePlayer();
                 });
                 
-                // Handle play event
-                audioElement.addEventListener('play', () => {
-                    isPlaying = true;
-                    playerStatus.textContent = 'Current Status: Playing';
-                });
+            // Handle play event (like template 63)
+            audioElement.addEventListener('play', () => {
+                console.log('🔊 Audio play event fired');
+                isPlaying = true;
+                playerStatus.textContent = 'Current Status: Playing';
+            });
+            
+            // Handle pause event (like template 63)
+            audioElement.addEventListener('pause', () => {
+                console.log('🔊 Audio pause event fired');
+                isPlaying = false;
+                playerStatus.textContent = 'Current Status: Paused';
+            });
+            
+            // Prevent auto-play on page load (like template 63)
+            audioElement.addEventListener('loadstart', () => {
+                console.log('🔊 Audio loadstart - ensuring paused state');
+                audioElement.pause();
+                playerStatus.textContent = 'Current Status: Loading...';
+            });
                 
-                // Handle pause event
-                audioElement.addEventListener('pause', () => {
-                    isPlaying = false;
-                    playerStatus.textContent = 'Current Status: Paused';
-                });
-                
-                // Set initial volume
-                audioElement.volume = volumeSlider.value / 100;
-                updateVolumeDisplay();
+            // Set initial volume
+            audioElement.volume = volumeSlider.value / 100;
+            updateVolumeDisplay();
+            
+            // Ensure audio is paused on load (like template 63)
+            audioElement.pause();
+            playerStatus.textContent = 'Current Status: Ready';
                 
                 // Function to update player status with countdown
                 function startWithDelay() {

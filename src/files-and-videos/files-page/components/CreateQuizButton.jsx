@@ -930,10 +930,9 @@ const generateQuizTemplate = (templateId, quizData) => {
           ? `${quizData.startTime}-${quizData.endTime}` 
           : '0-0');
       
-      // Apply furigana conversion to paragraphText, blankOptions, and scriptText
+      // Apply furigana conversion to paragraphText and blankOptions (scriptText handled by template)
       const processedParagraphText40 = convertFurigana(quizData.paragraphText);
       const processedBlankOptions40 = convertFurigana(quizData.blankOptions);
-      const processedScriptText40 = convertFurigana(quizData.scriptText || '');
       const processedInstructions40 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
       
       return getListenSingleChoiceNoImageTemplate(
@@ -942,7 +941,7 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.audioFile || '',
         timeSegments,
         processedInstructions40,
-        processedScriptText40
+        quizData.scriptText || '' // Pass original scriptText without furigana processing
       );
     
     case TEMPLATE_IDS.ID44_LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
@@ -952,10 +951,9 @@ const generateQuizTemplate = (templateId, quizData) => {
           ? `${quizData.startTime}-${quizData.endTime}` 
           : '0-0');
       
-      // Apply furigana conversion to paragraphText, blankOptions, and scriptText
+      // Apply furigana conversion to paragraphText and blankOptions (scriptText handled by template)
       const processedParagraphText44 = convertFurigana(quizData.paragraphText);
       const processedBlankOptions44 = convertFurigana(quizData.blankOptions);
-      const processedScriptText44 = convertFurigana(quizData.scriptText || '');
       const processedInstructions44 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
       
       return getListenSingleChoiceNoImageTemplate(
@@ -964,7 +962,7 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.audioFile || '',
         timeSegments44,
         processedInstructions44,
-        processedScriptText44
+        quizData.scriptText || '' // Pass original scriptText without furigana processing
       );
 
     case TEMPLATE_IDS.LISTEN_WITH_IMAGE_MULTIPLE_DIFFERENT_BLANK_OPTIONS:

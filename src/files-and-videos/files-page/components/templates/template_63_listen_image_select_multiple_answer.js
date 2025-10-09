@@ -290,25 +290,6 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             border: 1px solid #e0e0e0;
         }
-        .audio-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .audio-button {
-            background: #0075b4;
-            color: white;
-            border: 1px solid #0075b4;
-            border-radius: 4px;
-            padding: 6px 12px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            font-weight: bold;
-        }
-        .audio-button:hover {
-            background: #005a8b;
-            border-color: #005a8b;
-        }
         .select-container {
             margin: 0;
             display: flex;
@@ -701,12 +682,8 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                             Your browser does not support the audio element.
                         </audio>
                         <div class="custom-audio-player">
-                            <div class="controls-row" style="justify-content: space-between; align-items: center;">
-                                <div id="player-status" class="player-status" style="margin: 0; flex: 1;">Current Status: Starting in 10s...</div>
-                                <div class="audio-actions">
-                                    <button type="button" id="audio-stop-btn" class="audio-button">Stop</button>
-                                    <button type="button" id="audio-replay-btn" class="audio-button">Replay</button>
-                                </div>
+                            <div class="controls-row" style="justify-content: center; align-items: center;">
+                                <div id="player-status" class="player-status" style="margin: 0;">Current Status: Starting in 10s...</div>
                             </div>
                             <div class="controls-row">
                                 <div id="progress-container" class="progress-container">
@@ -1575,57 +1552,11 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 playerStatus.textContent = 'Current Status: Paused';
             }
             
-            // Function to stop playback and reset to segment start
-            function stopPlayback() {
-                // Pause audio and countdown
-                audioElement.pause();
-                pauseCountdown();
-                isPlaying = false;
-                isTransitioning = false;
-                // Reset to current segment start or first if none
-                if (timeSegments.length > 0) {
-                    const index = Math.min(Math.max(currentSegmentIndex, 0), timeSegments.length - 1);
-                    currentSegmentIndex = index;
-                    audioElement.currentTime = timeSegments[currentSegmentIndex].start;
-                }
-                playerStatus.textContent = 'Current Status: Paused';
-            }
-            
-            // Function to replay current segment from start
-            function replayCurrentSegment() {
-                // Cancel countdown if any
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                }
-                // Ensure valid index
-                if (timeSegments.length === 0) {
-                    playerStatus.textContent = 'Current Status: Ready';
-                    return;
-                }
-                if (currentSegmentIndex >= timeSegments.length) {
-                    currentSegmentIndex = 0;
-                }
-                isTransitioning = false;
-                audioElement.currentTime = timeSegments[currentSegmentIndex].start;
-                audioElement.play()
-                    .then(function() {
-                        isPlaying = true;
-                        playerStatus.textContent = 'Current Status: Playing';
-                    })
-                    .catch(function(error) {
-                        console.error('Error replaying audio:', error);
-                        isPlaying = false;
-                        playerStatus.textContent = 'Current Status: Error';
-                    });
-            }
             
             // Expose the functions
             return {
                 startWithDelay,
                 pauseCountdown,
-                stopPlayback,
-                replayCurrentSegment,
                 resetToStart: () => {
                     // Clear any existing countdown interval
                     if (countdownInterval) {
@@ -1765,23 +1696,6 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             console.log('Audio data loaded');
         });
 
-        // Wire up Stop and Replay buttons
-        const stopBtn = document.getElementById('audio-stop-btn');
-        const replayBtn = document.getElementById('audio-replay-btn');
-        if (stopBtn) {
-            stopBtn.addEventListener('click', function() {
-                if (audioPlayer && audioPlayer.stopPlayback) {
-                    audioPlayer.stopPlayback();
-                }
-            });
-        }
-        if (replayBtn) {
-            replayBtn.addEventListener('click', function() {
-                if (audioPlayer && audioPlayer.replayCurrentSegment) {
-                    audioPlayer.replayCurrentSegment();
-                }
-            });
-        }
     })();
     </script>
 </body>

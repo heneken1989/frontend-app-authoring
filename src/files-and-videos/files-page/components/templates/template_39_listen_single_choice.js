@@ -464,6 +464,8 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                         {{OPTIONS}}
                     </div>
                     <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
+                    <!-- Hidden script text for popup display -->
+                    <span id="script-text-hidden" style="display: none;">{{SCRIPT_TEXT}}</span>
                 </form>
             </div>
         </div>
@@ -492,6 +494,12 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     }
                 }
                 return cookieValue;
+            }
+
+            // Helper function to encode script text
+            function encodeScriptText(text) {
+                if (!text) return '';
+                return btoa(unescape(encodeURIComponent(text)));
             }
 
             const correctAnswer = '{{CORRECT_ANSWER}}';
@@ -856,9 +864,22 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     }, 1000);
                 }
                 
+                // Function to pause countdown
+                function pauseCountdown() {
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+                    if (audioElement) {
+                        audioElement.pause();
+                    }
+                    playerStatus.textContent = 'Current Status: Paused';
+                }
+                
                 // Expose the functions
                 return {
                     startWithDelay,
+                    pauseCountdown,
                     resetToStart: () => {
                         // Clear any existing countdown interval
                         if (countdownInterval) {
@@ -938,6 +959,31 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 // Update display with answer
                 const result = calculateResults();
                 updateDisplay(result);
+                
+                // Pause audio when checking answers
+                const audioElement = document.getElementById('audio-player');
+                if (audioElement) {
+                    audioElement.pause();
+                }
+                
+                // Pause countdown if active
+                if (audioPlayer && audioPlayer.pauseCountdown) {
+                    audioPlayer.pauseCountdown();
+                }
+                
+                // Send script text to parent for popup display - use innerHTML to preserve <ruby> tags
+                const scriptTextElement = document.getElementById('script-text-hidden');
+                const scriptText = scriptTextElement ? scriptTextElement.innerHTML : '';
+                const quizData = { templateId: 39, scriptText: scriptText };
+                
+                // Store in localStorage for persistence
+                localStorage.setItem('quizGradeSubmitted', JSON.stringify(quizData));
+                localStorage.setItem('quizGradeSubmittedTimestamp', Date.now().toString());
+                
+                // Send to parent
+                if (window.parent) {
+                    window.parent.postMessage({ type: 'quiz.data.ready', quizData: quizData }, '*');
+                }
                 
                 // Call completion API (non-blocking)
                 setTimeout(() => {
@@ -1089,7 +1135,12 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                             updateDisplay(result);
                             
                             if (state.showAnswer) {
-                                audioPlayer.resetToStart();
+                                // Pause countdown when showing answer
+                                if (audioPlayer && audioPlayer.pauseCountdown) {
+                                    audioPlayer.pauseCountdown();
+                                } else {
+                                    audioPlayer.resetToStart();
+                                }
                             }
                         } catch (e) {
                             console.error('Error parsing answers:', e);
@@ -1119,6 +1170,15 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 channel.bind('getGrade', getGrade);
                 channel.bind('getState', getState);
                 channel.bind('setState', setState);
+            }
+
+            // Send quiz.meta message to parent on load
+            if (window.parent) {
+                window.parent.postMessage({ 
+                    type: 'quiz.meta', 
+                    hasAudio: true, 
+                    templateId: 39 
+                }, '*');
             }
             
             // Listen for problem.submit messages with action 'save'
@@ -1159,10 +1219,22 @@ export const getListenSingleChoiceTemplate = (questionText, optionsString, audio
     ).join('');
     console.log('🔍 Generated options HTML:', optionsHtml);
     
-    // Process script text to highlight quoted text in red and convert furigana
-    const processedScriptText = scriptText
+    // Process script text to highlight quoted text in red and convert furigana (like template 63)
+    console.log('🔍 Original scriptText:', scriptText);
+    
+    // First, handle newlines and normalize the text
+    const normalizedScriptText = scriptText
+        .replace(/\n/g, '<br>')  // Convert newlines to HTML breaks
+        .replace(/\r/g, '');     // Remove carriage returns
+    
+    console.log('🔍 Normalized scriptText:', normalizedScriptText);
+    
+    // Then process quotes for highlighting
+    const processedScriptText = normalizedScriptText
         .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>')
         .replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+    
+    console.log('🔍 Processed scriptText:', processedScriptText);
     
     // Handle image display
     const imageHtml = imageFile ? 

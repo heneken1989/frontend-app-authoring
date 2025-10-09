@@ -1,6 +1,12 @@
 // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
 function convertFurigana(text) {
-    return text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+    // First convert Japanese parentheses: 毎日（まいにち） -> <ruby>毎日<rt>まいにち</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)（([^）]+)）/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    });
+    // Then convert regular parentheses: 車(くるま) -> <ruby>車<rt>くるま</rt></ruby>
+    text = text.replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+    return text;
 }
 
 export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
@@ -21,7 +27,8 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             color: #414141;
             height: auto;
             position: relative;
-            overflow-y: hidden;
+            overflow-x: visible;
+            box-sizing: border-box;
         }
         .container {
             position: relative;
@@ -29,9 +36,29 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             gap: 20px;
-            padding: 1.5rem;
-            max-width: 800px;
-            margin: 0 auto;
+            width: calc(100% - 100px);
+            margin: 0 0 0 100px;
+            box-sizing: border-box;
+        }
+        .top-section {
+            display: flex;
+            flex-direction: row;
+            gap: 50px;
+            align-items: flex-start;
+        }
+        .left-content {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: calc(100% - 350px);
+        }
+        .right-content {
+            flex: 0 0 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 300px;
         }
         .content-wrapper {
             display: flex;
@@ -58,18 +85,20 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
         }
         .audio-container {
             margin-bottom: 10px;
-            width: 90%;
+            width: 100%;
+            height: auto;
         }
         .custom-audio-player {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
+            width: 300px;
+            min-width: 300px;
+            max-width: 300px;
+            margin: 0;
             background-color: white;
             border-radius: 4px;
-            padding: 15px;
+            padding: 5px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 5px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             border: 1px solid #e0e0e0;
         }
@@ -80,7 +109,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             gap: 8px;
             padding: 0;
             background: transparent;
-            max-width: 600px;
+            width: 100%;
         }
         .option-button {
             appearance: none;
@@ -176,10 +205,10 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
         .player-status {
             font-weight: bold;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             text-align: left;
             font-size: 14px;
-            padding-bottom: 10px;
+            padding-bottom: 5px;
         }
         .divider {
             height: 1px;
@@ -374,8 +403,14 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
         
         @media (max-width: 768px) {
             .container {
-                padding: 1rem;
                 gap: 10px;
+            }
+            .top-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .left-content, .right-content {
+                width: 100%;
             }
             .content-wrapper {
                 gap: 8px;
@@ -387,6 +422,9 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             .option-button {
                 width: 100%;
                 padding: 12px 16px;
+            }
+            .custom-audio-player {
+                max-width: 100%;
             }
         }
         
@@ -403,13 +441,16 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <div class="content-wrapper">
-            <div class="instructions" id="quiz-instructions">
-                {{INSTRUCTIONS}}
+        <div class="top-section">
+            <div class="left-content">
+                <div class="content-wrapper">
+                    <div class="instructions" id="quiz-instructions">
+                        {{INSTRUCTIONS}}
+                    </div>
+                    <div class="question-text">{{QUESTION_TEXT}}</div>
+                </div>
             </div>
-            <div class="question-text">{{QUESTION_TEXT}}</div>
-            
-            <form id="quizForm" onsubmit="return false;">
+            <div class="right-content">
                 <div class="audio-container">
                     <audio id="audio-player" class="audio-player">
                         <source src="{{AUDIO_FILE}}" type="audio/mpeg">
@@ -438,17 +479,39 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                         <span id="duration">0:00</span>
                         <span id="start-time">{{START_TIME}}</span>
                         <span id="end-time">{{END_TIME}}</span>
+                        <span id="script-text-hidden">{{SCRIPT_TEXT}}</span>
                     </div>
                 </div>
-                <div class="options-container" id="options-container">
-                    {{OPTIONS}}
-                </div>
-                <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
-            </form>
+            </div>
         </div>
+        <form id="quizForm" onsubmit="return false;">
+            <div class="options-container" id="options-container">
+                {{OPTIONS}}
+            </div>
+            <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
+        </form>
     </div>
 
     <script>
+        // Function to encode script text for safe transmission (like template 63)
+        function encodeScriptText(text) {
+            if (!text) return '';
+            
+            // Script text already has underline styling from template processing
+            // Just encode special characters for safe transmission
+            return text
+                .replace(/\\\\/g, '\\\\\\\\')  // Escape backslashes first
+                .replace(/"/g, '\\\\"')    // Escape double quotes
+                .replace(/'/g, "\\\\'")    // Escape single quotes
+                .replace(/\\n/g, '\\\\n')   // Escape newlines
+                .replace(/\\r/g, '\\\\r')   // Escape carriage returns
+                .replace(/\\t/g, '\\\\t')   // Escape tabs
+                .replace(/「/g, '\\\\u300c') // Escape Japanese opening bracket
+                .replace(/」/g, '\\\\u300d') // Escape Japanese closing bracket
+                .replace(/（/g, '\\\\u3008') // Escape Japanese opening parenthesis
+                .replace(/）/g, '\\\\u3009'); // Escape Japanese closing parenthesis
+        }
+        
         (function() {
             var state = {
                 answer: '',
@@ -835,9 +898,22 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     }, 1000);
                 }
                 
+                // Function to pause countdown
+                function pauseCountdown() {
+                    // Clear any existing countdown interval
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+                    
+                    // Update status to paused
+                    playerStatus.textContent = 'Current Status: Paused';
+                }
+                
                 // Expose the functions
                 return {
                     startWithDelay,
+                    pauseCountdown,
                     resetToStart: () => {
                         // Clear any existing countdown interval
                         if (countdownInterval) {
@@ -903,6 +979,15 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
 
             // Initialize audio player
             const audioPlayer = setupAudioPlayer();
+            
+            // Send quiz meta to parent (like template 63)
+            if (window.parent) {
+                window.parent.postMessage({ 
+                    type: 'quiz.meta', 
+                    hasAudio: true, 
+                    templateId: 40 
+                }, '*');
+            }
 
             function getGrade() {
                 // Always show answer when submitted
@@ -914,9 +999,62 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     selectedOption = selectedButton.dataset.value;
                 }
                 
+                // Pause audio when showing answers
+                const audioElement = document.getElementById('audio-player');
+                audioElement.pause();
+                
+                // Also pause countdown if it's running
+                if (audioPlayer && audioPlayer.pauseCountdown) {
+                    audioPlayer.pauseCountdown();
+                }
+                
                 // Update display with answer
                 const result = calculateResults();
                 updateDisplay(result);
+                
+                // Send script text to parent for popup display (like template 63)
+                try {
+                    // Get script text from the template - use innerHTML to preserve <ruby> tags
+                    const scriptTextElement = document.getElementById('script-text-hidden');
+                    const scriptText = scriptTextElement ? scriptTextElement.innerHTML : '';
+                    
+                    console.log('🔍 DOM - Script text from hidden element:', scriptText);
+                    console.log('🔍 DOM - Script text contains <ruby>:', scriptText.includes('<ruby>'));
+                    console.log('🔍 DOM - Script text contains ():', scriptText.includes('('));
+                    console.log('🔍 DOM - Script text contains （）:', scriptText.includes('（'));
+                    console.log('🔍 DOM - Script text length:', scriptText.length);
+                    
+                    // Check if the hidden element contains the original text
+                    const hiddenElement = document.getElementById('script-text-hidden');
+                    if (hiddenElement) {
+                        console.log('🔍 DOM - Hidden element innerHTML:', hiddenElement.innerHTML);
+                        console.log('🔍 DOM - Hidden element textContent:', hiddenElement.textContent);
+                    }
+                    
+                    // Encode script text to handle special characters (like template 63)
+                    const encodedScriptText = encodeScriptText(scriptText);
+                    
+                    console.log('🔍 Encoded script text:', encodedScriptText);
+                    
+                    const quizData = {
+                        templateId: 40,
+                        scriptText: encodedScriptText
+                    };
+                    
+                    // Store in localStorage for popup
+                    localStorage.setItem('quizGradeSubmitted', JSON.stringify(quizData));
+                    localStorage.setItem('quizGradeSubmittedTimestamp', Date.now().toString());
+                    
+                    // Send message to parent
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'quiz.data.ready',
+                            quizData: quizData
+                        }, '*');
+                    }
+                } catch (error) {
+                    console.error('Error sending script text to parent:', error);
+                }
                 
                 // Call completion API (non-blocking)
                 setTimeout(() => {
@@ -1073,7 +1211,14 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                                 state.showAnswer ? 'true' : 'false';
                                 
                             if (state.showAnswer) {
-                                audioPlayer.resetToStart();
+                                // Pause audio and countdown when showing answers
+                                const audioElement = document.getElementById('audio-player');
+                                audioElement.pause();
+                                
+                                // Also pause countdown if it's running
+                                if (audioPlayer && audioPlayer.pauseCountdown) {
+                                    audioPlayer.pauseCountdown();
+                                }
                             }
                         } catch (e) {
                             console.error('Error parsing answers:', e);
@@ -1131,9 +1276,34 @@ export const getListenSingleChoiceNoImageTemplate = (questionText, optionsString
     ).join('');
     
     // Process script text to highlight quoted text in red and convert furigana
-    const processedScriptText = scriptText
-        .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>')
-        .replace(/([一-龯]+)\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>');
+    console.log('🔍 STEP 1 - Original scriptText from CreateQuizButton:', scriptText);
+    console.log('🔍 STEP 1 - ScriptText contains ():', scriptText.includes('('));
+    console.log('🔍 STEP 1 - ScriptText contains （）:', scriptText.includes('（'));
+    console.log('🔍 STEP 1 - ScriptText contains <ruby>:', scriptText.includes('<ruby>'));
+    console.log('🔍 STEP 1 - ScriptText length:', scriptText.length);
+    
+    // Test with sample furigana text to verify conversion works
+    const testFuriganaText = '皆(みな)さん、クイズをしましょう';
+    console.log('🔍 Test furigana conversion:', convertFurigana(testFuriganaText));
+    
+    // Step 2: Handle newlines and normalize the text (like template 63)
+    const normalizedScriptText = scriptText
+        .replace(/\n/g, '<br>')  // Convert newlines to HTML breaks
+        .replace(/\r/g, '');     // Remove carriage returns
+    console.log('🔍 STEP 2 - Normalized scriptText:', normalizedScriptText);
+    
+    // Step 3: Highlight quoted text
+    const highlightedScriptText = normalizedScriptText.replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
+    console.log('🔍 STEP 3 - After highlighting quoted text:', highlightedScriptText);
+    console.log('🔍 STEP 3 - Contains ():', highlightedScriptText.includes('('));
+    console.log('🔍 STEP 3 - Contains （）:', highlightedScriptText.includes('（'));
+    
+    // Step 4: Convert furigana
+    const processedScriptText = convertFurigana(highlightedScriptText);
+    console.log('🔍 STEP 4 - After furigana conversion:', processedScriptText);
+    console.log('🔍 STEP 4 - Contains <ruby>:', processedScriptText.includes('<ruby>'));
+    console.log('🔍 STEP 4 - Contains ():', processedScriptText.includes('('));
+    console.log('🔍 STEP 4 - Contains （）:', processedScriptText.includes('（'));
     
     // Helper function to format time
     function formatTime(seconds) {

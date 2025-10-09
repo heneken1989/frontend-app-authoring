@@ -83,6 +83,24 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             object-fit: contain;
+            /* Image loading optimizations */
+            loading: eager;
+            decoding: async;
+            fetchpriority: high;
+            /* Smooth loading transition */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .question-image.loaded {
+            opacity: 1;
+        }
+        .image-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #666;
+            font-size: 1rem;
         }
         .audio-container {
             margin-bottom: 10px;
@@ -1181,6 +1199,33 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 }, '*');
             }
             
+            // Preload image for faster loading
+            const imageElement = document.querySelector('.question-image');
+            if (imageElement) {
+                const imageUrl = imageElement.src;
+                if (imageUrl) {
+                    // Create a new Image object to preload
+                    const preloadImage = new Image();
+                    preloadImage.onload = function() {
+                        console.log('🖼️ Image preloaded successfully');
+                        // Image is ready, show it
+                        imageElement.classList.add('loaded');
+                        const loadingElement = document.getElementById('image-loading');
+                        if (loadingElement) {
+                            loadingElement.style.display = 'none';
+                        }
+                    };
+                    preloadImage.onerror = function() {
+                        console.error('🖼️ Failed to preload image');
+                        const loadingElement = document.getElementById('image-loading');
+                        if (loadingElement) {
+                            loadingElement.textContent = 'Failed to load image';
+                        }
+                    };
+                    preloadImage.src = imageUrl;
+                }
+            }
+            
             // Listen for problem.submit messages with action 'save'
             window.addEventListener('message', function(event) {
                 if (event.data && event.data.type === 'problem.submit' && event.data.action === 'save') {
@@ -1236,10 +1281,14 @@ export const getListenSingleChoiceTemplate = (questionText, optionsString, audio
     
     console.log('🔍 Processed scriptText:', processedScriptText);
     
-    // Handle image display
+    // Handle image display with preloading
     const imageHtml = imageFile ? 
         `<div class="image-container">
-            <img src="${imageFile}" alt="Question Image" class="question-image">
+            <div class="image-loading" id="image-loading">Loading image...</div>
+            <img src="${imageFile}" alt="Question Image" class="question-image" 
+                 loading="eager" decoding="async" fetchpriority="high"
+                 onload="this.classList.add('loaded'); document.getElementById('image-loading').style.display='none';"
+                 onerror="document.getElementById('image-loading').textContent='Failed to load image';">
         </div>` : '';
 
     return listenSingleChoiceTemplate

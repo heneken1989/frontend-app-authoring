@@ -454,7 +454,7 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                             Your browser does not support the audio element.
                         </audio>
                         <div class="custom-audio-player">
-                            <div id="player-status" class="player-status">Current Status: Playing</div>
+                            <div id="player-status" class="player-status">Current Status: Starting in 5s...</div>
                             <div class="controls-row">
                                 <div id="progress-container" class="progress-container">
                                     <div id="progress-bar" class="progress-bar"></div>
@@ -682,10 +682,10 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 audioElement.currentTime = timeSegments[0].start;
                 
                 // Update status to show countdown
-                playerStatus.textContent = 'Current Status: Starting in 10s...';
+                playerStatus.textContent = 'Current Status: Starting in 5s...';
                 
                 // Countdown timer
-                let countdown = 10;
+                let countdown = 5;
                 countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
@@ -871,7 +871,10 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 
                 // Function to update player status with countdown
                 function startWithDelay() {
-                    if (timeSegments.length === 0) return;
+                    if (timeSegments.length === 0) {
+                        playerStatus.textContent = 'Current Status: Ready';
+                        return;
+                    }
                     
                     // Clear any existing countdown interval
                     if (countdownInterval) {
@@ -885,10 +888,10 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     audioElement.currentTime = timeSegments[0].start;
                     
                     // Update status with countdown
-                    playerStatus.textContent = 'Current Status: Starting in 10s...';
+                    playerStatus.textContent = 'Current Status: Starting in 5s...';
                     
                     // Countdown timer
-                    let countdown = 10;
+                    let countdown = 5;
                     countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
@@ -983,6 +986,13 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
 
             // Initialize audio player
             const audioPlayer = setupAudioPlayer();
+            
+            // Auto-start countdown when page loads (like template 63)
+            setTimeout(() => {
+                if (audioPlayer && audioPlayer.startWithDelay) {
+                    audioPlayer.startWithDelay();
+                }
+            }, 500); // Delay to ensure audio metadata is loaded
 
             function getGrade() {
                 // Always show answer when submitted

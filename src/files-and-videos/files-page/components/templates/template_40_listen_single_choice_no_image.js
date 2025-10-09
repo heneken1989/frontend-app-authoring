@@ -457,7 +457,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                         Your browser does not support the audio element.
                     </audio>
                     <div class="custom-audio-player">
-                        <div id="player-status" class="player-status">Current Status: Playing</div>
+                        <div id="player-status" class="player-status">Current Status: Starting in 10s...</div>
                         <div class="controls-row">
                             <div id="progress-container" class="progress-container">
                                 <div id="progress-bar" class="progress-bar"></div>
@@ -680,9 +680,12 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     updateVolumeDisplay();
                 });
                 
-                // Initialize with 5-second delay
+                // Initialize with 10-second delay (like template 63)
                 function initializePlayer() {
-                    if (timeSegments.length === 0) return;
+                    if (timeSegments.length === 0) {
+                        playerStatus.textContent = 'Current Status: Ready';
+                        return;
+                    }
                     
                     // Clear any existing countdown interval
                     if (countdownInterval) {
@@ -695,7 +698,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     audioElement.currentTime = timeSegments[0].start;
                     
                     // Update status to show countdown
-                    playerStatus.textContent = 'Current Status: Starting in 5s...';
+                    playerStatus.textContent = 'Current Status: Starting in 10s...';
                     
                     // Countdown timer
                     let countdown = 5;
@@ -845,29 +848,49 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                         audioElement.currentTime = timeSegments[0].start;
                     }
                     
+                    // Ensure audio is paused before initializing (like template 63)
+                    audioElement.pause();
+                    playerStatus.textContent = 'Current Status: Ready';
+                    
                     // Initialize player with delay
                     initializePlayer();
                 });
                 
-                // Handle play event
+                // Handle play event (like template 63)
                 audioElement.addEventListener('play', () => {
+                    console.log('🔊 Audio play event fired');
                     isPlaying = true;
                     playerStatus.textContent = 'Current Status: Playing';
                 });
                 
-                // Handle pause event
+                // Handle pause event (like template 63)
                 audioElement.addEventListener('pause', () => {
+                    console.log('🔊 Audio pause event fired');
                     isPlaying = false;
                     playerStatus.textContent = 'Current Status: Paused';
+                });
+                
+                // Prevent auto-play on page load (like template 63)
+                audioElement.addEventListener('loadstart', () => {
+                    console.log('🔊 Audio loadstart - ensuring paused state');
+                    audioElement.pause();
+                    playerStatus.textContent = 'Current Status: Loading...';
                 });
                 
                 // Set initial volume
                 audioElement.volume = volumeSlider.value / 100;
                 updateVolumeDisplay();
                 
+                // Ensure audio is paused on load (like template 63)
+                audioElement.pause();
+                playerStatus.textContent = 'Current Status: Ready';
+                
                 // Function to update player status with countdown
                 function startWithDelay() {
-                    if (timeSegments.length === 0) return;
+                    if (timeSegments.length === 0) {
+                        playerStatus.textContent = 'Current Status: Ready';
+                        return;
+                    }
                     
                     // Clear any existing countdown interval
                     if (countdownInterval) {
@@ -881,10 +904,10 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     audioElement.currentTime = timeSegments[0].start;
                     
                     // Update status with countdown
-                    playerStatus.textContent = 'Current Status: Starting in 5s...';
+                    playerStatus.textContent = 'Current Status: Starting in 10s...';
                     
                     // Countdown timer
-                    let countdown = 5;
+                    let countdown = 10;
                     countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
@@ -979,6 +1002,13 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
 
             // Initialize audio player
             const audioPlayer = setupAudioPlayer();
+            
+            // Auto-start countdown when page loads (like template 63)
+            setTimeout(() => {
+                if (audioPlayer && audioPlayer.startWithDelay) {
+                    audioPlayer.startWithDelay();
+                }
+            }, 500); // Delay to ensure audio metadata is loaded
             
             // Send quiz meta to parent (like template 63)
             if (window.parent) {

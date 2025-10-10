@@ -11,26 +11,33 @@ function convertFurigana(text) {
     return text;
 }
 
-export const getListenImageSelectMultipleAnswerTemplate = (questionText, correctAnswers, audioFile, timeSegmentsString = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
+export const getListenImageSelectMultipleAnswerTemplate65 = (questionText, correctAnswers, audioFile, timeSegmentsString = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
     // Log the incoming parameters to help debug
-    console.log('getListenImageSelectMultipleAnswerTemplate called with:', {
+    console.log('getListenImageSelectMultipleAnswerTemplate65 called with:', {
         questionText,
         correctAnswers,
         answerContent,
         blankOptions
     });
     
-    // Parse the blank options for dropdowns - these are the options for all dropdowns
-    let optionsArray = [];
+    // Parse the blank options for dropdowns - each dropdown can have different options
+    let optionsPerDropdown = [];
     if (blankOptions && blankOptions.trim()) {
-        // Preserve original order from input, do not sort/dedupe to keep per-index mapping
-        optionsArray = blankOptions.split(',')
-            .map(option => option.trim())
-            .filter(option => option);
+        // Split by semicolon to get options for each dropdown
+        const dropdownOptions = blankOptions.split(';');
+        optionsPerDropdown = dropdownOptions.map(dropdownOption => {
+            // For each dropdown, split by comma to get individual options
+            return dropdownOption.split(',')
+                .map(option => option.trim())
+                .filter(option => option);
+        });
     } else {
-        // Default options if none provided
-        optionsArray = ['O', 'X'];
+        // Default options if none provided - all dropdowns get same options
+        optionsPerDropdown = [['O', 'X']];
     }
+    
+    // Debug logging for options per dropdown
+    console.log('🔍 Options per dropdown:', optionsPerDropdown);
     
     // Parse the correct answers - each position corresponds to a day of the week
     // If correctAnswers is a string like "O,O,X,O,X,X,X", parse it into an array
@@ -50,24 +57,49 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
     // Use answer content if provided, otherwise leave answers empty
     let answersList = '';
     if (answerContent && answerContent.trim()) {
+        console.log('🔍 Processing answerContent:', answerContent);
         // Process each line of the answer content
         const answerLines = answerContent.split('\n').map(line => line.trim()).filter(line => line);
+        console.log('🔍 Answer lines:', answerLines);
         
         // Process each line of answer content to replace placeholders with dropdowns
         let answerDropdownIndex = 0;
         const processedAnswerLines = answerLines.map((line, lineIndex) => {
+            console.log(`🔍 Processing line ${lineIndex + 1}: "${line}"`);
+            
             // Process each placeholder in the line
             let processedLine = line;
             let placeholderMatch;
             const placeholderRegex = /（ー）/g;
             
+            // Count total placeholders first
+            const totalPlaceholders = (line.match(/（ー）/g) || []).length;
+            console.log(`🔍 Line "${line}" has ${totalPlaceholders} placeholders`);
+            console.log(`🔍 Line character codes:`, Array.from(line).map(c => c.charCodeAt(0)));
+            
+            // Reset regex lastIndex to ensure it starts from the beginning
+            placeholderRegex.lastIndex = 0;
+            
             // Replace each placeholder in the line with a dropdown
-            while ((placeholderMatch = placeholderRegex.exec(line)) !== null) {
-                // Determine correct answer purely from options order by index (cycle)
-                const correctAnswer = optionsArray[(answerDropdownIndex) % Math.max(1, optionsArray.length)] || '';
+            let placeholderCount = 0;
+            while ((placeholderMatch = placeholderRegex.exec(processedLine)) !== null) {
+                placeholderCount++;
+                console.log(`🔍 Found placeholder #${placeholderCount} at index ${placeholderMatch.index} in: "${processedLine}"`);
+                console.log(`🔍 Placeholder match: "${placeholderMatch[0]}"`);
+                console.log(`🔍 Before placeholder: "${processedLine.substring(0, placeholderMatch.index)}"`);
+                console.log(`🔍 After placeholder: "${processedLine.substring(placeholderMatch.index + placeholderMatch[0].length)}"`);
                 
-                // Create dropdown options from the options array - remove duplicates and sort alphabetically
-                const uniqueOptions = [...new Set(optionsArray)].sort((a, b) => {
+                // Get options for this specific dropdown (by index)
+                const currentDropdownOptions = optionsPerDropdown[answerDropdownIndex] || optionsPerDropdown[0] || ['O', 'X'];
+                
+                // Debug logging for current dropdown
+                console.log(`🔍 Dropdown ${answerDropdownIndex + 1} options:`, currentDropdownOptions);
+                
+                // Determine correct answer - first option is always correct
+                const correctAnswer = currentDropdownOptions[0] || '';
+                
+                // Create dropdown options from the current dropdown's options - remove duplicates and sort alphabetically
+                const uniqueOptions = [...new Set(currentDropdownOptions)].sort((a, b) => {
                     try {
                         return a.localeCompare(b, 'ja');
                     } catch (e) {
@@ -89,19 +121,30 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
                 `;
                 
                 // Replace the placeholder with the dropdown
+                const placeholderLength = placeholderMatch[0].length;
                 const beforePlaceholder = processedLine.substring(0, placeholderMatch.index);
-                const afterPlaceholder = processedLine.substring(placeholderMatch.index + 4); // 4 is the length of （ー）
+                const afterPlaceholder = processedLine.substring(placeholderMatch.index + placeholderLength);
                 processedLine = beforePlaceholder + dropdown + afterPlaceholder;
                 
+                console.log(`🔍 Placeholder length: ${placeholderLength}`);
+                console.log(`🔍 Before: "${beforePlaceholder}"`);
+                console.log(`🔍 After: "${afterPlaceholder}"`);
+                
+                console.log(`🔍 After replacement: "${processedLine}"`);
+                console.log(`🔍 Remaining placeholders: ${(processedLine.match(/（ー）/g) || []).length}`);
+                
                 // Update the regex's lastIndex to account for the new dropdown
+                // Reset to the position after the inserted dropdown
                 placeholderRegex.lastIndex = beforePlaceholder.length + dropdown.length;
                 
                 answerDropdownIndex++;
             }
             
+            console.log(`🔍 Final processed line: "${processedLine}"`);
+            console.log(`🔍 Total dropdowns created: ${placeholderCount}`);
+            
             return processedLine;
         });
-        
         // Wrap each line in a div for separate lines
         answersList = processedAnswerLines.map(line => 
             `<div class="answer-item">${line}</div>`
@@ -110,12 +153,10 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
 
     // Process script text to highlight quoted text in red and convert furigana (like template 29)
     console.log('🔍 Original scriptText:', scriptText);
-    
     // First, handle newlines and normalize the text
     const normalizedScriptText = scriptText
         .replace(/\n/g, '<br>')  // Convert newlines to HTML breaks
         .replace(/\r/g, '');     // Remove carriage returns
-    
     console.log('🔍 Normalized scriptText:', normalizedScriptText);
     
     // Then process quotes for highlighting
@@ -123,7 +164,6 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
         .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
     
     console.log('🔍 Processed scriptText:', processedScriptText);
-    
     // Convert furigana
     const finalScriptText = convertFurigana(processedScriptText);
     
@@ -132,7 +172,7 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
     // Extract the first line as the question text and apply furigana
     const firstLine = convertFurigana(processedLines[0] || questionText);
     
-    let template = listenImageSelectMultipleAnswerTemplate
+    let template = listenImageSelectMultipleAnswerTemplate65
         .replace('{{QUESTION_TEXT}}', firstLine)
         .replace(/{{ANSWERS_LIST}}/g, answersList) // Replace all occurrences
         .replace('{{AUDIO_FILE}}', audioFile || '')
@@ -141,21 +181,12 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
         .replace('{{SCRIPT_TEXT}}', finalScriptText || '')
         .replace('{{CORRECT_ANSWERS}}', JSON.stringify(correctAnswersArray));
 
-    // Handle image file
-    if (imageFile) {
-        template = template
-            .replace('{{#if IMAGE_FILE}}', '')
-            .replace('{{/if}}', '')
-            .replace('{{IMAGE_FILE}}', imageFile);
-    } else {
-        template = template
-            .replace(/{{#if IMAGE_FILE}}[\s\S]*?{{\/if}}/g, '');
-    }
+    // Image file handling removed - no longer needed
     
     return template;
 };
 
-export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
+export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
 <html>
 <head>
     <title>Listen and Select Multiple Answer Quiz</title>
@@ -181,112 +212,73 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         }
         .container {
             position: relative;
-            height: 620px;
+            height: auto;
             display: flex;
             flex-direction: column;
-            gap: 0;
-            background-color: white;
-            max-height: 620px;
-            overflow-y: auto;
-            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 1.2rem;
-            font-weight: 400;
-            line-height: 1.5;
-            text-align: left;
+            gap: 20px;
+            width: calc(100% - 100px);
+            margin: 0 0 0 100px;
+            box-sizing: border-box;
         }
-        .main-content {
+        .top-section {
             display: flex;
-            gap: 0;
-            height: 100%;
-            background-color: white;
-            overflow-y: auto;
+            flex-direction: row;
+            gap: 50px;
+            align-items: flex-start;
         }
-        .left-section {
-            flex: 1;
-            background: white;
-            overflow-y: auto;
-            height: 100%;
-        }
-        .right-section {
-            flex: 1;
+        .left-content {
+            flex: 0 0 auto;
             display: flex;
             flex-direction: column;
-            background: white;
-            padding-left: 0;
-            overflow-y: auto;
-            height: 100%;
+            gap: 10px;
+            max-width: calc(100% - 350px);
+        }
+        .right-content {
+            flex: 0 0 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 300px;
         }
         .content-wrapper {
-            background: white;
-            padding: 0;
             display: flex;
             flex-direction: column;
-            gap: 0;
-            height: 100%;
+            gap: 10px;
         }
         .instructions {
-            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
-            font-weight: bold;
             line-height: 1.5;
-            text-align: left;
             color: #333;
+            font-weight: bold;
             font-style: italic;
             margin: 0 0 20px 0;
             letter-spacing: 0.3px;
         }
-        .instructions:before {
-            display: none;
-        }
-        .image-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0;
-            margin: 0;
-            overflow: hidden;
-            max-width: 100%;
-        }
-        .quiz-image {
-            max-width: 100%;
-            max-height: 450px;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto;
-        }
         .question-text {
-            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
-            font-weight: normal;
-            line-height: 1.6;
-            text-align: left;
+            padding: 15px 0;
             color: #333;
+            font-weight: normal;
             margin: 0;
-            position: relative;
-            padding-left: 5px;
+            line-height: 1.6;
             letter-spacing: 0.4px;
-        }
-        .question-text:before {
-            display: none;
         }
         .audio-container {
             margin-bottom: 10px;
-            width:90%;
-            background-color: white;
-            display: flex;
-            justify-content: flex-start;
+            width: 100%;
+            height: auto;
         }
         .custom-audio-player {
-            width: 100%;
-            max-width: 450px;
+            width: 300px;
+            min-width: 300px;
+            max-width: 300px;
             margin: 0;
             background-color: white;
             border-radius: 4px;
-            padding: 8px;
+            padding: 5px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 5px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             border: 1px solid #e0e0e0;
         }
@@ -296,7 +288,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             flex-direction: column;
             gap: 8px;
             padding: 0;
-            background: white;
+            background: transparent;
+            width: 100%;
+            overflow: visible;
         }
         .select-answer-header {
             font-size: 1.2rem;
@@ -373,7 +367,6 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         }
         .dropdown-options.balanced {
             position: absolute;
-            z-index: 1001;
             border: 2px solid #0075b4;
             border-radius: 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -381,6 +374,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             overflow-y: auto;
             top: 50%;
             transform: translateY(-50%);
+            z-index: 1000;
         }
         .dropdown-options.show {
             display: block;
@@ -510,16 +504,23 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         .player-status {
             font-weight: bold;
             color: #333;
-            margin: 0;
+            margin-bottom: 2px;
             text-align: left;
-            font-size: 1.2rem;
-            padding: 0;
+            font-size: 14px;
+            padding-bottom: 5px;
         }
         .divider {
             height: 1px;
             background-color: transparent;
             width: 100%;
             margin: 5px 0;
+        }
+        #player-status {
+            font-size: 14px;
+            color: #555;
+        }
+        .audio-player {
+            display: none; /* Hide the original audio player */
         }
         .controls-row {
             display: flex;
@@ -612,6 +613,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             color: #333;
             display: block;
             letter-spacing: 0.4px;
+            white-space: nowrap;
+            width: 100%;
+            position: relative;
         }
         .answer-item .custom-dropdown {
             vertical-align: middle;
@@ -625,88 +629,96 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             gap: 10px;
+            overflow: visible;
         }
+        @media (max-width: 1024px) {
+            .select-container {
+                max-width: 500px;
+            }
+        }
+        
         @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
+            .container {
                 gap: 10px;
             }
-            .left-section,
-            .right-section {
-                flex: none;
+            .top-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .left-content, .right-content {
                 width: 100%;
-                padding: 0;
-                margin: 0;
             }
             .content-wrapper {
-                gap: 10px;
-                padding: 0;
-            }
-            .image-container {
-                padding: 0;
-                margin: 0;
+                gap: 8px;
             }
             .select-container {
                 width: 100%;
+                max-width: 100%;
+            }
+            .custom-audio-player {
+                max-width: 100%;
+            }
+            .answer-item {
+                white-space: nowrap;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .select-container {
+                gap: 6px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="main-content">
-            <div class="left-section">
+        <div class="top-section">
+            <div class="left-content">
                 <div class="content-wrapper">
                     <div class="instructions" id="quiz-instructions">
                         {{INSTRUCTIONS}}
                     </div>
                     <div class="question-text">{{QUESTION_TEXT}}</div>
-                    {{#if IMAGE_FILE}}
-                    <div class="image-container">
-                        <img src="{{IMAGE_FILE}}" alt="Quiz illustration" class="quiz-image">
-                    </div>
-                    {{/if}}
                 </div>
             </div>
-            <div class="right-section">
-                <form id="quizForm" onsubmit="return false;">
-                    <div class="audio-container">
-                        <audio id="audio-player" class="audio-player">
-                            <source src="{{AUDIO_FILE}}" type="audio/mpeg">
-                            Your browser does not support the audio element.
-                        </audio>
-                        <div class="custom-audio-player">
-                            <div class="controls-row" style="justify-content: center; align-items: center;">
-                                <div id="player-status" class="player-status" style="margin: 0;">Current Status: Starting in 10s...</div>
+            <div class="right-content">
+                <div class="audio-container">
+                    <audio id="audio-player" class="audio-player">
+                        <source src="{{AUDIO_FILE}}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <div class="custom-audio-player">
+                        <div id="player-status" class="player-status">Current Status: Starting in 10s...</div>
+                        <div class="controls-row">
+                            <div id="progress-container" class="progress-container">
+                                <div id="progress-bar" class="progress-bar"></div>
                             </div>
-                            <div class="controls-row">
-                                <div id="progress-container" class="progress-container">
-                                    <div id="progress-bar" class="progress-bar"></div>
-                                </div>
-                            </div>
-                            <div class="divider"></div>
-                            <div class="controls-row">
-                                <div class="volume-control">
-                                    <span class="volume-label">Volume</span>
-                                    <div class="volume-slider-container">
-                                        <div id="volume-level" class="volume-level"></div>
-                                        <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="100" step="1">
-                                    </div>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="controls-row">
+                            <div class="volume-control">
+                                <span class="volume-label">Volume</span>
+                                <div class="volume-slider-container">
+                                    <div id="volume-level" class="volume-level"></div>
+                                    <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="100" step="1">
                                 </div>
                             </div>
                         </div>
-                        <div style="display: none;">
-                            <span id="time-segments">{{TIME_SEGMENTS}}</span>
-                            <span id="script-text-hidden">{{SCRIPT_TEXT}}</span>
-                        </div>
                     </div>
-                    <div class="select-container">
-                        <div class="answers-list">{{ANSWERS_LIST}}</div>
+                    <div style="display: none;">
+                        <span id="time-segments">{{TIME_SEGMENTS}}</span>
+                        <span id="script-text-hidden">{{SCRIPT_TEXT}}</span>
                     </div>
-                    <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
-                </form>
+                </div>
             </div>
         </div>
+        <form id="quizForm" onsubmit="return false;">
+            <div class="select-container">
+                <div class="answers-list">{{ANSWERS_LIST}}</div>
+            </div>
+            <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
+        </form>
     </div>
 
     <script>
@@ -1073,7 +1085,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 console.log('🔍 Encoded script text:', encodedScriptText);
                 
                 const quizData = {
-                    templateId: 63,
+                    templateId: 65,
                     scriptText: encodedScriptText
                 };
                 
@@ -1689,6 +1701,15 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         audioElement.addEventListener('loadeddata', () => {
             console.log('Audio data loaded');
         });
+
+        // Send quiz.meta message on load to inform parent of audio capability
+        if (window.parent) {
+            window.parent.postMessage({
+                type: 'quiz.meta',
+                templateId: 65,
+                hasAudio: true
+            }, '*');
+        }
 
     })();
     </script>

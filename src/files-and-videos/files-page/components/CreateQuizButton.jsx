@@ -31,7 +31,7 @@ import { highlightFillStyleTemplate } from './templates/template_41_highlight_ja
 import { getListenSingleChoiceTemplate } from './templates/template_39_listen_single_choice';
 import { getListenSingleChoiceNoImageTemplate } from './templates/template_40_listen_single_choice_no_image';
 import { getListenImageSelectMultipleAnswerTemplate } from './templates/template_63_listen_image_select_multiple_answer';
-import { getListenImageSelectMultipleAnswerMultiOptionsTemplate } from './templates/template_65_listen_image_select_multiple_answer_multioptions';
+import { getListenImageSelectMultipleAnswerTemplate65 } from './templates/template_65_listen_image_select_multiple_answer';
 import { getListenWriteAnswerWithImageTemplate } from './templates/template_67_listen_write_answer_with_image';
 import FORM_COMPONENTS, { getFormComponent } from './forms';
 import { getVocabMatchingTemplate } from './templates/template_2_vocab_matching';
@@ -1039,16 +1039,28 @@ const generateQuizTemplate = (templateId, quizData) => {
       );
 
     case TEMPLATE_IDS.LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER_MULTIOPTIONS:
-      return getListenImageSelectMultipleAnswerMultiOptionsTemplate(
-        quizData.paragraphText,
-        quizData.blankOptions || '', // Changed from optionsForBlanks to blankOptions
+      // Use timeSegmentsString if available, otherwise convert startTime and endTime
+      const timeSegments65 = quizData.timeSegmentsString || 
+        (quizData.startTime && quizData.endTime 
+          ? `${quizData.startTime}-${quizData.endTime}` 
+          : '0-0');
+      
+      // Apply furigana conversion to paragraphText, answerContent, and blankOptions (scriptText handled by template)
+      const processedParagraphText65 = convertFurigana(quizData.paragraphText);
+      const processedAnswerContent65 = convertFurigana(quizData.answerContent || '');
+      const processedInstructions65 = convertFurigana(quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。');
+      const processedBlankOptions65 = convertFurigana(quizData.blankOptions || '');
+      
+      return getListenImageSelectMultipleAnswerTemplate65(
+        processedParagraphText65,
+        quizData.correctAnswers || '', // Use correctAnswers as the second parameter
         quizData.audioFile || '',
-        quizData.startTime || 0,
-        quizData.endTime || 0,
-        quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
-        quizData.scriptText || '',
+        timeSegments65,
+        processedInstructions65,
+        quizData.scriptText || '', // Pass original scriptText without furigana processing
         quizData.imageFile || '',
-        quizData.answerContent || ''
+        processedAnswerContent65,
+        processedBlankOptions65  // Pass the processed blank options with furigana
       );
 
     case TEMPLATE_IDS.LISTEN_WRITE_ANSWER_WITH_IMAGE:
@@ -1730,9 +1742,11 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           startTimeEndTimeValue: quiz['startTime/endTime'],
           hasTimeSegments: !!quiz.timeSegments,
           timeSegmentsValue: quiz.timeSegments,
-          // Special handling for template 63
+          // Special handling for template 63 and 65
           isTemplate63: quizData.problemTypeId === 63,
-          template63TimeSegments: quizData.problemTypeId === 63 ? quizData.timeSegmentsString : 'N/A'
+          isTemplate65: quizData.problemTypeId === 65,
+          template63TimeSegments: quizData.problemTypeId === 63 ? quizData.timeSegmentsString : 'N/A',
+          template65TimeSegments: quizData.problemTypeId === 65 ? quizData.timeSegmentsString : 'N/A'
         });
 
         // Create quiz using existing createQuiz function
@@ -1860,9 +1874,9 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               <br />
               • startTime/endTime (format: "0.34-0.50" = 34s to 50s)
               <br />
-              • timeSegments (format: "0.04-0.09;0.21-0.30" = multiple segments for ID 40 and 63)
+              • timeSegments (format: "0.04-0.09;0.21-0.30" = multiple segments for ID 40, 63, and 65)
               <br />
-              <strong>Problem Type IDs:</strong> 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 63 (Listen Image Select Multiple Answer), 20 (Drag Drop), etc.
+              <strong>Problem Type IDs:</strong> 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 63 (Listen Image Select Multiple Answer), 65 (Listen Image Select Multiple Answer Template 65), 20 (Drag Drop), etc.
             </Form.Text>
           </Form.Group>
 
@@ -2060,6 +2074,35 @@ A:そうですか。`,
         instructions: '音声を聞いて、絵を見て、正しい答えを選んでください。',
         audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
         imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
+        'startTime/endTime': '0.34-0.50',
+        timeSegments: '0.04-0.09;0.21-0.30',
+        timeSegmentsString: '0.04-0.09;0.21-0.30',
+        timeLimit: '60',
+        published: 'true'
+      },
+      {
+        problemTypeId: '65',
+        unitTitle: 'Sample Quiz - Listen Image Select Multiple Answer (Template 65)',
+        paragraphText: '田中さんは何曜日(なんようび)に学校(がっこう)に行(い)きましたか行(い)きました（O）行(い)きませんでした（X）',
+        answerContent: `月曜日(げつようび)（ー）
+火曜日(かようび)（ー）
+水曜日(すいようび)（ー）
+木曜日(もくようび)（ー）
+金曜日(きんようび)（ー）
+土曜日(どようび)（ー）
+日曜日(にちようび)（ー）`,
+        correctAnswers: 'O,O,X,O,X,O,X',
+        blankOptions: 'O,X',
+        scriptText: `A:田中さんは先週(せんしゅう)、何曜日(なんようび)に学校(がっこう)に行(い)きましたか。
+B:えーと、月曜日(げつようび)と火曜日(かようび)と木曜日(もくようび)に行(い)きました。
+A:水曜日(すいようび)は?
+B:行(い)きませんでした。水曜日(すいようび)は休(やす)みました。
+A:金曜日(きんようび)は?
+B:金曜日(きんようび)も行(い)きませんでした。土曜日(どようび)と日曜日(にちようび)は休(やす)みです。
+A:そうですか。`,
+        instructions: '音声を聞いて、絵を見て、正しい答えを選んでください。',
+        audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/2.mp3',
+        imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/2.png',
         'startTime/endTime': '0.34-0.50',
         timeSegments: '0.04-0.09;0.21-0.30',
         timeSegmentsString: '0.04-0.09;0.21-0.30',

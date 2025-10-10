@@ -664,10 +664,10 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                     updateVolumeDisplay();
                 });
                 
-            // Initialize with 10-second delay (like template 63)
+            // Initialize with 5-second delay (like template 63)
             function initializePlayer() {
                 if (timeSegments.length === 0) {
-                    playerStatus.textContent = 'Current Status: Ready';
+                    playerStatus.textContent = 'Current Status: No audio segments';
                     return;
                 }
                 
@@ -867,12 +867,12 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
             
             // Ensure audio is paused on load (like template 63)
             audioElement.pause();
-            playerStatus.textContent = 'Current Status: Ready';
+            playerStatus.textContent = 'Current Status: Starting in 5s...';
                 
                 // Function to update player status with countdown
                 function startWithDelay() {
                     if (timeSegments.length === 0) {
-                        playerStatus.textContent = 'Current Status: Ready';
+                        playerStatus.textContent = 'Current Status: No audio segments';
                         return;
                     }
                     

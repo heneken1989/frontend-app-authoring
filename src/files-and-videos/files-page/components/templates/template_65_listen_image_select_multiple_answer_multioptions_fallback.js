@@ -1,3 +1,16 @@
+// Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+function convertFurigana(text) {
+    // First convert Japanese parentheses: 毎日（まいにち） -> <ruby>毎日<rt>まいにち</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)（([^）]+)）/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    });
+    // Then convert regular parentheses: 車(くるま) -> <ruby>車<rt>くるま</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)\(([^)]+)\)/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    });
+    return text;
+}
+
 export const getListenImageSelectMultipleAnswerMultiOptionsTemplate = (questionText, optionsForBlanks, audioFile, startTime = 0, endTime = 0, instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '') => {
     // Parse the options for each blank: semicolon-separated, each blank's options are comma-separated
     // Example: "a.韓国(かんこく),b.中国(ちゅうごく);a.コンピューター,b.自動車(じどうしゃ)"
@@ -40,8 +53,26 @@ export const getListenImageSelectMultipleAnswerMultiOptionsTemplate = (questionT
         answersList = processedAnswerLines.map(line => `<div class="answer-item">${line}</div>`).join('\n');
     }
 
-    // Process script text to highlight quoted text in red
-    const processedScriptText = scriptText.replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
+    // Process script text to highlight quoted text in red and convert furigana (like template 63)
+    console.log('🔍 Original scriptText:', scriptText);
+    
+    // First, handle newlines and normalize the text
+    const normalizedScriptText = scriptText
+        .replace(/\n/g, '<br>')  // Convert newlines to HTML breaks
+        .replace(/\r/g, '');     // Remove carriage returns
+    
+    console.log('🔍 Normalized scriptText:', normalizedScriptText);
+    
+    // Then process quotes for highlighting
+    const processedScriptText = normalizedScriptText
+        .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
+    
+    console.log('🔍 Processed scriptText:', processedScriptText);
+    
+    // Convert furigana
+    const finalScriptText = convertFurigana(processedScriptText);
+    
+    console.log('🔍 Final scriptText with furigana:', finalScriptText);
     
     // Build correct answers array for grading
     const correctAnswersArray = blanksOptionsArray.map(opts => opts[0] || '');
@@ -52,7 +83,7 @@ export const getListenImageSelectMultipleAnswerMultiOptionsTemplate = (questionT
         .replace('{{START_TIME}}', startTime || 0)
         .replace('{{END_TIME}}', endTime || 0)
         .replace('{{INSTRUCTIONS}}', instructions)
-        .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
+        .replace('{{SCRIPT_TEXT}}', finalScriptText || '')
         .replace('{{CORRECT_ANSWERS}}', JSON.stringify(correctAnswersArray));
 
     return template;
@@ -103,6 +134,10 @@ export const listenImageSelectMultipleAnswerMultiOptionsTemplate = `<!DOCTYPE ht
         .score-display { font-weight: bold; margin-bottom: 1rem; color: #333; }
         .answer-paragraph { font-family: Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; text-align: left; margin: 0; background-color: white; box-shadow: none; border-radius: 3px; display: block; border: 1px solid #e0e0e0; overflow-y: auto; max-height: 200px; }
         .script-highlight { color: #b40000; font-weight: normal; }
+        .script-highlight rt { color: #b40000 !important; }
+        /* Furigana styling - Simple approach like template 18 */
+        ruby { font-size: 1.2rem; }
+        rt { font-size: 0.6em; color: #666; }
         .no-answer { color: #666; border-bottom: 2px solid #666; padding: 0 4px; margin: 0 2px; }
         .answer-item { font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 1.2rem; font-weight: normal; line-height: 1.6; text-align: left; margin: 0; color: #333; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; letter-spacing: 0.4px; }
         .answers-list { padding: 5px; background: white; border-radius: 2px; margin: 5px 0; }
@@ -122,7 +157,7 @@ export const listenImageSelectMultipleAnswerMultiOptionsTemplate = `<!DOCTYPE ht
                         Your browser does not support the audio element.
                     </audio>
                     <div class="custom-audio-player">
-                        <div id="player-status" class="player-status">Current Status: Playing</div>
+                        <div id="player-status" class="player-status">Current Status: Starting in 10s...</div>
                         <div class="controls-row">
                             <div id="progress-container" class="progress-container">
                                 <div id="progress-bar" class="progress-bar"></div>
@@ -142,6 +177,7 @@ export const listenImageSelectMultipleAnswerMultiOptionsTemplate = `<!DOCTYPE ht
                     <div style="display: none;">
                         <span id="start-time">{{START_TIME}}</span>
                         <span id="end-time">{{END_TIME}}</span>
+                        <span id="script-text-hidden">{{SCRIPT_TEXT}}</span>
                     </div>
                 </div>
                 <div class="select-container">
@@ -253,6 +289,39 @@ export const listenImageSelectMultipleAnswerMultiOptionsTemplate = `<!DOCTYPE ht
                 showFlag.value = 'true';
                 state.showAnswer = true;
                 audioElement.pause();
+                
+                // Also pause countdown if it's running
+                if (audioPlayer && audioPlayer.pauseCountdown) {
+                    audioPlayer.pauseCountdown();
+                }
+                
+                // Send script text to parent for popup display (like template 63)
+                try {
+                    // Get script text from the template - use innerHTML to preserve HTML tags
+                    const scriptTextElement = document.getElementById('script-text-hidden');
+                    const scriptText = scriptTextElement ? scriptTextElement.innerHTML : '';
+                    
+                    console.log('🔍 Script text from hidden element:', scriptText);
+                    
+                    const quizData = {
+                        templateId: 65,
+                        scriptText: scriptText
+                    };
+                    
+                    // Store in localStorage for popup
+                    localStorage.setItem('quizGradeSubmitted', JSON.stringify(quizData));
+                    localStorage.setItem('quizGradeSubmittedTimestamp', Date.now().toString());
+                    
+                    // Send message to parent
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'quiz.data.ready',
+                            quizData: quizData
+                        }, '*');
+                    }
+                } catch (error) {
+                    console.error('Error sending script text to parent:', error);
+                }
             }
             const result = calculateResults();
             return JSON.stringify({ edxResult: None, edxScore: result.rawScore, edxMessage: result.message });
@@ -279,7 +348,14 @@ export const listenImageSelectMultipleAnswerMultiOptionsTemplate = `<!DOCTYPE ht
                         document.getElementById('answer-paragraph-container').style.display = state.showAnswer ? 'block' : 'none';
                         document.getElementById('showAnswerFlag').value = state.showAnswer ? 'true' : 'false';
                         if (state.showAnswer) {
-                            audioPlayer.resetToStart();
+                            // Pause audio and countdown when showing answers
+                            const audioElement = document.getElementById('audio-player');
+                            audioElement.pause();
+                            
+                            // Also pause countdown if it's running
+                            if (audioPlayer && audioPlayer.pauseCountdown) {
+                                audioPlayer.pauseCountdown();
+                            }
                         }
                     } catch (e) { console.error('Error parsing answers:', e); }
                 }
@@ -304,9 +380,75 @@ export const listenImageSelectMultipleAnswerMultiOptionsTemplate = `<!DOCTYPE ht
             const endTimeElement = document.getElementById('end-time');
             const playerStatus = document.getElementById('player-status');
             
+            // Set initial status to Starting countdown
+            playerStatus.textContent = 'Current Status: Starting in 10s...';
+            
+            // Parse time segments from input (format: "0.04-0.09;0.21-0.30")
+            function parseTimeSegments(timeString) {
+                if (!timeString || timeString.trim() === '') {
+                    return [];
+                }
+                
+                const segments = [];
+                const segmentStrings = timeString.split(';');
+                
+                segmentStrings.forEach((segmentStr, index) => {
+                    const parts = segmentStr.split('-');
+                    
+                    if (parts.length === 2) {
+                        // Parse time format: 0.04 = 4 seconds, 1.21 = 1 minute 21 seconds
+                        const parseTime = (timeStr) => {
+                            const time = parseFloat(timeStr.trim());
+                            if (isNaN(time)) return 0;
+                            
+                            if (timeStr.includes('.')) {
+                                const [minutes, secondsPart] = timeStr.split('.');
+                                const minutesNum = parseInt(minutes) || 0;
+                                const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
+                                return minutesNum * 60 + secondsNum;
+                            } else {
+                                return time;
+                            }
+                        };
+                        
+                        const start = parseTime(parts[0]);
+                        const end = parseTime(parts[1]);
+                        
+                        if (!isNaN(start) && !isNaN(end) && start >= 0 && end > start) {
+                            segments.push({ start, end });
+                        }
+                    }
+                });
+                
+                return segments;
+            }
+            
+            // For template 65, we'll use start/end time format like template 40
             const startTime = parseFloat(startTimeElement?.textContent) || 0;
             let endTime = parseFloat(endTimeElement?.textContent) || 0;
+            
+            // Convert to time segments format for consistency
+            let timeSegments = [];
+            if (endTime > startTime) {
+                timeSegments = [{ start: startTime, end: endTime }];
+            }
+            
+            let currentSegmentIndex = 0;
             let isPlaying = false;
+            let totalDuration = 0;
+            let isTransitioning = false; // Flag to prevent multiple transitions
+            let countdownInterval = null; // Store countdown interval reference
+            
+            // Calculate total duration of all segments
+            if (timeSegments.length > 0) {
+                totalDuration = timeSegments.reduce((total, segment) => total + (segment.end - segment.start), 0);
+            } else {
+                // Fallback to single time range from start/end time
+                if (endTime > startTime) {
+                    timeSegments.push({ start: startTime, end: endTime });
+                    totalDuration = endTime - startTime;
+                }
+            }
             
             // Update volume level display based on slider value
             function updateVolumeDisplay() {
@@ -331,69 +473,183 @@ export const listenImageSelectMultipleAnswerMultiOptionsTemplate = `<!DOCTYPE ht
                 updateVolumeDisplay();
             });
             
-            // Initialize with 3-second delay
+            // Initialize with 10-second delay
             function initializePlayer() {
-                // Set to start time
-                audioElement.currentTime = startTime;
+                if (timeSegments.length === 0) {
+                    playerStatus.textContent = 'Current Status: Ready';
+                    return;
+                }
+                
+                // Clear any existing countdown interval
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                
+                // Set to first segment start time
+                currentSegmentIndex = 0;
+                audioElement.currentTime = timeSegments[0].start;
                 
                 // Update status to show countdown
-                playerStatus.textContent = 'Current Status: Starting in 3s...';
+                playerStatus.textContent = 'Current Status: Starting in 10s...';
                 
                 // Countdown timer
-                let countdown = 3;
-                const countdownInterval = setInterval(function() {
+                let countdown = 10;
+                countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
                         playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                     } else {
                         clearInterval(countdownInterval);
+                        countdownInterval = null;
                         // Auto-play when countdown reaches 0
-                        audioElement.play()
-                            .then(function() {
-                                isPlaying = true;
-                                playerStatus.textContent = 'Current Status: Playing';
-                            });
+                        playNextSegment();
                     }
                 }, 1000);
             }
             
-            // Update progress bar
-            function updateProgress() {
-                if (audioElement.duration) {
-                    // Calculate relative to the start/end times
-                    const currentRelative = audioElement.currentTime - startTime;
-                    const durationRelative = (endTime > 0 ? endTime : audioElement.duration) - startTime;
+            // Play the current segment
+            function playNextSegment() {
+                if (currentSegmentIndex >= timeSegments.length) {
+                    // All segments played, stop and reset to first segment
+                    currentSegmentIndex = 0;
+                    audioElement.currentTime = timeSegments[0].start;
+                    audioElement.pause();
+                    isPlaying = false;
+                    playerStatus.textContent = 'Current Status: Completed';
                     
-                    // Update progress bar width
-                    const progressPercent = (currentRelative / durationRelative) * 100;
-                    progressBar.style.width = progressPercent + '%';
+                    // Force update status to ensure it's set correctly
+                    setTimeout(() => {
+                        if (playerStatus.textContent !== 'Current Status: Completed') {
+                            playerStatus.textContent = 'Current Status: Completed';
+                        }
+                    }, 50);
+                    return;
                 }
                 
-                // Check if we've reached the end time
-                if (endTime > 0 && audioElement.currentTime >= endTime) {
-                    audioElement.pause();
-                    audioElement.currentTime = startTime;
-                    isPlaying = false;
-                    playerStatus.textContent = 'Current Status: Paused';
+                const currentSegment = timeSegments[currentSegmentIndex];
+                audioElement.currentTime = currentSegment.start;
+                
+                audioElement.play()
+                    .then(function() {
+                        isPlaying = true;
+                        playerStatus.textContent = 'Current Status: Playing';
+                    })
+                    .catch(function(error) {
+                        console.error('Error playing audio:', error);
+                        isPlaying = false;
+                        playerStatus.textContent = 'Current Status: Error';
+                    });
+            }
+            
+            // Update progress bar
+            function updateProgress() {
+                if (audioElement.duration && timeSegments.length > 0) {
+                    const currentTime = audioElement.currentTime;
+                    const currentSegment = timeSegments[currentSegmentIndex];
+                    
+                    // Don't update if already completed
+                    if (playerStatus.textContent === 'Current Status: Completed') {
+                        return;
+                    }
+                    
+                    // Calculate progress within current segment
+                    if (currentTime >= currentSegment.start && currentTime <= currentSegment.end) {
+                        const segmentProgress = (currentTime - currentSegment.start) / (currentSegment.end - currentSegment.start);
+                        
+                        // Calculate total progress across all segments
+                        let totalElapsed = 0;
+                        for (let i = 0; i < currentSegmentIndex; i++) {
+                            totalElapsed += (timeSegments[i].end - timeSegments[i].start);
+                        }
+                        totalElapsed += (currentTime - currentSegment.start);
+                        
+                        const progressPercent = Math.min(100, Math.max(0, (totalElapsed / totalDuration) * 100));
+                        progressBar.style.width = progressPercent + '%';
+                    }
+                    
+                    // Check if we've reached the end of current segment
+                    if (currentTime >= currentSegment.end && !isTransitioning) {
+                        isTransitioning = true; // Prevent multiple transitions
+                        audioElement.pause();
+                        currentSegmentIndex++;
+                        
+                        if (currentSegmentIndex < timeSegments.length) {
+                            // Move to next segment
+                            setTimeout(() => {
+                                isTransitioning = false; // Reset flag
+                                playNextSegment();
+                            }, 100); // Small delay for smooth transition
+                        } else {
+                            // All segments completed
+                            isPlaying = false;
+                            playerStatus.textContent = 'Current Status: Completed';
+                            currentSegmentIndex = 0; // Reset for next play
+                            isTransitioning = false; // Reset flag
+                            
+                            // Force update status to ensure it's set correctly
+                            setTimeout(() => {
+                                if (playerStatus.textContent !== 'Current Status: Completed') {
+                                    playerStatus.textContent = 'Current Status: Completed';
+                                }
+                            }, 50);
+                        }
+                    }
                 }
             }
+            
+            // Disable seeking by click; make progress bar non-interactive
+            progressContainer.style.pointerEvents = 'none';
             
             // Update progress during playback
             audioElement.addEventListener('timeupdate', updateProgress);
             
             // When metadata is loaded, set up the player
             audioElement.addEventListener('loadedmetadata', () => {
-                // If endTime is not set or is greater than duration, use full duration
-                if (endTime <= 0 || endTime > audioElement.duration) {
-                    endTime = audioElement.duration;
+                // Get actual duration of the audio file
+                const actualDuration = audioElement.duration;
+                
+                // Validate and adjust time segments
+                if (timeSegments.length > 0) {
+                    timeSegments.forEach((segment, index) => {
+                        if (segment.end > actualDuration) {
+                            segment.end = actualDuration;
+                        }
+                        if (segment.start > actualDuration) {
+                            segment.start = 0;
+                            segment.end = 0;
+                        }
+                    });
+                    
+                    // Remove invalid segments
+                    const validSegments = timeSegments.filter(segment => segment.end > segment.start);
+                    timeSegments.length = 0;
+                    timeSegments.push(...validSegments);
+                    
+                    // Recalculate total duration
+                    totalDuration = timeSegments.reduce((total, segment) => total + (segment.end - segment.start), 0);
+                    
+                } else {
+                    // Fallback to full audio
+                    timeSegments.push({ start: 0, end: actualDuration });
+                    totalDuration = actualDuration;
                 }
                 
-                // Set to start time
-                audioElement.currentTime = startTime;
+                // Set to first segment start time
+                if (timeSegments.length > 0) {
+                    audioElement.currentTime = timeSegments[0].start;
+                }
                 
                 // Initialize player with delay
                 initializePlayer();
             });
+            
+            // Auto-start countdown when page loads (fallback if loadedmetadata doesn't fire)
+            setTimeout(() => {
+                if (timeSegments.length > 0 && !isPlaying) {
+                    initializePlayer();
+                }
+            }, 500); // Delay to ensure audio metadata is loaded
             
             // Handle play event
             audioElement.addEventListener('play', () => {
@@ -413,38 +669,95 @@ export const listenImageSelectMultipleAnswerMultiOptionsTemplate = `<!DOCTYPE ht
             
             // Function to update player status with countdown
             function startWithDelay() {
+                if (timeSegments.length === 0) {
+                    playerStatus.textContent = 'Current Status: Ready';
+                    return;
+                }
+                
+                // Clear any existing countdown interval
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                
+                // Reset to first segment
+                currentSegmentIndex = 0;
+                isTransitioning = false; // Reset transition flag
+                audioElement.currentTime = timeSegments[0].start;
+                
                 // Update status with countdown
-                playerStatus.textContent = 'Current Status: Starting in 3s...';
+                playerStatus.textContent = 'Current Status: Starting in 10s...';
                 
                 // Countdown timer
-                let countdown = 3;
-                const countdownInterval = setInterval(function() {
+                let countdown = 10;
+                countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
                         playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                     } else {
                         clearInterval(countdownInterval);
+                        countdownInterval = null;
                         // Auto-play when countdown reaches 0
-                        audioElement.play()
-                            .then(function() {
-                                playerStatus.textContent = 'Current Status: Playing';
-                            });
+                        playNextSegment();
                     }
                 }, 1000);
             }
             
-            // Expose the startWithDelay function
+            // Function to pause countdown
+            function pauseCountdown() {
+                // Clear any existing countdown interval
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                
+                // Update status to paused
+                playerStatus.textContent = 'Current Status: Paused';
+            }
+            
+            // Expose the functions
             return {
                 startWithDelay,
+                pauseCountdown,
                 resetToStart: () => {
-                    audioElement.currentTime = startTime;
+                    // Clear any existing countdown interval
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+                    
+                    if (timeSegments.length > 0) {
+                        currentSegmentIndex = 0;
+                        audioElement.currentTime = timeSegments[0].start;
+                        playerStatus.textContent = 'Current Status: Starting in 10s...';
+                        // Restart countdown after reset
+                        setTimeout(() => {
+                            initializePlayer();
+                        }, 100);
+                    } else {
+                        playerStatus.textContent = 'Current Status: Ready';
+                    }
                     audioElement.pause();
-                    playerStatus.textContent = 'Current Status: Paused';
+                },
+                getTimeRange: () => {
+                    if (timeSegments.length === 1) {
+                        return { startTime: timeSegments[0].start, endTime: timeSegments[0].end };
+                    }
+                    return { segments: timeSegments, totalDuration: totalDuration };
                 }
             };
         }
         
         const audioPlayer = setupAudioPlayer();
+        
+        // Send quiz.meta message on load to inform parent of audio capability
+        if (window.parent) {
+            window.parent.postMessage({
+                type: 'quiz.meta',
+                templateId: 65,
+                hasAudio: true
+            }, '*');
+        }
     })();
     </script>
 </body>

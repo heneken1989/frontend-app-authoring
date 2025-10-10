@@ -117,7 +117,7 @@ export const getListenImageSelectMultipleAnswerTemplate65 = (questionText, corre
                     <div class="custom-dropdown" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}">
                         <div class="dropdown-button" data-value=""></div>
                         <div class="dropdown-options">${optionsHtml}</div>
-                    </div> `;
+                    </div>&nbsp;`;
                 
                 // Replace the placeholder with the dropdown
                 const placeholderLength = placeholderMatch[0].length;
@@ -303,7 +303,7 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             min-width: 100px;
             width: auto;
             z-index: 1;
-            margin: 0 2px;
+            margin: 0 12px 0 2px;
             vertical-align: middle;
         }
         .custom-dropdown.open {
@@ -337,8 +337,9 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             margin: 0 !important;
             outline: none !important;
             letter-spacing: 0.4px !important;
-            white-space: normal !important;
-            word-wrap: break-word !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
         .dropdown-button:hover {
             background-color: #0075b4;
@@ -615,6 +616,7 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             white-space: nowrap;
             width: 100%;
             position: relative;
+            padding: 5px 0;
         }
         .answer-item .custom-dropdown {
             vertical-align: middle;
@@ -816,7 +818,12 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
         // Store original dropdowns immediately when page loads
         const initialDropdowns = document.querySelectorAll('.custom-dropdown');
         for (let i = 0; i < initialDropdowns.length; i++) {
-            originalDropdowns.push(initialDropdowns[i].cloneNode(true));
+            const dropdown = initialDropdowns[i].cloneNode(true);
+            // Add space after dropdown in the stored version
+            const wrapper = document.createElement('span');
+            wrapper.appendChild(dropdown);
+            wrapper.innerHTML += '&nbsp;';
+            originalDropdowns.push(wrapper);
         }
 
         // Add event listeners to each custom dropdown
@@ -868,6 +875,30 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
                     // Update button text with furigana
                     button.innerHTML = selectedText;
                     button.setAttribute('data-value', selectedValue);
+                    
+                    // Auto-adjust width to fit content without wrapping
+                    const tempSpan = document.createElement('span');
+                    tempSpan.style.visibility = 'hidden';
+                    tempSpan.style.position = 'absolute';
+                    tempSpan.style.fontSize = '1.2rem';
+                    tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                    tempSpan.style.fontWeight = 'normal';
+                    tempSpan.style.letterSpacing = '0.4px';
+                    tempSpan.style.padding = '0';
+                    tempSpan.style.margin = '0';
+                    tempSpan.style.border = 'none';
+                    tempSpan.style.whiteSpace = 'nowrap';
+                    tempSpan.innerHTML = selectedText;
+                    document.body.appendChild(tempSpan);
+                    
+                    const textWidth = tempSpan.offsetWidth;
+                    document.body.removeChild(tempSpan);
+                    
+                    // Set width to fit content (add padding: 16px left + 50px right = 66px total)
+                    const newWidth = Math.max(120, textWidth + 66);
+                    button.style.width = newWidth + 'px';
+                    // Also update the dropdown container width
+                    dropdown.style.width = newWidth + 'px';
                     
                     // Close dropdown
                     this.parentNode.classList.remove('show', 'balanced');
@@ -948,7 +979,8 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             for (let i = 0; i < replacements.length; i++) {
                 const replacement = replacements[i];
                 if (originalDropdowns[i]) {
-                    const restoredDropdown = originalDropdowns[i].cloneNode(true);
+                    const restoredWrapper = originalDropdowns[i].cloneNode(true);
+                    const restoredDropdown = restoredWrapper.querySelector('.custom-dropdown');
                     const button = restoredDropdown.querySelector('.dropdown-button');
                     if (button) {
                         button.setAttribute('data-value', '');
@@ -958,7 +990,8 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
                         // Also reset the dropdown container width
                         restoredDropdown.style.width = '100px';
                     }
-                    replacement.parentNode.replaceChild(restoredDropdown, replacement);
+                    
+                    replacement.parentNode.replaceChild(restoredWrapper, replacement);
                 }
             }
             
@@ -1029,6 +1062,30 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
                         // Update button text with furigana
                         button.innerHTML = selectedText;
                         button.setAttribute('data-value', selectedValue);
+                        
+                        // Auto-adjust width to fit content without wrapping
+                        const tempSpan = document.createElement('span');
+                        tempSpan.style.visibility = 'hidden';
+                        tempSpan.style.position = 'absolute';
+                        tempSpan.style.fontSize = '1.2rem';
+                        tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                        tempSpan.style.fontWeight = 'normal';
+                        tempSpan.style.letterSpacing = '0.4px';
+                        tempSpan.style.padding = '0';
+                        tempSpan.style.margin = '0';
+                        tempSpan.style.border = 'none';
+                        tempSpan.style.whiteSpace = 'nowrap';
+                        tempSpan.innerHTML = selectedText;
+                        document.body.appendChild(tempSpan);
+                        
+                        const textWidth = tempSpan.offsetWidth;
+                        document.body.removeChild(tempSpan);
+                        
+                        // Set width to fit content (add padding: 16px left + 50px right = 66px total)
+                        const newWidth = Math.max(120, textWidth + 66);
+                        button.style.width = newWidth + 'px';
+                        // Also update the dropdown container width
+                        dropdown.style.width = newWidth + 'px';
                         
                         // Close dropdown
                         this.parentNode.classList.remove('show', 'balanced');
@@ -1173,6 +1230,30 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
                                 if (selectedText && button) {
                                     button.innerHTML = selectedText;
                                     button.setAttribute('data-value', value);
+                                    
+                                    // Auto-adjust width to fit content without wrapping
+                                    const tempSpan = document.createElement('span');
+                                    tempSpan.style.visibility = 'hidden';
+                                    tempSpan.style.position = 'absolute';
+                                    tempSpan.style.fontSize = '1.2rem';
+                                    tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                                    tempSpan.style.fontWeight = 'normal';
+                                    tempSpan.style.letterSpacing = '0.4px';
+                                    tempSpan.style.padding = '0';
+                                    tempSpan.style.margin = '0';
+                                    tempSpan.style.border = 'none';
+                                    tempSpan.style.whiteSpace = 'nowrap';
+                                    tempSpan.innerHTML = selectedText;
+                                    document.body.appendChild(tempSpan);
+                                    
+                                    const textWidth = tempSpan.offsetWidth;
+                                    document.body.removeChild(tempSpan);
+                                    
+                                    // Set width to fit content (add padding: 16px left + 50px right = 66px total)
+                                    const newWidth = Math.max(120, textWidth + 66);
+                                    button.style.width = newWidth + 'px';
+                                    // Also update the dropdown container width
+                                    dropdown.style.width = newWidth + 'px';
                                 }
                             }
                         });

@@ -117,8 +117,7 @@ export const getListenImageSelectMultipleAnswerTemplate65 = (questionText, corre
                     <div class="custom-dropdown" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}">
                         <div class="dropdown-button" data-value=""></div>
                         <div class="dropdown-options">${optionsHtml}</div>
-                    </div>
-                `;
+                    </div> `;
                 
                 // Replace the placeholder with the dropdown
                 const placeholderLength = placeholderMatch[0].length;

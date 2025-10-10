@@ -144,9 +144,9 @@ export const getListenImageSelectMultipleAnswerTemplate65 = (questionText, corre
             
             return processedLine;
         });
-        // Wrap each line in a div for separate lines
+        // Wrap each line in a div for separate lines with proper spacing
         answersList = processedAnswerLines.map(line => 
-            `<div class="answer-item">${line}</div>`
+            `<div class="answer-item">${line}&nbsp;</div>`
         ).join('\n');
     }
 

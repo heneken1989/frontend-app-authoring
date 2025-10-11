@@ -1064,17 +1064,28 @@ const generateQuizTemplate = (templateId, quizData) => {
       );
 
     case TEMPLATE_IDS.LISTEN_WRITE_ANSWER_WITH_IMAGE:
+      // Use timeSegmentsString if available, otherwise convert startTime and endTime
+      const timeSegments67 = quizData.timeSegmentsString || 
+        (quizData.startTime && quizData.endTime 
+          ? `${quizData.startTime}-${quizData.endTime}` 
+          : '0-0');
+      
+      // Apply furigana conversion to paragraphText, answerContent, and blankOptions (scriptText handled by template)
+      const processedParagraphText67 = convertFurigana(quizData.paragraphText);
+      const processedAnswerContent67 = convertFurigana(quizData.answerContent || '');
+      const processedInstructions67 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
+      const processedBlankOptions67 = convertFurigana(quizData.blankOptions || '');
+      
       return getListenWriteAnswerWithImageTemplate(
-        quizData.paragraphText,
-        quizData.correctAnswers || quizData.blankOptions,
-        quizData.audioFile,
-        quizData.startTime,
-        quizData.endTime,
-        quizData.instructions || '音声を聞いて、絵を見て、正しい答えを選んでください。',
-        quizData.scriptText,
-        quizData.imageFile,
-        quizData.answerContent,
-        quizData.blankOptions
+        processedParagraphText67,
+        quizData.correctAnswers || '', // Use correctAnswers as the second parameter
+        quizData.audioFile || '',
+        timeSegments67,
+        processedInstructions67,
+        quizData.scriptText || '', // Pass original scriptText without furigana processing
+        quizData.imageFile || '',
+        processedAnswerContent67,
+        processedBlankOptions67  // Pass the processed blank options with furigana
       );
 
     case TEMPLATE_IDS.GRAMMAR_DROPDOWN:
@@ -1742,11 +1753,13 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           startTimeEndTimeValue: quiz['startTime/endTime'],
           hasTimeSegments: !!quiz.timeSegments,
           timeSegmentsValue: quiz.timeSegments,
-          // Special handling for template 63 and 65
+          // Special handling for template 63, 65, and 67
           isTemplate63: quizData.problemTypeId === 63,
           isTemplate65: quizData.problemTypeId === 65,
+          isTemplate67: quizData.problemTypeId === 67,
           template63TimeSegments: quizData.problemTypeId === 63 ? quizData.timeSegmentsString : 'N/A',
-          template65TimeSegments: quizData.problemTypeId === 65 ? quizData.timeSegmentsString : 'N/A'
+          template65TimeSegments: quizData.problemTypeId === 65 ? quizData.timeSegmentsString : 'N/A',
+          template67TimeSegments: quizData.problemTypeId === 67 ? quizData.timeSegmentsString : 'N/A'
         });
 
         // Create quiz using existing createQuiz function
@@ -1866,6 +1879,8 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               <br />
               <strong>Optional columns:</strong> scriptText, instructions, audioFile, imageFile, images, startTime, endTime, timeLimit, published
               <br />
+              <strong>Multiple correct answers:</strong> Use "/" to separate multiple correct answers for one blank (e.g., "月/げつ" for blank 2)
+              <br />
               <strong>Time Range columns:</strong> 
               <br />
               • timeRange (format: "1-1.1" = 1s to 1min10s) 
@@ -1874,9 +1889,9 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               <br />
               • startTime/endTime (format: "0.34-0.50" = 34s to 50s)
               <br />
-              • timeSegments (format: "0.04-0.09;0.21-0.30" = multiple segments for ID 40, 63, and 65)
+              • timeSegments (format: "0.04-0.09;0.21-0.30" = multiple segments for ID 40, 63, 65, and 67)
               <br />
-              <strong>Problem Type IDs:</strong> 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 63 (Listen Image Select Multiple Answer), 65 (Listen Image Select Multiple Answer Template 65), 20 (Drag Drop), etc.
+              <strong>Problem Type IDs:</strong> 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 63 (Listen Image Select Multiple Answer), 65 (Listen Image Select Multiple Answer Template 65), 67 (Listen Write Answer with Image), 20 (Drag Drop), etc.
             </Form.Text>
           </Form.Group>
 
@@ -2131,6 +2146,51 @@ A:そうですか。`,
         audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/3.mp3',
         imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/3.png',
         'startTime/endTime': '0.10-0.45',
+        timeLimit: '60',
+        published: 'true'
+      },
+      {
+        problemTypeId: '67',
+        unitTitle: 'Sample Quiz - Listen Write Answer with Image',
+        paragraphText: '田中さんは何時に学校に行きますか。',
+        answerContent: `田中さんは（ー）時に学校に行きます。
+田中さんは（ー）曜日に家に帰ります。`,
+        correctAnswers: '9:00〜12:00;月/げつ',
+        blankOptions: '9:00〜12:00;月/げつ',
+        scriptText: `A:田中さんは何時に学校に行きますか。
+B:9時に行きます。
+A:何曜日に家に帰りますか。
+B:月曜日に帰ります。`,
+        instructions: '音声を聞いて、正しい答えを選んでください。',
+        audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/3.mp3',
+        imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/3.png',
+        'startTime/endTime': '0.34-0.50',
+        timeSegments: '0.04-0.09;0.21-0.30',
+        timeSegmentsString: '0.04-0.09;0.21-0.30',
+        timeLimit: '60',
+        published: 'true'
+      },
+      {
+        problemTypeId: '67',
+        unitTitle: 'Sample Quiz - Multiple Correct Answers',
+        paragraphText: '以下の質問に答えてください。',
+        answerContent: `時間は（ー）です。
+曜日は（ー）です。
+色は（ー）です。`,
+        correctAnswers: '9:00/9時;月/げつ/月曜日;赤/あか/赤色',
+        blankOptions: '9:00/9時;月/げつ/月曜日;赤/あか/赤色',
+        scriptText: `A:時間は何時ですか。
+B:9時です。
+A:何曜日ですか。
+B:月曜日です。
+A:色は何色ですか。
+B:赤色です。`,
+        instructions: '音声を聞いて、正しい答えを選んでください。',
+        audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/4.mp3',
+        imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/4.png',
+        'startTime/endTime': '0.20-1.00',
+        timeSegments: '0.05-0.15;0.20-0.35;0.40-0.55',
+        timeSegmentsString: '0.05-0.15;0.20-0.35;0.40-0.55',
         timeLimit: '60',
         published: 'true'
       }

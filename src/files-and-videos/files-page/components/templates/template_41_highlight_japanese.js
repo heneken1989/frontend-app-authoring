@@ -47,6 +47,7 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             color: #333;
             font-weight: bold;
             font-style: italic;
+            text-align: center;
         }
         .audio-container {
             margin-bottom: 10px;
@@ -859,18 +860,17 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                                 } else {
                                     span.classList.add('no-furigana');
                                 }
-                                span.innerHTML = wordWithFurigana + ' <span class="correct-answer">(' + correctAnswerWithFurigana + ')</span>';
+                                span.innerHTML = wordWithFurigana;
                             } else {
-                                // User missed this word - show correct word in green with correct answer
-                                console.log('[DEBUG] Applying student-correct styling for missed word');
-                                span.classList.remove('selected', 'wrong');
-                                span.classList.add('student-correct');
+                                // User missed this word - show as normal (no highlighting)
+                                console.log('[DEBUG] User missed word, showing as normal');
+                                span.classList.remove('selected', 'wrong', 'student-correct', 'student-incorrect');
                                 if (hasFurigana) {
                                     span.classList.add('with-furigana');
                                 } else {
                                     span.classList.add('no-furigana');
                                 }
-                                span.innerHTML = wordWithFurigana + ' <span class="correct-answer">(' + correctAnswerWithFurigana + ')</span>';
+                                span.innerHTML = wordWithFurigana;
                             }
                             
                             // Increment the count for this word after processing
@@ -1430,6 +1430,13 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         }
                     }
                 }
+                // Send quiz data to parent for popup display (like template 63)
+                try {
+                    sendQuizData();
+                } catch (error) {
+                    console.error('Error sending quiz data to parent:', error);
+                }
+                
                 // Still return grade info to EdX
                 const result = grade();
                 console.log('[DEBUG] Grade result:', result);
@@ -1517,6 +1524,33 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             
             // Initialize audio player
             const audioPlayer = setupAudioPlayer();
+            
+            // Send quiz data to parent window (only after submission)
+            function sendQuizData() {
+                const quizData = {
+                    templateId: 41,
+                    paragraphText: paragraph,
+                    fixedWordsExplanation: document.getElementById('fixedWordsExplanation').value,
+                    correctWords: correctWords,
+                    fixedWordsMap: fixedWordsMap,
+                    indexedFixedWordsMap: indexedFixedWordsMap
+                };
+                
+                console.log('🔍 Template 41 sending quiz data:', quizData);
+                
+                // Store in localStorage for popup
+                localStorage.setItem('quizGradeSubmitted', JSON.stringify(quizData));
+                localStorage.setItem('quizGradeSubmittedTimestamp', Date.now().toString());
+                
+                // Send to parent window
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'quiz.data.ready',
+                        quizData: quizData
+                    }, '*');
+                }
+            }
+            
             
             renderParagraph();
         })();

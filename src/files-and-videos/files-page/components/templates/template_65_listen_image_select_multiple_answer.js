@@ -1,5 +1,11 @@
 // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
 function convertFurigana(text) {
+    // Convert tabs to non-breaking spaces (4 &nbsp; per tab)
+    text = text.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+    
+    // Convert /t/t pattern to non-breaking spaces (4 &nbsp; per /t)
+    text = text.replace(/\/t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+    
     // First convert Japanese parentheses: 毎日（まいにち） -> <ruby>毎日<rt>まいにち</rt></ruby>
     text = text.replace(/([一-龯ひらがなカタカナ0-9]+)（([^）]+)）/g, function(match, p1, p2) {
         return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
@@ -59,7 +65,7 @@ export const getListenImageSelectMultipleAnswerTemplate65 = (questionText, corre
     if (answerContent && answerContent.trim()) {
         console.log('🔍 Processing answerContent:', answerContent);
         // Process each line of the answer content
-        const answerLines = answerContent.split('\n').map(line => line.trim()).filter(line => line);
+        const answerLines = answerContent.split('\n').filter(line => line);
         console.log('🔍 Answer lines:', answerLines);
         
         // Process each line of answer content to replace placeholders with dropdowns
@@ -67,8 +73,11 @@ export const getListenImageSelectMultipleAnswerTemplate65 = (questionText, corre
         const processedAnswerLines = answerLines.map((line, lineIndex) => {
             console.log(`🔍 Processing line ${lineIndex + 1}: "${line}"`);
             
-            // Process each placeholder in the line
-            let processedLine = line;
+            // Convert tabs to non-breaking spaces (4 &nbsp; per tab)
+            let processedLine = line.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            
+            // Convert /t/t pattern to non-breaking spaces (4 &nbsp; per /t)
+            processedLine = processedLine.replace(/\/t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
             let placeholderMatch;
             const placeholderRegex = /（ー）/g;
             
@@ -214,23 +223,27 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             height: auto;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            width: calc(100% - 100px);
-            margin: 0 0 0 100px;
+            gap: 15px;
+            width: calc(100% - 60px);
+            margin: 0 auto;
             box-sizing: border-box;
         }
         .top-section {
             display: flex;
             flex-direction: row;
-            gap: 50px;
+            gap: 150px;
             align-items: flex-start;
+            justify-content: center;
         }
         .left-content {
             flex: 0 0 auto;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-width: calc(100% - 350px);
+            align-items: flex-start;
+            justify-content: flex-start;
+            width: auto;
+            max-width: none;
         }
         .right-content {
             flex: 0 0 300px;
@@ -238,11 +251,14 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             flex-direction: column;
             gap: 10px;
             width: 300px;
+            align-items: center;
         }
         .content-wrapper {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            align-items: flex-start;
+            width: auto;
         }
         .instructions {
             font-size: 1.2rem;
@@ -252,6 +268,9 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             font-style: italic;
             margin: 0 0 20px 0;
             letter-spacing: 0.3px;
+            text-align: left;
+            width: auto;
+            white-space: nowrap;
         }
         .question-text {
             font-size: 1.2rem;
@@ -261,6 +280,9 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             margin: 0;
             line-height: 1.6;
             letter-spacing: 0.4px;
+            text-align: left;
+            width: auto;
+            white-space: nowrap;
         }
         .audio-container {
             margin-bottom: 10px;
@@ -274,28 +296,32 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             margin: 0;
             background-color: white;
             border-radius: 4px;
-            padding: 5px;
+            padding: 3px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 3px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             border: 1px solid #e0e0e0;
+            height: auto;
+            min-height: 80px;
         }
         .select-container {
-            margin: 0;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             gap: 8px;
             padding: 0;
             background: transparent;
-            width: 100%;
+            width: auto;
             overflow: visible;
+            align-items: center;
         }
         .select-answer-header {
             font-size: 1.2rem;
             color: #333;
             margin: 0;
             font-weight: bold;
+            text-align: center;
         }
         .custom-dropdown {
             position: relative;
@@ -504,16 +530,16 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
         .player-status {
             font-weight: bold;
             color: #333;
-            margin-bottom: 2px;
-            text-align: left;
-            font-size: 14px;
-            padding-bottom: 5px;
+            margin-bottom: 1px;
+            text-align: center;
+            font-size: 12px;
+            padding-bottom: 2px;
         }
         .divider {
             height: 1px;
             background-color: transparent;
             width: 100%;
-            margin: 5px 0;
+            margin: 2px 0;
         }
         #player-status {
             font-size: 14px;
@@ -525,8 +551,8 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
         .controls-row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 3px 0;
+            gap: 8px;
+            padding: 2px 0;
         }
         .progress-container {
             flex-grow: 1;
@@ -556,13 +582,14 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             margin-right: 8px;
             font-weight: bold;
             padding: 0 5px;
+            text-align: center;
         }
         .volume-control {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            padding: 3px;
+            padding: 2px;
         }
         .volume-icon {
             color: #333;
@@ -626,11 +653,13 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             padding: 5px;
             background: white;
             border-radius: 2px;
-            margin: 5px 0;
+            margin: 5px auto;
             display: flex;
             flex-direction: column;
             gap: 10px;
             overflow: visible;
+            align-items: flex-start;
+            width: auto;
         }
         @media (max-width: 1024px) {
             .select-container {
@@ -644,7 +673,7 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             }
             .top-section {
                 flex-direction: column;
-                gap: 15px;
+                gap: 150px;
             }
             .left-content, .right-content {
                 width: 100%;

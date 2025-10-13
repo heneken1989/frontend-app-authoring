@@ -59,6 +59,31 @@ const convertFurigana = (text) => {
   return text;
 };
 
+// Function to add spaces before and after special characters for Japanese text processing
+const addSpacesAfterSpecialChars = (text) => {
+  if (!text || typeof text !== "string") return text;
+  
+  // Add space before and after punctuation marks and special characters
+  // This helps preserve spacing when text is split by spaces
+  // Note: Both () and （） are excluded because they are used for furigana
+  return text
+    // Add space before and after Japanese punctuation marks
+    .replace(/([。、！？；：])/g, ' $1 ')
+    // Add space before and after brackets (but not parentheses () or （） for furigana)
+    .replace(/([「」『』【】〈〉《》])/g, ' $1 ')
+    // Add space before and after commas and periods
+    .replace(/([，．])/g, ' $1 ')
+    // Add space before and after quotation marks
+    .replace(/([""''`])/g, ' $1 ')
+    // Add space before and after dashes and hyphens
+    .replace(/([—–-])/g, ' $1 ')
+    // Add space before and after other common punctuation
+    .replace(/([：；！？])/g, ' $1 ')
+    // Clean up multiple spaces
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 
 // Excel parsing function
 const parseExcelFile = (file) => {
@@ -812,8 +837,13 @@ const generateQuizTemplate = (templateId, quizData) => {
         const fixedWordsExplanation = quizData.fixedWordsExplanation || 'These are the words that should be selected.';
         console.log('Final fixedWordsExplanation:', fixedWordsExplanation);
         
+        // Process paragraphText to add spaces after special characters for better word splitting
+        const processedParagraphText41 = addSpacesAfterSpecialChars(quizData.paragraphText);
+        console.log('Original paragraphText:', quizData.paragraphText);
+        console.log('Processed paragraphText:', processedParagraphText41);
+        
         return highlightFillStyleTemplate
-            .replace('{{PARAGRAPH}}', quizData.paragraphText.replace(/'/g, "\\'").replace(/\n/g, ' '))
+            .replace('{{PARAGRAPH}}', processedParagraphText41.replace(/'/g, "\\'").replace(/\n/g, ' '))
             .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords))
             .replace('{{FIXED_WORDS_EXPLANATION}}', fixedWordsExplanation)
             .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions)
@@ -845,8 +875,13 @@ const generateQuizTemplate = (templateId, quizData) => {
         // Make sure fixedWordsExplanation is not empty
         const fixedWordsExplanation45 = quizData.fixedWordsExplanation || 'These are the words that should be selected.';
         
+        // Process paragraphText to add spaces after special characters for better word splitting
+        const processedParagraphText45 = addSpacesAfterSpecialChars(quizData.paragraphText);
+        console.log('ID45 - Original paragraphText:', quizData.paragraphText);
+        console.log('ID45 - Processed paragraphText:', processedParagraphText45);
+        
         return highlightFillStyleTemplate
-            .replace('{{PARAGRAPH}}', quizData.paragraphText.replace(/'/g, "\\'").replace(/\n/g, ' '))
+            .replace('{{PARAGRAPH}}', processedParagraphText45.replace(/'/g, "\\'").replace(/\n/g, ' '))
             .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords45))
             .replace('{{FIXED_WORDS_EXPLANATION}}', fixedWordsExplanation45)
             .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions45)

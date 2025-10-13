@@ -557,10 +557,12 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
         </div>
         <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
         <input type="hidden" id="fixedWordsExplanation" name="fixedWordsExplanation" value="{{FIXED_WORDS_EXPLANATION}}">
+        <input type="hidden" id="paragraphData" name="paragraphData" value="{{PARAGRAPH}}">
     </div>
     <script>
         (function() {
-            const paragraph = '{{PARAGRAPH}}';
+            const paragraphElement = document.getElementById('paragraphData');
+            const paragraph = paragraphElement ? paragraphElement.value : '';
             // We'll derive correctWords from fixedWordsExplanation instead of using a separate field
             let correctWords = [];
             
@@ -573,12 +575,12 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 console.log('[DEBUG] fixedWordsExplanation element:', fixedWordsInput);
                 
                 // Check if the element exists and get its value
-                const fixedWordsExplanation = fixedWordsInput ? fixedWordsInput.value : '{{FIXED_WORDS_EXPLANATION}}';
+                const fixedWordsExplanation = fixedWordsInput ? fixedWordsInput.value : '';
                 console.log('[DEBUG] Raw fixedWordsExplanation value:', fixedWordsExplanation);
                 console.log('[DEBUG] fixedWordsExplanation type:', typeof fixedWordsExplanation);
                 
                 // Log the template variable directly for comparison
-                console.log('[DEBUG] Template variable: {{FIXED_WORDS_EXPLANATION}}');
+                console.log('[DEBUG] Template variable:', '{{FIXED_WORDS_EXPLANATION}}');
                 
                 // Check if the value is empty or just whitespace
                 if (!fixedWordsExplanation || fixedWordsExplanation.trim() === '') {
@@ -1430,6 +1432,17 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         }
                     }
                 }
+                
+                // Call completion API (like template 63)
+                setTimeout(() => {
+                    try {
+                        const result = grade();
+                        updateCompletionStatus(result);
+                    } catch (error) {
+                        console.error('Error in updateCompletionStatus:', error);
+                    }
+                }, 100);
+                
                 // Send quiz data to parent for popup display (like template 63)
                 try {
                     sendQuizData();
@@ -1524,6 +1537,98 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             
             // Initialize audio player
             const audioPlayer = setupAudioPlayer();
+            
+            // Helper function to get cookies (from template 63)
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            // Function to update completion status (from template 63)
+            function updateCompletionStatus(result) {
+                // Get CSRF token
+                let csrfToken = '';
+                try {
+                    const tokenSources = [
+                        () => document.querySelector('[name=csrfmiddlewaretoken]')?.value,
+                        () => window.parent?.document?.querySelector('[name=csrfmiddlewaretoken]')?.value,
+                        () => getCookie('csrftoken'),
+                        () => document.querySelector('meta[name=csrf-token]')?.getAttribute('content'),
+                        () => window.parent?.document?.querySelector('meta[name=csrf-token]')?.getAttribute('content')
+                    ];
+                    
+                    for (let getToken of tokenSources) {
+                        try {
+                            const token = getToken();
+                            if (token) {
+                                csrfToken = token;
+                                break;
+                            }
+                        } catch (e) {}
+                    }
+                    
+                    if (!csrfToken) {
+                        csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
+                    }
+                } catch (e) {
+                    csrfToken = 'rN400a1rY6H0c7Ex86YaiA9ibJbFmEDf';
+                }
+                
+                // Get block ID from parent URL
+                let blockId = 'block-v1:Manabi+N51+2026+type@vertical+block@aea91ffdf79346a2b9d03f6c570ad186';
+                try {
+                    if (window.parent && window.parent.location) {
+                        const parentUrl = window.parent.location.href;
+                        const blockMatch = parentUrl.match(/block-v1:([^\/\?\&]+)/);
+                        if (blockMatch) {
+                            blockId = blockMatch[0];
+                        }
+                    }
+                } catch (e) {
+                    // Use fallback block ID
+                }
+                
+                // Always mark as complete when user submits
+                const completionStatus = 1.0;
+                
+                // ✅ CALL COMPLETION API
+                fetch('/courseware/mark_block_completion/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        'block_key': blockId,
+                        'completion': completionStatus
+                    })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                })
+                .then(data => {
+                    // Success
+                    console.log('✅ Quiz completion marked successfully');
+                })
+                .catch(error => {
+                    // Error handling
+                    console.error('❌ Error marking quiz completion:', error);
+                });
+            }
             
             // Send quiz data to parent window (only after submission)
             function sendQuizData() {

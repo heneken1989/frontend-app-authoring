@@ -120,16 +120,7 @@ export const getListenWriteAnswerWithImageTemplate = (questionText, correctAnswe
         .replace('{{SCRIPT_TEXT}}', finalScriptText || '')
         .replace('{{CORRECT_ANSWERS}}', JSON.stringify(correctAnswersArray));
 
-    // Handle image file
-    if (imageFile) {
-        template = template
-            .replace('{{#if IMAGE_FILE}}', '')
-            .replace('{{/if}}', '')
-            .replace('{{IMAGE_FILE}}', imageFile);
-    } else {
-        template = template
-            .replace(/{{#if IMAGE_FILE}}[\s\S]*?{{\/if}}/g, '');
-    }
+    // Image file handling removed - no longer needed
     
     return template;
 };
@@ -175,40 +166,43 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         }
         .main-content {
             display: flex;
-            gap: 0;
+            flex-direction: column;
+            gap: 5px;
             height: 100%;
             background-color: white;
             overflow-y: auto;
+            align-items: center;
         }
         .left-section {
-            flex: 1;
+            width: 100%;
+            max-width: 800px;
             background: white;
             overflow-y: auto;
-            height: 100%;
         }
         .right-section {
-            flex: 1;
+            width: 100%;
+            max-width: 800px;
             display: flex;
             flex-direction: column;
             background: white;
             padding-left: 0;
             overflow-y: auto;
-            height: 100%;
         }
         .content-wrapper {
             background: white;
             padding: 0;
             display: flex;
             flex-direction: column;
-            gap: 0;
+            gap: 5px;
             height: 100%;
+            align-items: center;
         }
         .instructions {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: bold;
             line-height: 1.5;
-            text-align: left;
+            text-align: center;
             color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
@@ -217,44 +211,29 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         .instructions:before {
             display: none;
         }
-        .image-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0;
-            margin: 0;
-            overflow: hidden;
-            max-width: 100%;
-        }
-        .quiz-image {
-            max-width: 100%;
-            max-height: 450px;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto;
-        }
         .question-text {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: normal;
             line-height: 1.6;
-            text-align: left;
+            text-align: center;
             color: #333;
             margin: 0;
             position: relative;
-            padding-left: 5px;
+            padding: 10px;
             letter-spacing: 0.4px;
         }
         .question-text:before {
             display: none;
         }
         .audio-container {
-            margin-bottom: 10px;
-            width:90%;
+            margin: 0 auto 10px auto;
+            width: 100%;
+            max-width: 600px;
             background-color: white;
             display: flex;
-            justify-content: flex-start;
+            justify-content: center;
+            align-items: center;
         }
         .custom-audio-player {
             width: 100%;
@@ -270,12 +249,15 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             border: 1px solid #e0e0e0;
         }
         .select-container {
-            margin: 0;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
             gap: 8px;
             padding: 0;
             background: white;
+            width: 100%;
+            max-width: 600px;
+            align-items: flex-start;
         }
         .select-answer-header {
             font-size: 1.2rem;
@@ -503,7 +485,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         .controls-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 5px;
             padding: 3px 0;
         }
         .progress-container {
@@ -603,7 +585,9 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             margin: 5px 0;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 5px;
+            width: 100%;
+            align-items: flex-start;
         }
         .answer-paragraph-container {
             position: fixed;
@@ -719,25 +703,25 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
-                gap: 10px;
+                gap: 15px;
             }
             .left-section,
             .right-section {
-                flex: none;
                 width: 100%;
+                max-width: 100%;
                 padding: 0;
                 margin: 0;
             }
             .content-wrapper {
-                gap: 10px;
+                gap: 15px;
                 padding: 0;
-            }
-            .image-container {
-                padding: 0;
-                margin: 0;
             }
             .select-container {
                 width: 100%;
+                max-width: 100%;
+            }
+            .audio-container {
+                max-width: 100%;
             }
         }
     </style>
@@ -745,51 +729,45 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
 <body>
     <div class="container">
         <div class="main-content">
-            <div class="left-section">
-                <div class="content-wrapper">
-                    <div class="instructions" id="quiz-instructions">
-                        {{INSTRUCTIONS}}
-                    </div>
-                    <div class="question-text">{{QUESTION_TEXT}}</div>
-                    {{#if IMAGE_FILE}}
-                    <div class="image-container">
-                        <img src="{{IMAGE_FILE}}" alt="Quiz illustration" class="quiz-image">
-                    </div>
-                    {{/if}}
+            <div class="content-wrapper">
+                <div class="instructions" id="quiz-instructions">
+                    {{INSTRUCTIONS}}
                 </div>
-            </div>
-            <div class="right-section">
-                <form id="quizForm" onsubmit="return false;">
-                    <div class="audio-container">
-                        <audio id="audio-player" class="audio-player">
-                            <source src="{{AUDIO_FILE}}" type="audio/mpeg">
-                            Your browser does not support the audio element.
-                        </audio>
-                        <div class="custom-audio-player">
-                            <div class="controls-row" style="justify-content: center; align-items: center;">
-                                <div id="player-status" class="player-status" style="margin: 0;">Current Status: Starting in 10s...</div>
-                            </div>
-                            <div class="controls-row">
-                                <div id="progress-container" class="progress-container">
-                                    <div id="progress-bar" class="progress-bar"></div>
-                                </div>
-                            </div>
-                            <div class="divider"></div>
-                            <div class="controls-row">
-                                <div class="volume-control">
-                                    <span class="volume-label">Volume</span>
-                                    <div class="volume-slider-container">
-                                        <div id="volume-level" class="volume-level"></div>
-                                        <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="100" step="1">
-                                    </div>
-                                </div>
+                
+                <div class="audio-container">
+                    <audio id="audio-player" class="audio-player">
+                        <source src="{{AUDIO_FILE}}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <div class="custom-audio-player">
+                        <div class="controls-row" style="justify-content: center; align-items: center;">
+                            <div id="player-status" class="player-status" style="margin: 0;">Current Status: Starting in 10s...</div>
+                        </div>
+                        <div class="controls-row">
+                            <div id="progress-container" class="progress-container">
+                                <div id="progress-bar" class="progress-bar"></div>
                             </div>
                         </div>
-                        <div style="display: none;">
-                            <span id="time-segments">{{TIME_SEGMENTS}}</span>
-                            <span id="script-text-hidden">{{SCRIPT_TEXT}}</span>
+                        <div class="divider"></div>
+                        <div class="controls-row">
+                            <div class="volume-control">
+                                <span class="volume-label">Volume</span>
+                                <div class="volume-slider-container">
+                                    <div id="volume-level" class="volume-level"></div>
+                                    <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="100" step="1">
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <div style="display: none;">
+                        <span id="time-segments">{{TIME_SEGMENTS}}</span>
+                        <span id="script-text-hidden">{{SCRIPT_TEXT}}</span>
+                    </div>
+                </div>
+                
+                <div class="question-text">{{QUESTION_TEXT}}</div>
+                
+                <form id="quizForm" onsubmit="return false;">
                     <div class="select-container">
                         <div class="answers-list">{{ANSWERS_LIST}}</div>
                     </div>

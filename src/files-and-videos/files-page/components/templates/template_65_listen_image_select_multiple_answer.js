@@ -220,7 +220,7 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
         }
         .container {
             position: relative;
-            height: auto;
+            height: 620px;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -234,6 +234,8 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             gap: 150px;
             align-items: flex-start;
             justify-content: center;
+            flex-shrink: 0;
+            max-height: 200px;
         }
         .left-content {
             flex: 0 0 auto;
@@ -274,7 +276,7 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
         }
         .question-text {
             font-size: 1.2rem;
-            padding: 15px 0;
+            padding: 5px 0;
             color: #333;
             font-weight: normal;
             margin: 0;
@@ -315,6 +317,8 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             width: auto;
             overflow: visible;
             align-items: center;
+            flex: 1;
+            min-height: 0;
         }
         .select-answer-header {
             font-size: 1.2rem;
@@ -643,23 +647,25 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             white-space: nowrap;
             width: 100%;
             position: relative;
-            padding: 5px 0;
+            padding: 0px 0;
         }
         .answer-item .custom-dropdown {
             vertical-align: middle;
             display: inline-block;
         }
         .answers-list {
-            padding: 5px;
+            padding: 0px;
             background: white;
             border-radius: 2px;
             margin: 5px auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 1px;
             overflow: visible;
             align-items: flex-start;
             width: auto;
+            flex: 1;
+            justify-content: flex-start;
         }
         @media (max-width: 1024px) {
             .select-container {

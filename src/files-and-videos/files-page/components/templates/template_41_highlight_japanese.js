@@ -28,15 +28,20 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
         .paragraph {
             background-color: #f8f8f8;
             padding: 1.0rem 1.0rem 0.5rem 0.5rem;
-            margin-bottom: 0.5rem;
+            margin: 0 auto 0.5rem auto;
             font-size: 1.2rem;
             line-height: 2.0;
             position: relative;
             z-index: 1;
-            white-space: nowrap;
+            white-space: normal;
             overflow-x: auto;
             min-height: 4.0rem;
-            text-align: center;
+            text-align: left;
+            max-width: 80%;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+            position: relative;
         }
         .instructions {
             background-color: #f5f9fc;
@@ -335,18 +340,19 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
         }
         .student-correct {
             display: inline-block;
-            background-color: #ecf3ec;
-            color: #2e7d32;
+            background-color: #4caf50;
+            color: white;
             padding: 1.2em 0.3rem 0.1em 0.3rem;
-            border-radius: 2px;
-            font-weight: normal;
+            border-radius: 4px;
+            font-weight: bold;
             margin: 0 2px;
-            border: 1px solid #c5e0c5;
+            border: 2px solid #2e7d32;
             vertical-align: baseline;
             line-height: 1;
             position: relative;
             box-sizing: border-box;
             text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .student-correct.no-furigana {
             padding: 0.3em 0.3rem;
@@ -358,18 +364,19 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
         }
         .student-incorrect {
             display: inline-block;
-            background-color: #f9ecec;
-            color: #b40000;
+            background-color: #f44336;
+            color: white;
             padding: 1.2em 0.3rem 0.1em 0.3rem;
-            border-radius: 2px;
-            font-weight: normal;
+            border-radius: 4px;
+            font-weight: bold;
             margin: 0 2px;
-            border: 1px solid #ebccd1;
+            border: 2px solid #d32f2f;
             vertical-align: baseline;
             line-height: 1;
             position: relative;
             box-sizing: border-box;
             text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .student-incorrect.no-furigana {
             padding: 0.3em 0.3rem;
@@ -381,18 +388,19 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
         }
         .student-missed {
             display: inline-block;
-            background-color: #f9ecec;
-            color: #b40000;
+            background-color: #ff9800;
+            color: white;
             padding: 1.2em 0.3rem 0.1em 0.3rem;
-            border-radius: 2px;
-            font-weight: normal;
+            border-radius: 4px;
+            font-weight: bold;
             margin: 0 2px;
-            border: 1px solid #ebccd1;
+            border: 2px solid #f57c00;
             vertical-align: baseline;
             line-height: 1;
             position: relative;
             box-sizing: border-box;
             text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .student-missed.no-furigana {
             padding: 0.3em 0.3rem;
@@ -432,26 +440,48 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             width: auto;
             z-index: auto;
         }
-        /* Furigana styling - Force above kanji */
+        /* Furigana styling - Force above kanji for all browsers */
         ruby { 
             font-size: 1.2rem !important;
-            display: inline;
-            line-height: 1;
-            vertical-align: baseline;
-            position: relative;
+            display: inline !important;
+            line-height: 1 !important;
+            vertical-align: baseline !important;
+            position: relative !important;
         }
         rt { 
             font-size: 0.5rem !important; 
-            color: #666;
-            line-height: 1;
-            display: block;
-            text-align: center;
-            position: absolute;
-            top: -0.8em;
-            left: 0;
-            right: 0;
-            width: 100%;
-            z-index: 5;
+            color: #666 !important;
+            line-height: 1 !important;
+            display: block !important;
+            text-align: center !important;
+            position: absolute !important;
+            top: -0.8em !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            z-index: 5 !important;
+        }
+        /* Safari-specific furigana fix */
+        @media not all and (min-resolution:.001dpcm) {
+          @supports (-webkit-appearance:none) {
+            rt {
+              position: absolute !important;
+              top: -1.2em !important;
+              transform: translateY(0) !important;
+            }
+            .quiz-word rt {
+              position: absolute !important;
+              top: -1.2em !important;
+              transform: translateY(0) !important;
+            }
+            .student-correct rt,
+            .student-incorrect rt,
+            .student-missed rt {
+              position: absolute !important;
+              top: -1.2em !important;
+              transform: translateY(0) !important;
+            }
+          }
         }
         .quiz-word ruby {
             vertical-align: baseline;
@@ -732,8 +762,12 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             }
 
             function splitWords(text) {
+                // First, replace BREAK with a special separator to ensure it's split properly
+                const textWithSeparators = text.replace(/BREAK/g, ' |||BREAK||| ');
                 // Split on both standard and full-width spaces
-                return text.split(/[\u0020\u3000]+/).filter(Boolean);
+                const words = textWithSeparators.split(/[\u0020\u3000]+/).filter(Boolean);
+                // Convert |||BREAK||| back to BREAK
+                return words.map(word => word === '|||BREAK|||' ? 'BREAK' : word);
             }
 
             function renderParagraph() {
@@ -799,7 +833,16 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 // Reset word counts for rendering
                 const renderWordCounts = {};
                 
+                let spanIndex = 0; // Track actual span index for styling
+                
                 words.forEach((word, idx) => {
+                    // Check if this is a line break marker
+                    if (word === 'BREAK') {
+                        const br = document.createElement('br');
+                        container.appendChild(br);
+                        return;
+                    }
+                    
                     const span = document.createElement('span');
                     span.className = 'quiz-word';
                     
@@ -828,21 +871,29 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         }
                         
                         // Debug: Log all relevant information
-                        console.log('[DEBUG] Word at idx', idx, ':', word, 'norm:', norm);
+                        console.log('[DEBUG] Word at idx', idx, 'spanIndex', spanIndex, ':', word, 'norm:', norm);
                         console.log('[DEBUG] highlightedWords[idx]:', highlightedWords[idx]);
                         console.log('[DEBUG] selectedWords.includes(idx):', selectedWords.includes(idx));
                         console.log('[DEBUG] showAnswer:', showAnswer);
                         
                         // Check if this word is a correct answer (regardless of user selection)
                         if (correctWords.includes(norm)) {
-                            console.log('[DEBUG] Processing correct word at idx', idx, ':', word);
+                            console.log('[DEBUG] Processing correct word at idx', idx, 'spanIndex', spanIndex, ':', word);
                             
                             // Get the correct answer
                             let correctAnswer = word;
+                            console.log('[DEBUG] Checking indexed mapping for word:', word, 'norm:', norm, 'count:', renderWordCounts[norm]);
+                            console.log('[DEBUG] indexedFixedWordsMap[norm]:', indexedFixedWordsMap[norm]);
+                            console.log('[DEBUG] fixedWordsMap[norm]:', fixedWordsMap[norm]);
+                            
                             if (indexedFixedWordsMap[norm] && indexedFixedWordsMap[norm][renderWordCounts[norm]] !== undefined) {
                                 correctAnswer = indexedFixedWordsMap[norm][renderWordCounts[norm]];
+                                console.log('[DEBUG] Using indexed mapping:', correctAnswer);
                             } else if (fixedWordsMap[norm]) {
                                 correctAnswer = fixedWordsMap[norm];
+                                console.log('[DEBUG] Using simple mapping:', correctAnswer);
+                            } else {
+                                console.log('[DEBUG] No mapping found, using original word:', correctAnswer);
                             }
                             
                             // Apply furigana to correct answer too
@@ -851,10 +902,10 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                             console.log('[DEBUG] Correct answer for', word, ':', correctAnswer);
                             console.log('[DEBUG] Selected words includes idx', idx, ':', selectedWords.includes(idx));
                             
-                            // Apply styling based on user's selection
-                            if (selectedWords.includes(idx)) {
-                                // User selected correctly - show in green
-                                console.log('[DEBUG] Applying student-correct styling');
+                            // Apply styling based on whether this word should be highlighted
+                            if (highlightedWords[idx]) {
+                                // This word should be highlighted - show in green
+                                console.log('[DEBUG] Applying student-correct styling for highlighted word');
                                 span.classList.remove('selected', 'wrong');
                                 span.classList.add('student-correct');
                                 if (hasFurigana) {
@@ -863,9 +914,20 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                                     span.classList.add('no-furigana');
                                 }
                                 span.innerHTML = wordWithFurigana;
+                            } else if (selectedWords.includes(idx)) {
+                                // User selected this word but it shouldn't be highlighted - show as incorrect
+                                console.log('[DEBUG] User selected word that should not be highlighted - showing as incorrect');
+                                span.classList.remove('selected', 'wrong');
+                                span.classList.add('student-incorrect');
+                                if (hasFurigana) {
+                                    span.classList.add('with-furigana');
+                                } else {
+                                    span.classList.add('no-furigana');
+                                }
+                                span.innerHTML = wordWithFurigana;
                             } else {
-                                // User missed this word - show as normal (no highlighting)
-                                console.log('[DEBUG] User missed word, showing as normal');
+                                // This word should not be highlighted and user didn't select it - show as normal
+                                console.log('[DEBUG] Word should not be highlighted and not selected, showing as normal');
                                 span.classList.remove('selected', 'wrong', 'student-correct', 'student-incorrect');
                                 if (hasFurigana) {
                                     span.classList.add('with-furigana');
@@ -898,8 +960,13 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         if (selectedWords.includes(idx)) {
                             const norm = normalize(word);
                             if (!correctWords.includes(norm)) {
-                                span.classList.add('wrong');
+                                span.classList.add('student-incorrect');
+                            } else {
+                                span.classList.add('student-correct');
                             }
+                        } else {
+                            // Reset any existing styling for non-selected words
+                            span.classList.remove('student-correct', 'student-incorrect', 'student-missed', 'wrong');
                         }
                         // Normal mode - just show the word with furigana
                         span.innerHTML = wordWithFurigana;
@@ -918,6 +985,7 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                     
                     container.appendChild(span);
                     container.appendChild(document.createTextNode(' '));
+                    spanIndex++; // Increment span index for each actual span created
                 });
                 
                 
@@ -1386,30 +1454,41 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         const spans = document.querySelectorAll('.quiz-word');
                         console.log('[DEBUG] Found spans:', spans.length);
                         
+                        // Create a mapping from span index to word index
+                        let wordIndex = 0;
+                        const spanToWordMap = [];
+                        words.forEach((word, idx) => {
+                            if (word !== 'BREAK') {
+                                spanToWordMap.push(idx);
+                                wordIndex++;
+                            }
+                        });
+                        
                         spans.forEach((span, spanIdx) => {
-                            if (selectedWords.includes(spanIdx)) {
-                                const word = words[spanIdx];
+                            const wordIdx = spanToWordMap[spanIdx];
+                            if (wordIdx !== undefined && selectedWords.includes(wordIdx)) {
+                                const word = words[wordIdx];
                                 const norm = normalize(word);
-                                console.log('[DEBUG] Checking span', spanIdx, 'word:', word, 'normalized:', norm);
+                                console.log('[DEBUG] Checking span', spanIdx, 'wordIdx', wordIdx, 'word:', word, 'normalized:', norm);
                                 
                                 if (!correctWords.includes(norm)) {
-                                    console.log('[DEBUG] Marking word as wrong:', word, 'at span index:', spanIdx);
+                                    console.log('[DEBUG] Marking word as wrong:', word, 'at word index:', wordIdx);
                                     
                                     // Remove any existing styling classes
-                                    span.classList.remove('student-correct', 'student-incorrect', 'student-missed');
-                                    span.classList.add('wrong');
+                                    span.classList.remove('student-correct', 'student-incorrect', 'student-missed', 'wrong');
+                                    span.classList.add('student-incorrect');
                                     
-                                    // Apply wrong styling directly
-                                    span.style.backgroundColor = '#f9ecec';
-                                    span.style.color = '#b40000';
-                                    span.style.border = '0.5px solid #b40000';
-                                    
-                                    console.log('[DEBUG] Added wrong class to span:', span);
+                                    console.log('[DEBUG] Added student-incorrect class to span:', span);
                                     console.log('[DEBUG] Span classes after:', span.className);
-                                    console.log('[DEBUG] Span styles after:', span.style.cssText);
                                 } else {
                                     console.log('[DEBUG] Word is correct:', word);
                                 }
+                            } else {
+                                // Reset any wrong styling for non-selected words
+                                span.classList.remove('student-correct', 'student-incorrect', 'student-missed', 'wrong');
+                                span.style.backgroundColor = '';
+                                span.style.color = '';
+                                span.style.border = '';
                             }
                         });
                         

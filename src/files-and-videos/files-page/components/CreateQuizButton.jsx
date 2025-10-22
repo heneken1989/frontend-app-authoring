@@ -63,10 +63,13 @@ const convertFurigana = (text) => {
 const addSpacesAfterSpecialChars = (text) => {
   if (!text || typeof text !== "string") return text;
   
+  // First, replace line breaks with BREAK marker to preserve them
+  const textWithLineBreakMarkers = text.replace(/\n/g, 'BREAK');
+  
   // Add space before and after punctuation marks and special characters
   // This helps preserve spacing when text is split by spaces
   // Note: Both () and （） are excluded because they are used for furigana
-  return text
+  const processedText = textWithLineBreakMarkers
     // Add space before and after Japanese punctuation marks
     .replace(/([。、！？；：])/g, ' $1 ')
     // Add space before and after brackets (but not parentheses () or （） for furigana)
@@ -79,9 +82,12 @@ const addSpacesAfterSpecialChars = (text) => {
     .replace(/([—–-])/g, ' $1 ')
     // Add space before and after other common punctuation
     .replace(/([：；！？])/g, ' $1 ')
-    // Clean up multiple spaces
-    .replace(/\s+/g, ' ')
+    // Clean up multiple spaces (but preserve BREAK markers)
+    .replace(/(?<!BREAK)\s+(?!BREAK)/g, ' ')
     .trim();
+  
+  // Keep BREAK markers for template processing
+  return processedText;
 };
 
 
@@ -841,10 +847,10 @@ const generateQuizTemplate = (templateId, quizData) => {
         // Process paragraphText to add spaces after special characters for better word splitting
         const processedParagraphText41 = addSpacesAfterSpecialChars(quizData.paragraphText);
         console.log('Original paragraphText:', quizData.paragraphText);
-        console.log('Processed paragraphText:', processedParagraphText41);
+        console.log('Processed paragraphText with BREAK markers:', processedParagraphText41);
         
         return highlightFillStyleTemplate
-            .replace('{{PARAGRAPH}}', processedParagraphText41.replace(/'/g, "\\'").replace(/\n/g, ' '))
+            .replace('{{PARAGRAPH}}', processedParagraphText41.replace(/'/g, "\\'"))
             .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords))
             .replace('{{FIXED_WORDS_EXPLANATION}}', fixedWordsExplanation)
             .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions)
@@ -879,10 +885,10 @@ const generateQuizTemplate = (templateId, quizData) => {
         // Process paragraphText to add spaces after special characters for better word splitting
         const processedParagraphText45 = addSpacesAfterSpecialChars(quizData.paragraphText);
         console.log('ID45 - Original paragraphText:', quizData.paragraphText);
-        console.log('ID45 - Processed paragraphText:', processedParagraphText45);
+        console.log('ID45 - Processed paragraphText with BREAK markers:', processedParagraphText45);
         
         return highlightFillStyleTemplate
-            .replace('{{PARAGRAPH}}', processedParagraphText45.replace(/'/g, "\\'").replace(/\n/g, ' '))
+            .replace('{{PARAGRAPH}}', processedParagraphText45.replace(/'/g, "\\'"))
             .replace('{{CORRECT_WORDS}}', JSON.stringify(correctWords45))
             .replace('{{FIXED_WORDS_EXPLANATION}}', fixedWordsExplanation45)
             .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions45)

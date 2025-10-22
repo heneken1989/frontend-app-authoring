@@ -438,13 +438,14 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             line-height: 1.6;
             text-align: left;
             color: #fff; 
-            padding: 4px 8px; 
+            padding: 2px 6px; 
             border-radius: 4px; 
             background-color: #4caf50; 
             display: inline-block; 
-            margin: 2px 4px 2px 0;
+            margin: 0 2px;
             letter-spacing: 0.4px;
             white-space: nowrap;
+            vertical-align: baseline;
         }
         .correct-answer rt { color: #fff !important; }
         .wrong-answer { 
@@ -454,18 +455,19 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             line-height: 1.6;
             text-align: left;
             color: #fff; 
-            padding: 4px 8px; 
+            padding: 2px 6px; 
             border-radius: 4px; 
             background-color: #f44336; 
             display: inline-block; 
-            margin: 2px 4px 2px 0;
+            margin: 0 2px;
             letter-spacing: 0.4px;
             white-space: nowrap;
+            vertical-align: baseline;
         }
         .wrong-answer rt { color: #fff !important; }
         .answer-replacement { 
             display: inline-block; 
-            vertical-align: middle;
+            vertical-align: baseline;
         }
         /* Keep rest of the existing styles */
         .player-status {
@@ -810,6 +812,10 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         }
         
     (function() {
+        console.log('🚀 Template 67 - Initializing...');
+        console.log('🚀 Template 67 - Window location:', window.location.href);
+        console.log('🚀 Template 67 - Window parent:', window.parent);
+        
         var state = {
             answer: '',
             score: 0,
@@ -820,39 +826,137 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         const correctAnswers = JSON.parse('{{CORRECT_ANSWERS}}');
         let selectedAnswers = new Array(correctAnswers.length).fill('');
         
-        function calculateResults() {
-            const totalQuestions = document.querySelectorAll('.answer-input').length;
-            let correctCount = 0;
-            const answers = {};
+        // Function to normalize text for flexible comparison (handles full-width/half-width)
+    function normalizeText(text) {
+        if (!text) return '';
+        
+        return text
+            .trim() // Remove leading/trailing spaces
+            .toLowerCase() // Convert to lowercase
+            .replace(/[！]/g, '!') // Full-width exclamation to half-width
+            .replace(/[？]/g, '?') // Full-width question to half-width
+            .replace(/[，]/g, ',') // Full-width comma to half-width
+            .replace(/[。]/g, '.') // Full-width period to half-width
+            .replace(/[：]/g, ':') // Full-width colon to half-width
+            .replace(/[；]/g, ';') // Full-width semicolon to half-width
+            .replace(/[（]/g, '(') // Full-width parentheses to half-width
+            .replace(/[）]/g, ')') // Full-width parentheses to half-width
+            .replace(/[「]/g, '"') // Full-width quotes to half-width
+            .replace(/[」]/g, '"') // Full-width quotes to half-width
+            .replace(/[『]/g, "'") // Full-width single quotes to half-width
+            .replace(/[』]/g, "'") // Full-width single quotes to half-width
+            .replace(/[～]/g, '~') // Full-width tilde to half-width
+            .replace(/[－]/g, '-') // Full-width dash to half-width
+            .replace(/[０-９]/g, function(match) {
+                return String.fromCharCode(match.charCodeAt(0) - 0xFF10 + 0x30);
+            }) // Full-width numbers to half-width
+            .replace(/[Ａ-Ｚ]/g, function(match) {
+                return String.fromCharCode(match.charCodeAt(0) - 0xFF21 + 0x41);
+            }) // Full-width uppercase letters to half-width
+            .replace(/[ａ-ｚ]/g, function(match) {
+                return String.fromCharCode(match.charCodeAt(0) - 0xFF41 + 0x61);
+            }) // Full-width lowercase letters to half-width
+            .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
+            .replace(/[\u3000]/g, ' '); // Full-width space to half-width space
+    }
+        
+        // Function to check if user answer matches any correct answer (flexible comparison)
+        function isAnswerCorrect(userAnswer, correctAnswers) {
+            if (!userAnswer || !correctAnswers || correctAnswers.length === 0) return false;
             
-            document.querySelectorAll('.answer-input').forEach((input, index) => {
-                const userAnswer = input.value.trim();
-                const correctAnswersForBlank = JSON.parse(input.getAttribute('data-correct'));
-                selectedAnswers[index] = userAnswer;
-                
-                // Check if user answer matches any of the correct answers (case insensitive)
-                const isCorrect = correctAnswersForBlank.some(correctAnswer => 
-                    correctAnswer.toLowerCase() === userAnswer.toLowerCase()
-                );
-                
-                if (isCorrect) correctCount++;
-                answers[index] = userAnswer;
+            const normalizedUserAnswer = normalizeText(userAnswer);
+            
+            return correctAnswers.some(correctAnswer => {
+                const normalizedCorrectAnswer = normalizeText(correctAnswer);
+                return normalizedCorrectAnswer === normalizedUserAnswer;
             });
+        }
+        
+        // Store total questions from parent
+        let actualTotalQuestions = 0; // Default value
 
-            const rawScore = totalQuestions > 0 ? correctCount / totalQuestions : 0;
-            const message = correctCount === totalQuestions ? '正解です！' : '不正解です。';
+        // Listen for quiz.config message from parent
+        window.addEventListener('message', function(event) {
+            try {
+                console.log('📨 [Template] Received message:', event.data);
+                
+                if (event.data && event.data.type === 'quiz.config') {
+                    console.log('📊 [Template] Received quiz config:', event.data);
+                    if (event.data.data && typeof event.data.data.totalQuestions === 'number') {
+                        actualTotalQuestions = event.data.data.totalQuestions;
+                        console.log('📊 [Template] Updated total questions to:', actualTotalQuestions);
+                        
+                        // Log current state after update
+                        console.log('📊 [Template] Current quiz state:', {
+                            actualTotalQuestions,
+                            answeredQuestions: document.querySelectorAll('.answer-input').length,
+                            selectedAnswers: selectedAnswers || []
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error handling message:', error);
+            }
+        });
 
-            state.answer = JSON.stringify(answers);
-            state.score = rawScore;
-            state.attempts += 1;
+        function calculateResults() {
+            try {
+                console.log('📊 [Template] Starting calculateResults...');
+                console.log('📊 [Template] Current actualTotalQuestions:', actualTotalQuestions);
+                
+                const answeredQuestions = document.querySelectorAll('.answer-input').length;
+                let correctCount = 0;
+                const answers = {};
+                
+                document.querySelectorAll('.answer-input').forEach((input, index) => {
+                    try {
+                        const userAnswer = input.value.trim();
+                        const correctAnswersForBlank = JSON.parse(input.getAttribute('data-correct') || '[]');
+                        selectedAnswers[index] = userAnswer;
+                        
+                        // Check if user answer matches any of the correct answers (flexible comparison)
+                        const isCorrect = isAnswerCorrect(userAnswer, correctAnswersForBlank);
+                        
+                        if (isCorrect) correctCount++;
+                        answers[index] = userAnswer;
+                    } catch (error) {
+                        console.error('Error processing input:', error);
+                    }
+                });
 
-            return {
-                rawScore,
-                message,
-                answers,
-                correctCount,
-                totalQuestions
-            };
+                console.log('📊 [Template] Quiz results calculation:', {
+                    actualTotalQuestions,
+                    answeredQuestions,
+                    correctCount,
+                    answers
+                });
+
+                const rawScore = actualTotalQuestions > 0 ? correctCount / actualTotalQuestions : 0;
+                const message = correctCount === actualTotalQuestions ? '正解です！' : '不正解です。';
+
+                state.answer = JSON.stringify(answers);
+                state.score = rawScore;
+                state.attempts += 1;
+
+                return {
+                    rawScore,
+                    message,
+                    answers,
+                    correctCount,
+                    totalQuestions: actualTotalQuestions,
+                    answeredQuestions: document.querySelectorAll('.answer-input').length
+                };
+            } catch (error) {
+                console.error('Error calculating results:', error);
+                return {
+                    rawScore: 0,
+                    message: 'エラーが発生しました。',
+                    answers: {},
+                    correctCount: 0,
+                    totalQuestions: actualTotalQuestions,
+                    answeredQuestions: 0
+                };
+            }
         }
 
         function updateDisplay(result) {
@@ -860,81 +964,104 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             const answerContainer = document.getElementById('answer-paragraph-container');
             const scoreDisplay = document.getElementById('score-display');
             
-            scoreDisplay.textContent = result.message;
+            console.log('📊 Updating display with result:', result);
+            
+            // Show score and answered questions count
+            const answeredText = result.answeredQuestions === result.totalQuestions 
+                ? '全問回答済み (' + result.answeredQuestions + '/' + result.totalQuestions + ')'
+                : result.answeredQuestions + '/' + result.totalQuestions + ' 問回答済み';
+            
+            scoreDisplay.textContent = result.message + ' ' + answeredText;
             
             if (state.showAnswer) {
-                // Replace text inputs with text display in the answers list (like template 63)
+            try {
+                // Replace text inputs with text display in the answers list
                 const inputs = document.querySelectorAll('.answer-input');
                 for (let i = 0; i < inputs.length; i++) {
-                    const input = inputs[i];
-                    const userAnswer = selectedAnswers[i];
-                    const correctAnswersForBlank = JSON.parse(input.getAttribute('data-correct'));
-                    
-                    // Check if user answer is correct (case insensitive)
-                    const isCorrect = correctAnswersForBlank.some(correctAnswer => 
-                        correctAnswer.toLowerCase() === userAnswer.toLowerCase()
-                    );
-                    
-                    const replacementSpan = document.createElement('span');
-                    replacementSpan.className = 'answer-replacement';
-                    replacementSpan.setAttribute('data-correct', input.getAttribute('data-correct'));
-                    
-                    if (userAnswer) {
-                        if (isCorrect) {
-                            replacementSpan.innerHTML = '<span class="correct-answer">' + userAnswer + '</span>';
+                    try {
+                        const input = inputs[i];
+                        const userAnswer = selectedAnswers[i];
+                        const correctAnswersForBlank = JSON.parse(input.getAttribute('data-correct') || '[]');
+                        
+                        // Check if user answer is correct (flexible comparison)
+                        const isCorrect = isAnswerCorrect(userAnswer, correctAnswersForBlank);
+                        
+                        const replacementSpan = document.createElement('span');
+                        replacementSpan.className = 'answer-replacement';
+                        replacementSpan.setAttribute('data-correct', input.getAttribute('data-correct') || '[]');
+                        
+                        if (userAnswer) {
+                            if (isCorrect) {
+                                replacementSpan.innerHTML = '<span class="correct-answer">' + userAnswer + '</span>';
+                            } else {
+                                // Show all correct answers separated by /
+                                const correctAnswersDisplay = correctAnswersForBlank.join(' / ');
+                                replacementSpan.innerHTML = '<span class="wrong-answer">' + userAnswer + '</span> <span class="correct-answer">' + correctAnswersDisplay + '</span>';
+                            }
                         } else {
                             // Show all correct answers separated by /
                             const correctAnswersDisplay = correctAnswersForBlank.join(' / ');
-                            replacementSpan.innerHTML = '<span class="wrong-answer">' + userAnswer + '</span> <span class="correct-answer">' + correctAnswersDisplay + '</span>';
+                            replacementSpan.innerHTML = '<span class="wrong-answer">未回答</span> <span class="correct-answer">' + correctAnswersDisplay + '</span>';
                         }
-                    } else {
-                        // Show all correct answers separated by /
-                        const correctAnswersDisplay = correctAnswersForBlank.join(' / ');
-                        replacementSpan.innerHTML = '<span class="wrong-answer">未回答</span> <span class="correct-answer">' + correctAnswersDisplay + '</span>';
+                        
+                        // Replace the input with the text display
+                        if (input.parentNode) {
+                            input.parentNode.replaceChild(replacementSpan, input);
+                        }
+                    } catch (error) {
+                        console.error('Error processing input:', error);
                     }
-                    
-                    // Replace the input with the text display
-                    input.parentNode.replaceChild(replacementSpan, input);
                 }
+            } catch (error) {
+                console.error('Error replacing inputs:', error);
+            }
             }
             
-            // Also update the popup display
-            let answerHtml = '';
-            document.querySelectorAll('.answer-input, .answer-replacement').forEach((element, index) => {
-                const number = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'][index];
-                const userAnswer = selectedAnswers[index];
-                const correctAnswersForBlank = JSON.parse(element.getAttribute('data-correct') || '[]');
+            try {
+                // Also update the popup display
+                let answerHtml = '';
+                const numbers = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
                 
-                // Check if user answer is correct (case insensitive)
-                const isCorrect = correctAnswersForBlank.some(correctAnswer => 
-                    correctAnswer.toLowerCase() === userAnswer.toLowerCase()
-                );
-                
-                answerHtml += '<div class="answer-item-result">' + number + ' ';
-                
-                if (userAnswer) {
-                    if (isCorrect) {
-                        answerHtml += '<span class="correct-answer">' + userAnswer + '</span> ✓';
-                    } else {
-                        // Show all correct answers separated by /
-                        const correctAnswersDisplay = correctAnswersForBlank.join(' / ');
-                        answerHtml += '<span class="wrong-answer">' + userAnswer + '</span> → ' +
-                                     '<span class="correct-answer">' + correctAnswersDisplay + '</span> ✗';
+                document.querySelectorAll('.answer-input, .answer-replacement').forEach((element, index) => {
+                    try {
+                        const number = numbers[index] || (index + 1).toString() + '.';
+                        const userAnswer = selectedAnswers[index];
+                        const correctAnswersForBlank = JSON.parse(element.getAttribute('data-correct') || '[]');
+                        
+                        // Check if user answer is correct (flexible comparison)
+                        const isCorrect = isAnswerCorrect(userAnswer, correctAnswersForBlank);
+                        
+                        answerHtml += '<div class="answer-item-result">' + number + ' ';
+                        
+                        if (userAnswer) {
+                            if (isCorrect) {
+                                answerHtml += '<span class="correct-answer">' + userAnswer + '</span> ✓';
+                            } else {
+                                // Show all correct answers separated by /
+                                const correctAnswersDisplay = correctAnswersForBlank.join(' / ');
+                                answerHtml += '<span class="wrong-answer">' + userAnswer + '</span> → ' +
+                                             '<span class="correct-answer">' + correctAnswersDisplay + '</span> ✗';
+                            }
+                        } else {
+                            // Show all correct answers separated by /
+                            const correctAnswersDisplay = correctAnswersForBlank.join(' / ');
+                            answerHtml += '<span class="no-answer">未回答</span> → ' +
+                                         '<span class="correct-answer">' + correctAnswersDisplay + '</span>';
+                        }
+                        
+                        answerHtml += '</div>';
+                    } catch (error) {
+                        console.error('Error processing answer item:', error);
                     }
-                } else {
-                    // Show all correct answers separated by /
-                    const correctAnswersDisplay = correctAnswersForBlank.join(' / ');
-                    answerHtml += '<span class="no-answer">未回答</span> → ' +
-                                 '<span class="correct-answer">' + correctAnswersDisplay + '</span>';
-                }
+                });
+            
+                answerParagraph.innerHTML = answerHtml;
                 
-                answerHtml += '</div>';
-            });
-            
-            answerParagraph.innerHTML = answerHtml;
-            
-            // Don't show answer container automatically - only when ShowScript is clicked (like template 63)
-            answerContainer.style.display = 'none';
+                // Don't show answer container automatically - only when ShowScript is clicked
+                answerContainer.style.display = 'none';
+            } catch (error) {
+                console.error('Error updating popup display:', error);
+            }
         }
 
         // Function to auto-resize input based on content
@@ -976,7 +1103,10 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
 
         // Listen for messages from parent (Check button and ShowScript button)
         window.addEventListener('message', function(event) {
-            console.log('🔄 Received message:', event.data);
+            console.log('🔄 Template 67 - Received message:', event.data);
+            console.log('🔄 Template 67 - Message type:', event.data?.type);
+            console.log('🔄 Template 67 - Message source:', event.source);
+            console.log('🔄 Template 67 - Window parent:', window.parent);
             
             // Handle JSChannel messages (from EdX)
             if (event.data && event.data.method === 'JSInput::getGrade') {
@@ -1018,6 +1148,25 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 console.log('🔄 Processing show.script - displaying script popup');
                 showScriptPopup();
             }
+            
+            // Handle get answers request
+            if (event.data && event.data.type === 'quiz.get_answers') {
+                console.log('🔄 [Template] Processing quiz.get_answers - sending answers');
+                console.log('🔄 [Template] Message source:', event.source);
+                console.log('🔄 [Template] Message origin:', event.origin);
+                saveQuizResults(); // This will collect and send answers
+            } else if (event.data && event.data.type === 'ping') {
+                console.log('🏓 Template 67 - Received ping, responding with pong');
+                console.log('🏓 Template 67 - Ping data:', event.data.data);
+                // Respond with pong
+                if (window.parent) {
+                    window.parent.postMessage({
+                        type: 'pong',
+                        data: { message: 'Template 67 is ready!', timestamp: new Date().toISOString() }
+                    }, '*');
+                    console.log('🏓 Template 67 - Pong sent to parent');
+                }
+            }
         });
 
         function showScriptPopup() {
@@ -1027,6 +1176,41 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             const answerContainer = document.getElementById('answer-paragraph-container');
             if (answerContainer) {
                 answerContainer.style.display = 'block';
+            }
+        }
+
+        function saveQuizResults() {
+            console.log('💾 [Template] Calculating quiz results...');
+            
+            // Get all answers
+            const answers = [];
+            document.querySelectorAll('.answer-input').forEach((input, index) => {
+                try {
+                    const userAnswer = input.value.trim();
+                    const correctAnswersForBlank = JSON.parse(input.getAttribute('data-correct') || '[]');
+                    
+                    answers.push({
+                        userAnswer,
+                        isCorrect: isAnswerCorrect(userAnswer, correctAnswersForBlank)
+                    });
+                } catch (error) {
+                    console.error('Error processing input:', error);
+                }
+            });
+            
+            console.log('📊 [Template] User answers:', answers);
+            
+            // Send only user answers to parent
+            if (window.parent) {
+                console.log('📤 [Template] Sending answers to parent:', answers);
+                console.log('📤 [Template] Parent window:', window.parent);
+                
+                window.parent.postMessage({
+                    type: 'quiz.answers',
+                    answers: answers // Array of {userAnswer, isCorrect}
+                }, '*');
+                
+                console.log('📤 [Template] Answers sent successfully');
             }
         }
 
@@ -1152,7 +1336,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             // Return data to EdX (prevent reload)
             try {
                 const returnValue = {
-                    edxResult: None,
+                    edxResult: null,
                     edxScore: result.rawScore,
                     edxMessage: result.message
                 };
@@ -1161,7 +1345,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             } catch (error) {
                 console.error('Error in return value:', error);
                 return JSON.stringify({
-                    edxResult: None,
+                    edxResult: null,
                     edxScore: 0,
                     edxMessage: 'Error occurred'
                 });

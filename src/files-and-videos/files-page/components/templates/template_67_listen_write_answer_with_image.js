@@ -12,13 +12,6 @@ function convertFurigana(text) {
 }
 
 export const getListenWriteAnswerWithImageTemplate = (questionText, correctAnswers, audioFile, timeSegmentsString = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
-    // Log the incoming parameters to help debug
-    console.log('getListenWriteAnswerWithImageTemplate called with:', {
-        questionText,
-        correctAnswers,
-        answerContent,
-        blankOptions
-    });
     
     // Parse the correct answers from blankOptions
     // Format: "10:30〜5:00;月/げつ" - each blank separated by semicolon, multiple answers for one blank separated by /
@@ -29,8 +22,6 @@ export const getListenWriteAnswerWithImageTemplate = (questionText, correctAnswe
             return answers;
         });
     }
-    
-    console.log('🔍 Parsed correct answers:', correctAnswersArray);
     
     // Process the question text (only for display, not for answers)
     const processedLines = questionText.split('\n').map(line => line.trim()).filter(line => line);
@@ -88,25 +79,18 @@ export const getListenWriteAnswerWithImageTemplate = (questionText, correctAnswe
     }
 
     // Process script text to highlight quoted text in red and convert furigana (like template 29)
-    console.log('🔍 Original scriptText:', scriptText);
     
     // First, handle newlines and normalize the text
     const normalizedScriptText = scriptText
         .replace(/\n/g, '<br>')  // Convert newlines to HTML breaks
         .replace(/\r/g, '');     // Remove carriage returns
     
-    console.log('🔍 Normalized scriptText:', normalizedScriptText);
-    
     // Then process quotes for highlighting
     const processedScriptText = normalizedScriptText
         .replace(/"([^"]+)"/g, '<span class="script-highlight">$1</span>');
     
-    console.log('🔍 Processed scriptText:', processedScriptText);
-    
     // Convert furigana
     const finalScriptText = convertFurigana(processedScriptText);
-    
-    console.log('🔍 Final scriptText with furigana:', finalScriptText);
     
     // Extract the first line as the question text and apply furigana
     const firstLine = convertFurigana(processedLines[0] || questionText);
@@ -812,9 +796,6 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         }
         
     (function() {
-        console.log('🚀 Template 67 - Initializing...');
-        console.log('🚀 Template 67 - Window location:', window.location.href);
-        console.log('🚀 Template 67 - Window parent:', window.parent);
         
         var state = {
             answer: '',
@@ -878,20 +859,9 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         // Listen for quiz.config message from parent
         window.addEventListener('message', function(event) {
             try {
-                console.log('📨 [Template] Received message:', event.data);
-                
                 if (event.data && event.data.type === 'quiz.config') {
-                    console.log('📊 [Template] Received quiz config:', event.data);
                     if (event.data.data && typeof event.data.data.totalQuestions === 'number') {
                         actualTotalQuestions = event.data.data.totalQuestions;
-                        console.log('📊 [Template] Updated total questions to:', actualTotalQuestions);
-                        
-                        // Log current state after update
-                        console.log('📊 [Template] Current quiz state:', {
-                            actualTotalQuestions,
-                            answeredQuestions: document.querySelectorAll('.answer-input').length,
-                            selectedAnswers: selectedAnswers || []
-                        });
                     }
                 }
             } catch (error) {
@@ -901,8 +871,6 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
 
         function calculateResults() {
             try {
-                console.log('📊 [Template] Starting calculateResults...');
-                console.log('📊 [Template] Current actualTotalQuestions:', actualTotalQuestions);
                 
                 const answeredQuestions = document.querySelectorAll('.answer-input').length;
                 let correctCount = 0;
@@ -922,13 +890,6 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                     } catch (error) {
                         console.error('Error processing input:', error);
                     }
-                });
-
-                console.log('📊 [Template] Quiz results calculation:', {
-                    actualTotalQuestions,
-                    answeredQuestions,
-                    correctCount,
-                    answers
                 });
 
                 const rawScore = actualTotalQuestions > 0 ? correctCount / actualTotalQuestions : 0;
@@ -963,8 +924,6 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             const answerParagraph = document.getElementById('answer-paragraph');
             const answerContainer = document.getElementById('answer-paragraph-container');
             const scoreDisplay = document.getElementById('score-display');
-            
-            console.log('📊 Updating display with result:', result);
             
             // Show score and answered questions count
             const answeredText = result.answeredQuestions === result.totalQuestions 
@@ -1103,14 +1062,9 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
 
         // Listen for messages from parent (Check button and ShowScript button)
         window.addEventListener('message', function(event) {
-            console.log('🔄 Template 67 - Received message:', event.data);
-            console.log('🔄 Template 67 - Message type:', event.data?.type);
-            console.log('🔄 Template 67 - Message source:', event.source);
-            console.log('🔄 Template 67 - Window parent:', window.parent);
             
             // Handle JSChannel messages (from EdX)
             if (event.data && event.data.method === 'JSInput::getGrade') {
-                console.log('🔄 Processing JSChannel getGrade - showing answers');
                 getGrade();
                 return;
             }
@@ -1120,24 +1074,16 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 return;
             }
             
-            console.log('🔄 Received postMessage from parent:', event.data);
-            console.log('🔄 Message type:', event.data?.type);
-            
             if (event.data && event.data.type === 'problem.check') {
-                console.log('🔄 Processing problem.check - resetting quiz');
                 // Reset quiz state
                 resetQuiz();
             }
             
             if (event.data && event.data.type === 'problem.submit') {
-                console.log('🔄 Processing problem.submit - action:', event.data.action);
-                
                 if (event.data.action === 'check') {
-                    console.log('🔄 Processing problem.submit with action=check - showing answers');
                     // Trigger quiz submission when Check button is clicked
                     getGrade();
                 } else if (event.data.action === 'reset') {
-                    console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
                     // Reset quiz when reset action is received
                     resetQuiz();
                 }
@@ -1145,32 +1091,24 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             
             // Handle ShowScript button click (like template 63)
             if (event.data && event.data.type === 'show.script') {
-                console.log('🔄 Processing show.script - displaying script popup');
                 showScriptPopup();
             }
             
             // Handle get answers request
             if (event.data && event.data.type === 'quiz.get_answers') {
-                console.log('🔄 [Template] Processing quiz.get_answers - sending answers');
-                console.log('🔄 [Template] Message source:', event.source);
-                console.log('🔄 [Template] Message origin:', event.origin);
                 saveQuizResults(); // This will collect and send answers
             } else if (event.data && event.data.type === 'ping') {
-                console.log('🏓 Template 67 - Received ping, responding with pong');
-                console.log('🏓 Template 67 - Ping data:', event.data.data);
                 // Respond with pong
                 if (window.parent) {
                     window.parent.postMessage({
                         type: 'pong',
                         data: { message: 'Template 67 is ready!', timestamp: new Date().toISOString() }
                     }, '*');
-                    console.log('🏓 Template 67 - Pong sent to parent');
                 }
             }
         });
 
         function showScriptPopup() {
-            console.log('📜 Showing script popup');
             
             // Show the answer container with script (like template 63)
             const answerContainer = document.getElementById('answer-paragraph-container');
@@ -1180,7 +1118,6 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         }
 
         function saveQuizResults() {
-            console.log('💾 [Template] Calculating quiz results...');
             
             // Get all answers
             const answers = [];
@@ -1198,24 +1135,16 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 }
             });
             
-            console.log('📊 [Template] User answers:', answers);
-            
             // Send only user answers to parent
             if (window.parent) {
-                console.log('📤 [Template] Sending answers to parent:', answers);
-                console.log('📤 [Template] Parent window:', window.parent);
-                
                 window.parent.postMessage({
                     type: 'quiz.answers',
                     answers: answers // Array of {userAnswer, isCorrect}
                 }, '*');
-                
-                console.log('📤 [Template] Answers sent successfully');
             }
         }
 
         function resetQuiz() {
-            console.log('🔄 Starting reset process...');
             
             // Restore text inputs from answer replacements (like template 63)
             const answerReplacements = document.querySelectorAll('.answer-replacement');
@@ -1272,15 +1201,10 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             if (audioPlayer) {
                 audioPlayer.startWithDelay();
             }
-            
-            console.log('🔄 Quiz reset completed via problem.check message');
         }
 
         function getGrade() {
-            console.log('🎯 getGrade() called - Processing quiz submission');
-            
             const result = calculateResults();
-            console.log('📊 Quiz results:', result);
             
             // Show answers but not script (like template 63)
             state.showAnswer = true;
@@ -1301,12 +1225,8 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 const scriptTextElement = document.getElementById('script-text-hidden');
                 const scriptText = scriptTextElement ? scriptTextElement.innerHTML : '';
                 
-                console.log('🔍 Script text from hidden element:', scriptText);
-                
                 // Encode script text to handle special characters (like template 29)
                 const encodedScriptText = encodeScriptText(scriptText);
-                
-                console.log('🔍 Encoded script text:', encodedScriptText);
                 
                 const quizData = {
                     templateId: 67,
@@ -1882,7 +1802,6 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             })
             .then(data => {
                 // Success
-                console.log('✅ Quiz completion marked successfully');
             })
             .catch(error => {
                 // Error handling
@@ -1893,17 +1812,17 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         // Add event listener for when audio is ready to play
         const audioElement = document.getElementById('audio-player');
         audioElement.addEventListener('canplaythrough', () => {
-            console.log('Audio is ready to play');
+            // Audio is ready to play
         });
 
         // Add event listener for when audio starts loading
         audioElement.addEventListener('loadstart', () => {
-            console.log('Audio started loading');
+            // Audio started loading
         });
 
         // Add event listener for when audio finishes loading
         audioElement.addEventListener('loadeddata', () => {
-            console.log('Audio data loaded');
+            // Audio data loaded
         });
 
     })();

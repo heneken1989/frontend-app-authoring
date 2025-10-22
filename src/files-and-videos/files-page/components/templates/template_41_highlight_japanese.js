@@ -602,58 +602,43 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             
             try {
                 const fixedWordsInput = document.getElementById('fixedWordsExplanation');
-                console.log('[DEBUG] fixedWordsExplanation element:', fixedWordsInput);
                 
                 // Check if the element exists and get its value
                 const fixedWordsExplanation = fixedWordsInput ? fixedWordsInput.value : '';
-                console.log('[DEBUG] Raw fixedWordsExplanation value:', fixedWordsExplanation);
-                console.log('[DEBUG] fixedWordsExplanation type:', typeof fixedWordsExplanation);
-                
-                // Log the template variable directly for comparison
-                console.log('[DEBUG] Template variable:', '{{FIXED_WORDS_EXPLANATION}}');
                 
                 // Check if the value is empty or just whitespace
                 if (!fixedWordsExplanation || fixedWordsExplanation.trim() === '') {
-                    console.error('[DEBUG] fixedWordsExplanation is empty or only whitespace');
+                    console.error('fixedWordsExplanation is empty or only whitespace');
                 }
                 
                 // Check if it's the default value
                 if (fixedWordsExplanation === 'These are the words that should be selected.') {
-                    console.warn('[DEBUG] fixedWordsExplanation is using the default value');
+                    console.warn('fixedWordsExplanation is using the default value');
                 }
                 
                 if (fixedWordsExplanation) {
                     // Split by comma and trim each part to handle extra spaces
                     const pairs = fixedWordsExplanation.split(',').map(p => p.trim());
-                    console.log('[DEBUG] Split pairs:', pairs);
                     
                     if (pairs.length === 0 || (pairs.length === 1 && pairs[0] === '')) {
-                        console.error('[DEBUG] No valid pairs found after splitting');
+                        console.error('No valid pairs found after splitting');
                     }
                     
                     pairs.forEach(pair => {
-                        console.log('[DEBUG] Processing pair:', pair);
-                        
                         // Replace full-width equals sign (＝) with standard equals sign (=)
                         const normalizedPair = pair.replace(/＝/g, '=');
-                        console.log('[DEBUG] Normalized pair:', normalizedPair);
                         
                         // Check if this is an indexed format (word:index=fixed)
                         if (normalizedPair.includes(':') && normalizedPair.includes('=')) {
-                            console.log('[DEBUG] Found indexed format');
                             const [wrongWithIndex, fixed] = normalizedPair.split('=').map(s => s.trim());
-                            console.log('[DEBUG] wrongWithIndex:', wrongWithIndex, 'fixed:', fixed);
                             if (wrongWithIndex && fixed) {
                                 const [wrong, indexStr] = wrongWithIndex.split(':').map(s => s.trim());
-                                console.log('[DEBUG] wrong:', wrong, 'indexStr:', indexStr);
                                 const normWrong = normalize(wrong);
                                 const index = parseInt(indexStr, 10);
-                                console.log('[DEBUG] normWrong:', normWrong, 'index:', index);
                                 
                                 // Add to correctWords if not already included
                                 if (!correctWords.includes(normWrong)) {
                                     correctWords.push(normWrong);
-                                    console.log('[DEBUG] Added to correctWords:', normWrong);
                                 }
                                 
                                 if (!isNaN(index)) {
@@ -661,24 +646,18 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                                         indexedFixedWordsMap[normWrong] = {};
                                     }
                                     indexedFixedWordsMap[normWrong][index] = fixed;
-                                    
-                                    // Log for debugging
-                                    console.log('[DEBUG] Added indexed mapping: ' + normWrong + '[' + index + '] = ' + fixed);
                                 }
                             }
                         } 
                         // Simple format (word=fixed)
                         else if (normalizedPair.includes('=')) {
-                            console.log('[DEBUG] Found simple format');
                             const [wrong, fixed] = normalizedPair.split('=').map(s => s.trim());
-                            console.log('[DEBUG] wrong:', wrong, 'fixed:', fixed);
                             if (wrong && fixed) {
                                 const normWrong = normalize(wrong);
                                 
                                 // Add to correctWords if not already included
                                 if (!correctWords.includes(normWrong)) {
                                     correctWords.push(normWrong);
-                                    console.log('[DEBUG] Added to correctWords:', normWrong);
                                 }
                                 
                                 // Store in both maps - simple format for backward compatibility
@@ -689,37 +668,9 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                                     indexedFixedWordsMap[normWrong] = {};
                                 }
                                 indexedFixedWordsMap[normWrong][0] = fixed;
-                                
-                                // Log for debugging
-                                console.log('[DEBUG] Added simple mapping: ' + normWrong + ' = ' + fixed);
-                                console.log('[DEBUG] Also added as indexed mapping: ' + normWrong + '[0] = ' + fixed);
                             }
                         }
                     });
-                }
-                
-                // Log the final mappings for debugging
-                console.log('[DEBUG] Final correctWords:', correctWords);
-                console.log('[DEBUG] Final fixedWordsMap:', fixedWordsMap);
-                console.log('[DEBUG] Final indexedFixedWordsMap:', indexedFixedWordsMap);
-                
-                // If no correctWords found, try to create some test data
-                if (correctWords.length === 0) {
-                    console.warn('[DEBUG] No correctWords found! This might be the issue.');
-                    console.log('[DEBUG] Template variable FIXED_WORDS_EXPLANATION:', '{{FIXED_WORDS_EXPLANATION}}');
-                    
-                    // For testing purposes, let's try to add some test words
-                    // This is just for debugging - remove in production
-                    const testWords = ['あたらしいくない', 'じてんしゃ', 'この'];
-                    correctWords = testWords;
-                    console.log('[DEBUG] Using test words:', correctWords);
-                } else {
-                    // If correctWords exist but don't match paragraph, use paragraph words for testing
-                    console.log('[DEBUG] correctWords exist but may not match paragraph');
-                    console.log('[DEBUG] correctWords:', correctWords);
-                    
-                    // We'll handle this dynamically in renderParagraph based on actual paragraph content
-                    console.log('[DEBUG] Will use dynamic paragraph words in renderParagraph');
                 }
             } catch (e) {
                 console.error('Error parsing fixed words:', e);
@@ -775,10 +726,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 const container = document.getElementById('quiz-paragraph');
                 container.innerHTML = '';
                 
-                console.log('[DEBUG] renderParagraph called, showAnswer:', showAnswer);
-                console.log('[DEBUG] selectedWords:', selectedWords);
-                console.log('[DEBUG] correctWords:', correctWords);
-                
                 // First, identify which words should be highlighted for answers
                 const highlightedWords = {};
                 const wordCounts = {};
@@ -786,10 +733,8 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 if (showAnswer) {
                     // If correctWords is empty or doesn't match current paragraph, use paragraph words
                     if (correctWords.length === 0 || !words.some(word => correctWords.includes(normalize(word)))) {
-                        console.log('[DEBUG] correctWords does not match current paragraph, using paragraph words');
                         // Use all words from paragraph as correct words for testing
                         correctWords = words.map(word => normalize(word));
-                        console.log('[DEBUG] New correctWords from paragraph:', correctWords);
                     }
                     
                     // Process correctWords to identify which words (and which occurrences) should be highlighted
@@ -826,8 +771,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         // Increment the count for this word after processing
                         wordCounts[norm]++;
                     });
-                    
-                    console.log('[DEBUG] highlightedWords:', highlightedWords);
                 }
                 
                 // Reset word counts for rendering
@@ -870,42 +813,24 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                             renderWordCounts[norm] = 0;
                         }
                         
-                        // Debug: Log all relevant information
-                        console.log('[DEBUG] Word at idx', idx, 'spanIndex', spanIndex, ':', word, 'norm:', norm);
-                        console.log('[DEBUG] highlightedWords[idx]:', highlightedWords[idx]);
-                        console.log('[DEBUG] selectedWords.includes(idx):', selectedWords.includes(idx));
-                        console.log('[DEBUG] showAnswer:', showAnswer);
                         
                         // Check if this word is a correct answer (regardless of user selection)
                         if (correctWords.includes(norm)) {
-                            console.log('[DEBUG] Processing correct word at idx', idx, 'spanIndex', spanIndex, ':', word);
-                            
                             // Get the correct answer
                             let correctAnswer = word;
-                            console.log('[DEBUG] Checking indexed mapping for word:', word, 'norm:', norm, 'count:', renderWordCounts[norm]);
-                            console.log('[DEBUG] indexedFixedWordsMap[norm]:', indexedFixedWordsMap[norm]);
-                            console.log('[DEBUG] fixedWordsMap[norm]:', fixedWordsMap[norm]);
                             
                             if (indexedFixedWordsMap[norm] && indexedFixedWordsMap[norm][renderWordCounts[norm]] !== undefined) {
                                 correctAnswer = indexedFixedWordsMap[norm][renderWordCounts[norm]];
-                                console.log('[DEBUG] Using indexed mapping:', correctAnswer);
                             } else if (fixedWordsMap[norm]) {
                                 correctAnswer = fixedWordsMap[norm];
-                                console.log('[DEBUG] Using simple mapping:', correctAnswer);
-                            } else {
-                                console.log('[DEBUG] No mapping found, using original word:', correctAnswer);
                             }
                             
                             // Apply furigana to correct answer too
                             const correctAnswerWithFurigana = convertFurigana(correctAnswer);
                             
-                            console.log('[DEBUG] Correct answer for', word, ':', correctAnswer);
-                            console.log('[DEBUG] Selected words includes idx', idx, ':', selectedWords.includes(idx));
-                            
                             // Apply styling based on whether this word should be highlighted
                             if (highlightedWords[idx]) {
                                 // This word should be highlighted - show in green
-                                console.log('[DEBUG] Applying student-correct styling for highlighted word');
                                 span.classList.remove('selected', 'wrong');
                                 span.classList.add('student-correct');
                                 if (hasFurigana) {
@@ -916,7 +841,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                                 span.innerHTML = wordWithFurigana;
                             } else if (selectedWords.includes(idx)) {
                                 // User selected this word but it shouldn't be highlighted - show as incorrect
-                                console.log('[DEBUG] User selected word that should not be highlighted - showing as incorrect');
                                 span.classList.remove('selected', 'wrong');
                                 span.classList.add('student-incorrect');
                                 if (hasFurigana) {
@@ -927,7 +851,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                                 span.innerHTML = wordWithFurigana;
                             } else {
                                 // This word should not be highlighted and user didn't select it - show as normal
-                                console.log('[DEBUG] Word should not be highlighted and not selected, showing as normal');
                                 span.classList.remove('selected', 'wrong', 'student-correct', 'student-incorrect');
                                 if (hasFurigana) {
                                     span.classList.add('with-furigana');
@@ -941,7 +864,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                             renderWordCounts[norm]++;
                         } else if (selectedWords.includes(idx)) {
                             // User selected incorrectly - show in red
-                            console.log('[DEBUG] Applying student-incorrect styling for', word);
                             span.classList.remove('selected', 'wrong');
                             span.classList.add('student-incorrect');
                             if (hasFurigana) {
@@ -952,7 +874,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                             span.innerHTML = wordWithFurigana;
                         } else {
                             // Normal word
-                            console.log('[DEBUG] Normal word, no styling applied');
                             span.innerHTML = wordWithFurigana;
                         }
                     } else {
@@ -1286,11 +1207,8 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 return selectedWords;
             }
             function grade() {
-                console.log('[DEBUG] Starting grade function');
                 const selected = getSelectedWords();
-                console.log('[DEBUG] Selected words:', selected);
                 const words = splitWords(paragraph);
-                console.log('[DEBUG] Words from paragraph:', words);
                 
                 // First, identify which words should be highlighted
                 // This handles indexed words correctly
@@ -1306,18 +1224,11 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         wordCounts[norm] = 0;
                     }
                     
-                    console.log('[DEBUG-GRADE] Word at idx ' + idx + ': "' + word + '", normalized: "' + norm + '", count: ' + wordCounts[norm]);
-                    console.log('[DEBUG-GRADE] Is in correctWords: ' + correctWords.includes(norm));
                     
                     // Check if this word is in correctWords
                     if (correctWords.includes(norm)) {
-                        console.log('[DEBUG-GRADE] Has indexed mapping: ' + Object.keys(indexedFixedWordsMap).includes(norm));
-                        
                         // All words should have indexed mappings now
                         if (Object.keys(indexedFixedWordsMap).includes(norm)) {
-                            console.log('[DEBUG-GRADE] Indexed mappings for ' + norm + ':', indexedFixedWordsMap[norm]);
-                            console.log('[DEBUG-GRADE] Current count: ' + wordCounts[norm] + ', has mapping: ' + (indexedFixedWordsMap[norm][wordCounts[norm]] !== undefined));
-                            
                             // Only highlight if this specific occurrence has a mapping
                             if (indexedFixedWordsMap[norm][wordCounts[norm]] !== undefined) {
                                 highlightedWords[idx] = {
@@ -1325,10 +1236,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                                     norm: norm,
                                     count: wordCounts[norm]
                                 };
-                                console.log('[DEBUG-GRADE] Added to highlightedWords at idx ' + idx + ':', highlightedWords[idx]);
-                            } else {
-                                // For other occurrences, don't highlight
-                                console.log('[DEBUG-GRADE] Skipping this occurrence as it has no indexed mapping');
                             }
                         }
                         // No indexed mapping for this word, highlight all occurrences
@@ -1338,7 +1245,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                                 norm: norm,
                                 count: wordCounts[norm]
                             };
-                            console.log('[DEBUG-GRADE] Added to highlightedWords (no index) at idx ' + idx + ':', highlightedWords[idx]);
                         }
                     }
                     
@@ -1346,21 +1252,16 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                     wordCounts[norm]++;
                 });
                 
-                console.log('[DEBUG-GRADE] Final highlightedWords:', highlightedWords);
-                
                 // Calculate score based on highlighted words
                 let correctCount = 0;
                 let total = Object.keys(highlightedWords).length;
                 
                 Object.keys(highlightedWords).forEach(idx => {
                     const idxNum = parseInt(idx);
-                    console.log('[DEBUG-GRADE] Checking if idx ' + idxNum + ' is in selected:', selected.includes(idxNum));
                     if (selected.includes(idxNum)) {
                         correctCount++;
                     }
                 });
-                
-                console.log('[DEBUG-GRADE] Final score: ' + correctCount + '/' + total);
                 
                 return { correctCount, total };
             }
@@ -1408,21 +1309,15 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 });
             }
             function getGrade() {
-                console.log('[DEBUG] getGrade called');
-                console.log('[DEBUG] Current showAnswer:', showAnswer);
-                console.log('[DEBUG] Current selectedWords:', selectedWords);
-                console.log('[DEBUG] correctWords:', correctWords);
                 
                 const answerContainer = document.getElementById('answer-paragraph-container');
                 const answerParagraph = document.getElementById('answer-paragraph');
                 const showFlag = document.getElementById('showAnswerFlag');
                 
                 const isVisible = answerContainer.style.display === 'block';
-                console.log('[DEBUG] isVisible:', isVisible);
                 
                 if (isVisible) {
                     // Hide answers - use resetQuiz for complete reset
-                    console.log('[DEBUG] Hiding answers - calling resetQuiz');
                     resetQuiz();
                     
                 } else {
@@ -1434,11 +1329,8 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         return !correctWords.includes(norm);
                     });
                     
-                    console.log('[DEBUG] hasWrongSelections:', hasWrongSelections, 'showAnswer:', showAnswer);
-                    
                     if (hasWrongSelections) {
                         // First check - show both wrong selections and correct answers
-                        console.log('[DEBUG] First check - showing wrong selections and correct answers');
                         
                         // First render paragraph to show correct answers
                         showAnswer = true;
@@ -1446,13 +1338,9 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         
                         // Then apply wrong styling to incorrect selections
                         const words = splitWords(paragraph);
-                        console.log('[DEBUG] All words:', words);
-                        console.log('[DEBUG] Selected words indices:', selectedWords);
-                        console.log('[DEBUG] Correct words:', correctWords);
                         
                         // Find all span elements and mark wrong ones
                         const spans = document.querySelectorAll('.quiz-word');
-                        console.log('[DEBUG] Found spans:', spans.length);
                         
                         // Create a mapping from span index to word index
                         let wordIndex = 0;
@@ -1469,19 +1357,11 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                             if (wordIdx !== undefined && selectedWords.includes(wordIdx)) {
                                 const word = words[wordIdx];
                                 const norm = normalize(word);
-                                console.log('[DEBUG] Checking span', spanIdx, 'wordIdx', wordIdx, 'word:', word, 'normalized:', norm);
                                 
                                 if (!correctWords.includes(norm)) {
-                                    console.log('[DEBUG] Marking word as wrong:', word, 'at word index:', wordIdx);
-                                    
                                     // Remove any existing styling classes
                                     span.classList.remove('student-correct', 'student-incorrect', 'student-missed', 'wrong');
                                     span.classList.add('student-incorrect');
-                                    
-                                    console.log('[DEBUG] Added student-incorrect class to span:', span);
-                                    console.log('[DEBUG] Span classes after:', span.className);
-                                } else {
-                                    console.log('[DEBUG] Word is correct:', word);
                                 }
                             } else {
                                 // Reset any wrong styling for non-selected words
@@ -1500,7 +1380,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         }
                     } else {
                         // Second check - show full answers
-                        console.log('[DEBUG] Second check - showing full answers');
                         showAnswer = true;
                         renderParagraph();
                         showFlag.value = 'true';
@@ -1531,7 +1410,6 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 
                 // Still return grade info to EdX
                 const result = grade();
-                console.log('[DEBUG] Grade result:', result);
                 return JSON.stringify({
                     edxResult: None,
                     edxScore: result.correctCount / result.total,

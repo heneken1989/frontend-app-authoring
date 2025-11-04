@@ -21,15 +21,15 @@ const ListenSingleChoiceForm = ({ quizData, setQuizData }) => {
         />
       </Form.Group>
       <Form.Group>
-        <Form.Label>Answer Options</Form.Label>
+        <Form.Label>Answer Content</Form.Label>
         <Form.Control
           as="textarea"
           rows={3}
-          value={quizData.blankOptions}
+          value={quizData.answerContent || quizData.blankOptions || ''}
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
-              blankOptions: e.target.value
+              answerContent: e.target.value
             }));
           }}
           placeholder="Enter options separated by commas. First option is correct. Example: はい、分かりました,いいえ、分かりません,すみません"

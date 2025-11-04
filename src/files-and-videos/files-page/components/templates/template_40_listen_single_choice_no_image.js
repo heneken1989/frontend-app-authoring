@@ -27,7 +27,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             color: #414141;
             height: auto;
             position: relative;
-            overflow-x: visible;
+            overflow-x: hidden;
             box-sizing: border-box;
         }
         .container {
@@ -37,21 +37,24 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             flex-direction: column;
             gap: 20px;
             width: calc(100% - 100px);
+            max-width: 100%;
             margin: 0 0 0 100px;
             box-sizing: border-box;
+            overflow-x: hidden;
         }
         .top-section {
             display: flex;
             flex-direction: row;
-            gap: 50px;
+            gap: 30px;
             align-items: flex-start;
+            flex-wrap: nowrap;
         }
         .left-content {
-            flex: 0 0 auto;
+            flex: 0 0 65%;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-width: calc(100% - 350px);
+            max-width: 65%;
         }
         .right-content {
             flex: 0 0 300px;
@@ -59,6 +62,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             flex-direction: column;
             gap: 10px;
             width: 300px;
+            flex-shrink: 0;
         }
         .content-wrapper {
             display: flex;
@@ -73,6 +77,12 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             font-style: italic;
             margin: 0 0 20px 0;
             letter-spacing: 0.3px;
+            max-width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
         .question-text {
             font-size: 1.2rem;
@@ -960,6 +970,22 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 };
             }
 
+            // Function to save quiz results (like template 67)
+            function saveQuizResults() {
+                const userAnswer = selectedOption || '';
+                const isCorrect = userAnswer === correctAnswer;
+                const answers = [{
+                    userAnswer: userAnswer,
+                    isCorrect: isCorrect
+                }];
+                if (window.parent) {
+                    window.parent.postMessage({
+                        type: 'quiz.answers',
+                        answers: answers
+                    }, '*');
+                }
+            }
+
             // Listen for messages from parent (Check button)
             window.addEventListener('message', function(event) {
                 console.log('🔄 Received message:', event.data);
@@ -986,6 +1012,19 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                         console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
                         // Reset quiz when reset action is received
                         resetQuiz();
+                    }
+                }
+                
+                // Handle get answers request (like template 67)
+                if (event.data && event.data.type === 'quiz.get_answers') {
+                    saveQuizResults(); // This will collect and send answers
+                } else if (event.data && event.data.type === 'ping') {
+                    // Respond with pong
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'pong',
+                            data: { message: 'Template 40 is ready!', timestamp: new Date().toISOString() }
+                        }, '*');
                     }
                 }
             });

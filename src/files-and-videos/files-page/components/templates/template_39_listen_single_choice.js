@@ -944,6 +944,22 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                 };
             }
 
+            // Function to save quiz results (like template 67)
+            function saveQuizResults() {
+                const userAnswer = selectedOption || '';
+                const isCorrect = userAnswer === correctAnswer;
+                const answers = [{
+                    userAnswer: userAnswer,
+                    isCorrect: isCorrect
+                }];
+                if (window.parent) {
+                    window.parent.postMessage({
+                        type: 'quiz.answers',
+                        answers: answers
+                    }, '*');
+                }
+            }
+
             // Listen for messages from parent (Check button)
             window.addEventListener('message', function(event) {
                 console.log('🔄 Received message:', event.data);
@@ -970,6 +986,19 @@ export const listenSingleChoiceTemplate = `<!DOCTYPE html>
                         console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
                         // Reset quiz when reset action is received
                         resetQuiz();
+                    }
+                }
+                
+                // Handle get answers request (like template 67)
+                if (event.data && event.data.type === 'quiz.get_answers') {
+                    saveQuizResults(); // This will collect and send answers
+                } else if (event.data && event.data.type === 'ping') {
+                    // Respond with pong
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'pong',
+                            data: { message: 'Template 39 is ready!', timestamp: new Date().toISOString() }
+                        }, '*');
                     }
                 }
             });

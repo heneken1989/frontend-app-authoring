@@ -25,11 +25,11 @@ const GrammarSingleSelectForm = ({ quizData, setQuizData }) => {
         <Form.Control
           as="textarea"
           rows={3}
-          value={quizData.blankOptions}
+          value={quizData.answerContent}
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
-              blankOptions: e.target.value
+              answerContent: e.target.value
             }));
           }}
           placeholder="Enter options separated by commas. First option is correct. Example: 私は毎日日本語を勉強します,私が毎日日本語を勉強します,私は毎日日本語が勉強します"

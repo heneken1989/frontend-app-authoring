@@ -11,7 +11,7 @@ function convertFurigana(text) {
     return text;
 }
 
-export const getListenWriteAnswerWithImageTemplate = (questionText, correctAnswers, audioFile, timeSegmentsString = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', imageFile = '', answerContent = '', blankOptions = '') => {
+export const getListenWriteAnswerWithImageTemplate = (questionText, correctAnswers, audioFile, timeSegmentsString = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', answerContent = '', blankOptions = '') => {
     
     // Parse the correct answers from blankOptions
     // Format: "10:30〜5:00;月/げつ" - each blank separated by semicolon, multiple answers for one blank separated by /
@@ -104,8 +104,6 @@ export const getListenWriteAnswerWithImageTemplate = (questionText, correctAnswe
         .replace('{{SCRIPT_TEXT}}', finalScriptText || '')
         .replace('{{CORRECT_ANSWERS}}', JSON.stringify(correctAnswersArray));
 
-    // Image file handling removed - no longer needed
-    
     return template;
 };
 
@@ -225,10 +223,10 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             margin: 0;
             background-color: white;
             border-radius: 4px;
-            padding: 8px;
+            padding: 6px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             border: 1px solid #e0e0e0;
         }
@@ -466,13 +464,13 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             height: 1px;
             background-color: transparent;
             width: 100%;
-            margin: 5px 0;
+            margin: 3px 0;
         }
         .controls-row {
             display: flex;
             align-items: center;
-            gap: 5px;
-            padding: 3px 0;
+            gap: 4px;
+            padding: 2px 0;
         }
         .progress-container {
             flex-grow: 1;
@@ -506,9 +504,9 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
         .volume-control {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            padding: 3px;
+            padding: 2px;
         }
         .volume-icon {
             color: #333;
@@ -659,12 +657,12 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: 400;
-            line-height: 1.5;
+            line-height: 1.3;
             text-align: left;
             width: 40px;
             min-width: 40px;
             max-width: 200px;
-            padding: 4px 8px;
+            padding: 2px 6px;
             border: 2px solid #0075b4;
             border-radius: 4px;
             background-color: white;

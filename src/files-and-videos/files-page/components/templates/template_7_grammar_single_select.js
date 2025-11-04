@@ -314,9 +314,41 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
                 updateGlobalVariables();
             });
             
-            // Listen for messages from parent (Check button)
+            // Function to save quiz results (like template 67)
+            function saveQuizResults() {
+                // Get the selected answer
+                const userAnswer = selectedOption || '';
+                const isCorrect = userAnswer === correctAnswer;
+                
+                // Format as array to match template 67 format
+                const answers = [{
+                    userAnswer: userAnswer,
+                    isCorrect: isCorrect
+                }];
+                
+                // Send answers to parent
+                if (window.parent) {
+                    window.parent.postMessage({
+                        type: 'quiz.answers',
+                        answers: answers // Array of {userAnswer, isCorrect}
+                    }, '*');
+                }
+            }
+
+            // Listen for messages from parent (Check button and quiz.get_answers)
             window.addEventListener('message', function(event) {
                 console.log('🔄 Received message:', event.data);
+                
+                // Handle JSChannel messages (from EdX)
+                if (event.data && event.data.method === 'JSInput::getGrade') {
+                    getGrade();
+                    return;
+                }
+                
+                // Process postMessage from parent window
+                if (event.source !== window.parent && event.source !== window) {
+                    return;
+                }
                 
                 if (event.data && event.data.type === 'problem.check') {
                     console.log('🔄 Processing problem.check - resetting quiz');
@@ -335,6 +367,19 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
                         console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
                         // Reset quiz when reset action is received
                         resetQuiz();
+                    }
+                }
+                
+                // Handle get answers request (like template 67)
+                if (event.data && event.data.type === 'quiz.get_answers') {
+                    saveQuizResults(); // This will collect and send answers
+                } else if (event.data && event.data.type === 'ping') {
+                    // Respond with pong
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'pong',
+                            data: { message: 'Template 7 is ready!', timestamp: new Date().toISOString() }
+                        }, '*');
                     }
                 }
             });

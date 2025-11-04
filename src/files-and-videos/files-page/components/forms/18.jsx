@@ -6,11 +6,11 @@ const GrammarDropdownForm = ({ quizData, setQuizData }) => {
   return (
     <>
       <Form.Group>
-        <Form.Label>Answer Content</Form.Label>
+        <Form.Label>Paragraph Text</Form.Label>
         <Form.Control
           as="textarea"
           rows={4}
-          value={quizData.answerContent ||`
+          value={quizData.paragraphText ||`
 A：サントスさんはブラジル人です。マリアさん（ー）ブラジル人ですか。
 B：はい、マリアさん（ー）ブラジル人です。
 A：ミラーさん（ー）ブラジル人ですか。
@@ -18,7 +18,7 @@ B：いいえ、ミラーさん（ー）ブラジル人じゃありません。`
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
-              answerContent: e.target.value
+              paragraphText: e.target.value
             }));
           }}
           placeholder="Enter content with （ー） placeholders"
@@ -29,15 +29,15 @@ B：いいえ、ミラーさん（ー）ブラジル人じゃありません。`
       </Form.Group>
 
       <Form.Group>
-        <Form.Label>Options for Each Blank</Form.Label>
+        <Form.Label>Answer Content</Form.Label>
         <Form.Control
           as="textarea"
           rows={3}
-          value={quizData.optionsForBlanks || "は,が,で,に,を"}
+          value={quizData.answerContent || "は,が,で,に,を"}
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
-              optionsForBlanks: e.target.value
+              answerContent: e.target.value
             }));
           }}
           placeholder="は,が,で,に,を"

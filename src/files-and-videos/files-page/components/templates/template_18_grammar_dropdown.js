@@ -80,14 +80,30 @@ if (!Array.prototype.map) {
     };
 }
 
-export const getGrammarDropdownTemplate = function(questionText, optionsForBlanks, audioFile, startTime, endTime, instructions, scriptText, imageFile, answerContent) {
+/**
+ * Grammar Dropdown Template
+ * @param {string} questionText - Not used, kept for compatibility
+ * @param {string} optionsForBlanks - Options for dropdowns (from quizData.answerContent). Format: "option1,option2,option3" or "opt1,opt2;opt3,opt4" for different options per blank
+ * @param {string} audioFile - Audio file path
+ * @param {number} startTime - Audio start time
+ * @param {number} endTime - Audio end time
+ * @param {string} instructions - Instructions text
+ * @param {string} scriptText - Script text to display
+ * @param {string} imageFile - Image file path
+ * @param {string} paragraphText - Content with placeholders (ー) to be replaced with dropdowns (from quizData.paragraphText)
+ */
+export const getGrammarDropdownTemplate = function(questionText, optionsForBlanks, audioFile, startTime, endTime, instructions, scriptText, imageFile, paragraphText) {
     // Set default values for older browsers
     startTime = startTime || 0;
     endTime = endTime || 0;
     instructions = instructions || '正しい答えを選んでください。';
     scriptText = scriptText || '';
     imageFile = imageFile || '';
-    answerContent = answerContent || '';
+    paragraphText = paragraphText || '';
+    
+    // Parameter mapping from CreateQuizButton:
+    // - optionsForBlanks (param 2) = quizData.answerContent (dropdown options)
+    // - paragraphText (param 9) = quizData.paragraphText (content with ー placeholders)
     
     // Browser compatibility check
     if (!isBrowserSupported()) {
@@ -95,7 +111,8 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
         return '<div style="color: red; padding: 20px; text-align: center;">Browser không được hỗ trợ. Vui lòng cập nhật trình duyệt lên phiên bản mới hơn.</div>';
     }
     
-    // Parse the options for each blank
+    // Parse the options for each blank from optionsForBlanks (parameter 2)
+    // This parameter receives quizData.answerContent from CreateQuizButton (contains dropdown options like "は,が,で,に,を")
     var blanksOptionsArray = [];
     if (optionsForBlanks && optionsForBlanks.trim()) {
         // If there's no semicolon, use first N words as correct answers in order, rest as wrong options
@@ -106,8 +123,9 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
             }
             allOptions = allOptions.filter(function(opt) { return opt; });
             
-            // Count number of blanks in answerContent
-            var blankMatches = answerContent.match(/（ー）/g);
+            // Count number of blanks in paragraphText (parameter 9)
+            // paragraphText parameter receives quizData.paragraphText from CreateQuizButton
+            var blankMatches = paragraphText.match(/（ー）/g);
             var blankCount = blankMatches ? blankMatches.length : 0;
             
             // Take first N words as correct answers (N = number of blanks)
@@ -149,12 +167,24 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
         }
     }
 
-    // Process answer content to replace placeholders with dropdowns
+    // Process paragraphText (parameter 9) to replace placeholders (ー) with dropdowns
+    // This parameter receives quizData.paragraphText from CreateQuizButton
+    // This contains the content with placeholders like "A：サントスさんはブラジル人です。マリアさん（ー）ブラジル人ですか。"
+    
+    // DEBUG: Log to verify we're using the correct parameter
+    console.log('🔍 Template 18 - Parameter values:', {
+        optionsForBlanks: optionsForBlanks,
+        paragraphText_param: paragraphText,
+        'paragraphText contains ー?': paragraphText && paragraphText.includes('（ー）'),
+        'paragraphText length': paragraphText ? paragraphText.length : 0
+    });
+    
     var answersList = '';
     var answerDropdownIndex = 0;
     
-    if (answerContent && answerContent.trim()) {
-        var answerLines = answerContent.split('\n');
+    if (paragraphText && paragraphText.trim()) {
+        // paragraphText contains content with ー placeholders
+        var answerLines = paragraphText.split('\n');
         for (var i = 0; i < answerLines.length; i++) {
             answerLines[i] = answerLines[i].trim();
         }
@@ -214,7 +244,16 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
     processedScriptText = convertFurigana(processedScriptText);
     
     // Process answers list to convert furigana
+    // answersList contains content from paragraphText (parameter 9) with dropdowns replacing (ー) placeholders
     var processedAnswersList = convertFurigana(answersList);
+    
+    // DEBUG: Verify answersList content
+    console.log('🔍 Template 18 - answersList source:', {
+        'answersList length': answersList.length,
+        'answersList preview': answersList.substring(0, 100),
+        'answersList contains dropdowns?': answersList.includes('custom-dropdown'),
+        'Source was paragraphText (parameter 9)': true
+    });
     
     // Build correct answers array for grading
     var correctAnswersArray = [];
@@ -223,6 +262,7 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
         correctAnswersArray.push(opts[0] || '');
     }
 
+    // Replace {{ANSWERS_LIST}} with content from paragraphText (parameter 9)
     var template = grammarDropdownTemplate
         .replace(/{{ANSWERS_LIST}}/g, processedAnswersList)
         .replace('{{INSTRUCTIONS}}', convertFurigana(instructions))
@@ -741,6 +781,36 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     console.log('🔄 Processing problem.submit with action=reset - resetting quiz');
                     // Reset quiz when reset action is received
                     resetQuiz();
+                }
+            }
+
+            // Parent (TestNavigationBar) requests answers for saving
+            if (event.data && event.data.type === 'quiz.get_answers') {
+                try {
+                    // Build answers payload: one item per blank dropdown
+                    var payload = [];
+                    var dropdowns = document.querySelectorAll('.custom-dropdown');
+                    for (var i = 0; i < dropdowns.length; i++) {
+                        var dropdown = dropdowns[i];
+                        var button = dropdown.querySelector('.dropdown-button');
+                        var userAnswer = (button && button.getAttribute('data-value')) || '';
+                        var correctAnswer = dropdown.getAttribute('data-correct') || '';
+                        payload.push({
+                            index: i + 1,
+                            userAnswer: userAnswer,
+                            correctAnswer: correctAnswer,
+                            isCorrect: userAnswer === correctAnswer
+                        });
+                    }
+
+                    // Respond to parent with answers array
+                    window.parent.postMessage({
+                        type: 'quiz.answers',
+                        answers: payload
+                    }, '*');
+                    console.log('📤 Sent quiz.answers to parent:', payload);
+                } catch (e) {
+                    console.error('❌ Failed to assemble quiz.answers payload:', e);
                 }
             }
         });

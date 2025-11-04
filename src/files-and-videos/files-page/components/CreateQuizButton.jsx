@@ -742,7 +742,7 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE:
       return getGrammarSingleSelectTemplate(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || 'どう　かきますか',
         quizData.scriptText || ''
       );
@@ -750,22 +750,22 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1:
       return getGrammarSingleSelectTemplate(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || 'どう　よみますか',
         quizData.scriptText || ''
       );
 
     case TEMPLATE_IDS.ID5_VOCAB_SINGLE_SELECT_2:
       return getGrammarDropdownTemplate(
-        quizData.paragraphText,
-        quizData.optionsForBlanks || '',
+        quizData.paragraphText || '',
+        quizData.answerContent || quizData.optionsForBlanks || '',
         quizData.audioFile || '',
         quizData.startTime || 0,
         quizData.endTime || 0,
         quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
         quizData.scriptText || '',
         quizData.imageFile || '',
-        quizData.answerContent || ''
+        quizData.paragraphText || ''
       );
 
     case TEMPLATE_IDS.FILL_IN_BLANK:
@@ -903,15 +903,15 @@ const generateQuizTemplate = (templateId, quizData) => {
           ? `${quizData.startTime}-${quizData.endTime}` 
           : '0-0');
       
-      // Apply furigana conversion to paragraphText, blankOptions, and scriptText
+      // Apply furigana conversion to paragraphText, answerContent, and scriptText
       const processedParagraphText39 = convertFurigana(quizData.paragraphText);
-      const processedBlankOptions39 = convertFurigana(quizData.blankOptions);
+      const processedAnswerContent39 = convertFurigana(quizData.answerContent || quizData.blankOptions || '');
       const processedScriptText39 = convertFurigana(quizData.scriptText || '');
       const processedInstructions39 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
       
       return getListenSingleChoiceTemplate(
         processedParagraphText39,
-        processedBlankOptions39,
+        processedAnswerContent39,
         quizData.audioFile || '',
         timeSegments39,
         processedInstructions39,
@@ -926,15 +926,15 @@ const generateQuizTemplate = (templateId, quizData) => {
             ? `${quizData.startTime}-${quizData.endTime}` 
             : '0-0');
         
-        // Apply furigana conversion to paragraphText, blankOptions, and scriptText
+        // Apply furigana conversion to paragraphText, answerContent, and scriptText
         const processedParagraphText47 = convertFurigana(quizData.paragraphText);
-        const processedBlankOptions47 = convertFurigana(quizData.blankOptions);
+        const processedAnswerContent47 = convertFurigana(quizData.answerContent || quizData.blankOptions || '');
         const processedScriptText47 = convertFurigana(quizData.scriptText || '');
         const processedInstructions47 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
         
         return getListenSingleChoiceTemplate(
           processedParagraphText47,
-          processedBlankOptions47,
+          processedAnswerContent47,
           quizData.audioFile || '',
           timeSegments47,
           processedInstructions47,
@@ -949,15 +949,15 @@ const generateQuizTemplate = (templateId, quizData) => {
             ? `${quizData.startTime}-${quizData.endTime}` 
             : '0-0');
         
-        // Apply furigana conversion to paragraphText, blankOptions, and scriptText
+        // Apply furigana conversion to paragraphText, answerContent, and scriptText
         const processedParagraphText43 = convertFurigana(quizData.paragraphText);
-        const processedBlankOptions43 = convertFurigana(quizData.blankOptions);
+        const processedAnswerContent43 = convertFurigana(quizData.answerContent || quizData.blankOptions || '');
         const processedScriptText43 = convertFurigana(quizData.scriptText || '');
         const processedInstructions43 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
         
         return getListenSingleChoiceTemplate(
           processedParagraphText43,
-          processedBlankOptions43,
+          processedAnswerContent43,
           quizData.audioFile || '',
           timeSegments43,
           processedInstructions43,
@@ -972,14 +972,14 @@ const generateQuizTemplate = (templateId, quizData) => {
           ? `${quizData.startTime}-${quizData.endTime}` 
           : '0-0');
       
-      // Apply furigana conversion to paragraphText and blankOptions (scriptText handled by template)
+      // Apply furigana conversion to paragraphText and answerContent (scriptText handled by template)
       const processedParagraphText40 = convertFurigana(quizData.paragraphText);
-      const processedBlankOptions40 = convertFurigana(quizData.blankOptions);
+      const processedAnswerContent40 = convertFurigana(quizData.answerContent || quizData.blankOptions || '');
       const processedInstructions40 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
       
       return getListenSingleChoiceNoImageTemplate(
         processedParagraphText40,
-        processedBlankOptions40,
+        processedAnswerContent40,
         quizData.audioFile || '',
         timeSegments,
         processedInstructions40,
@@ -993,14 +993,14 @@ const generateQuizTemplate = (templateId, quizData) => {
           ? `${quizData.startTime}-${quizData.endTime}` 
           : '0-0');
       
-      // Apply furigana conversion to paragraphText and blankOptions (scriptText handled by template)
+      // Apply furigana conversion to paragraphText and answerContent (scriptText handled by template)
       const processedParagraphText44 = convertFurigana(quizData.paragraphText);
-      const processedBlankOptions44 = convertFurigana(quizData.blankOptions);
+      const processedAnswerContent44 = convertFurigana(quizData.answerContent || quizData.blankOptions || '');
       const processedInstructions44 = convertFurigana(quizData.instructions || '音声を聞いて、正しい答えを選んでください。');
       
       return getListenSingleChoiceNoImageTemplate(
         processedParagraphText44,
-        processedBlankOptions44,
+        processedAnswerContent44,
         quizData.audioFile || '',
         timeSegments44,
         processedInstructions44,
@@ -1075,7 +1075,7 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT:
       return getGrammarSingleSelectTemplate29(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '正しい文を選んでください。',
         quizData.scriptText || ''
       );
@@ -1125,125 +1125,132 @@ const generateQuizTemplate = (templateId, quizData) => {
         timeSegments67,
         processedInstructions67,
         quizData.scriptText || '', // Pass original scriptText without furigana processing
-        quizData.imageFile || '',
         processedAnswerContent67,
         processedBlankOptions67  // Pass the processed blank options with furigana
       );
 
     case TEMPLATE_IDS.GRAMMAR_DROPDOWN:
+      // DEBUG: Log values to verify correct mapping
+      console.log('🔍 Template 18 Debug:', {
+        paragraphText: quizData.paragraphText,
+        answerContent: quizData.answerContent,
+        optionsForBlanks: quizData.optionsForBlanks,
+        'Parameter 2 (optionsForBlanks)': quizData.answerContent || quizData.optionsForBlanks || '',
+        'Parameter 9 (answerContent)': quizData.paragraphText || ''
+      });
       return getGrammarDropdownTemplate(
-        quizData.paragraphText,
-        quizData.optionsForBlanks || '',
+        quizData.paragraphText || '', // parameter 1: questionText (not used in template, but kept for compatibility)
+        quizData.answerContent || quizData.optionsForBlanks || '', // parameter 2: optionsForBlanks (dropdown options)
         quizData.audioFile || '',
         quizData.startTime || 0,
         quizData.endTime || 0,
         quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
         quizData.scriptText || '',
         quizData.imageFile || '',
-        quizData.answerContent || ''
+        quizData.paragraphText || '' // parameter 9: paragraphText - content with ー placeholders to be replaced with dropdowns
       );
 
     case TEMPLATE_IDS.ID19_GRAMMAR_DROPDOWN:
       return getGrammarDropdownTemplate(
-        quizData.paragraphText,
-        quizData.optionsForBlanks || '',
+        quizData.paragraphText || '',
+        quizData.answerContent || quizData.optionsForBlanks || '',
         quizData.audioFile || '',
         quizData.startTime || 0,
         quizData.endTime || 0,
         quizData.instructions || '',
         quizData.scriptText || '',
         quizData.imageFile || '',
-        quizData.answerContent || ''
+        quizData.paragraphText || ''
       );
 
     case TEMPLATE_IDS.ID6_GRAMMAR_DROPDOWN:
         return getGrammarDropdownTemplate(
-          quizData.paragraphText,
-          quizData.optionsForBlanks || '',
+          quizData.paragraphText || '',
+          quizData.answerContent || quizData.optionsForBlanks || '',
           quizData.audioFile || '',
           quizData.startTime || 0,
           quizData.endTime || 0,
           quizData.instructions || '',
           quizData.scriptText || '',
           quizData.imageFile || '',
-          quizData.answerContent || ''
+          quizData.paragraphText || ''
         );
     
     case TEMPLATE_IDS.ID21_GRAMMAR_DROPDOWN:
           return getGrammarDropdownTemplate(
-            quizData.paragraphText,
-            quizData.optionsForBlanks || '',
+            quizData.paragraphText || '',
+            quizData.answerContent || quizData.optionsForBlanks || '',
             quizData.audioFile || '',
             quizData.startTime || 0,
             quizData.endTime || 0,
             quizData.instructions || '',
             quizData.scriptText || '',
             quizData.imageFile || '',
-            quizData.answerContent || ''
+            quizData.paragraphText || ''
           );
 
     case TEMPLATE_IDS.ID23_GRAMMAR_DROPDOWN:
             return getGrammarDropdownTemplate(
-              quizData.paragraphText,
-              quizData.optionsForBlanks || '',
+              quizData.paragraphText || '',
+              quizData.answerContent || quizData.optionsForBlanks || '',
               quizData.audioFile || '',
               quizData.startTime || 0,
               quizData.endTime || 0,
               quizData.instructions || '',
               quizData.scriptText || '',
               quizData.imageFile || '',
-              quizData.answerContent || ''
+              quizData.paragraphText || ''
             );
 
     case TEMPLATE_IDS.ID24_GRAMMAR_DROPDOWN:
               return getGrammarDropdownTemplate(
-                quizData.paragraphText,
-                quizData.optionsForBlanks || '',
+                quizData.paragraphText || '',
+                quizData.answerContent || quizData.optionsForBlanks || '',
                 quizData.audioFile || '',
                 quizData.startTime || 0,
                 quizData.endTime || 0,
                 quizData.instructions || '',
                 quizData.scriptText || '',
                 quizData.imageFile || '',
-                quizData.answerContent || ''
+                quizData.paragraphText || ''
               );
     case TEMPLATE_IDS.ID62_GRAMMAR_DROPDOWN:
                 return getGrammarDropdownTemplate(
-                  quizData.paragraphText,
-                  quizData.optionsForBlanks || '',
+                  quizData.paragraphText || '',
+                  quizData.answerContent || quizData.optionsForBlanks || '',
                   quizData.audioFile || '',
                   quizData.startTime || 0,
                   quizData.endTime || 0,
                   quizData.instructions || '',
                   quizData.scriptText || '',
                   quizData.imageFile || '',
-                  quizData.answerContent || ''
+                  quizData.paragraphText || ''
                 );
 
     case TEMPLATE_IDS.ID26_GRAMMAR_DROPDOWN:
                   return getGrammarDropdownTemplate(
-                    quizData.paragraphText,
-                    quizData.optionsForBlanks || '',
+                    quizData.paragraphText || '',
+                    quizData.answerContent || quizData.optionsForBlanks || '',
                     quizData.audioFile || '',
                     quizData.startTime || 0,
                     quizData.endTime || 0,
                     quizData.instructions || '',
                     quizData.scriptText || '',
                     quizData.imageFile || '',
-                    quizData.answerContent || ''
+                    quizData.paragraphText || ''
                   );
 
     case TEMPLATE_IDS.ID30_GRAMMAR_DROPDOWN:
                     return getGrammarDropdownTemplate(
-                      quizData.paragraphText,
-                      quizData.optionsForBlanks || '',
+                      quizData.paragraphText || '',
+                      quizData.answerContent || quizData.optionsForBlanks || '',
                       quizData.audioFile || '',
                       quizData.startTime || 0,
                       quizData.endTime || 0,
                       quizData.instructions || '',
                       quizData.scriptText || '',
                       quizData.imageFile || '',
-                      quizData.answerContent || ''
+                      quizData.paragraphText || ''
                     );
 
     case TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT:
@@ -1263,7 +1270,7 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT:
       return getGrammarSingleSelectTemplate(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '正しい文を選んでください。',
         quizData.scriptText || ''
       );
@@ -1271,7 +1278,7 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT:
       return getGrammarSingleSelectTemplate(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '★＿＿＿に　入る　ものは　どれですか。',
         quizData.scriptText || ''
       );
@@ -1384,7 +1391,7 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE:
       return getGrammarSingleSelectTemplate(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || 'どう　かきますか',
         quizData.scriptText || ''
       );
@@ -1392,7 +1399,7 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1:
       return getGrammarSingleSelectTemplate(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || 'どう　かきますか',
         quizData.scriptText || ''
       );
@@ -1401,35 +1408,35 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3:
         return getGrammarSingleSelectTemplate7(
           quizData.paragraphText || '',
-          quizData.blankOptions || '',
+          quizData.answerContent || quizData.blankOptions || '',
           quizData.instructions || '_______　の文と　だいたい　同じ　いみの　文が　あります。１～４から　１つ　えらんで　ください。',
           quizData.scriptText || ''
         );
     case TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4:
           return getGrammarSingleSelectTemplate(
             quizData.paragraphText || '',
-            quizData.blankOptions || '',
+            quizData.answerContent || quizData.blankOptions || '',
             quizData.instructions || 'どう　かきますか',
             quizData.scriptText || ''
           );
     case TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5:
           return getGrammarSingleSelectTemplate(
             quizData.paragraphText || '',
-            quizData.blankOptions || '',
+            quizData.answerContent || quizData.blankOptions || '',
             quizData.instructions || 'どう　よみますか',
             quizData.scriptText || ''
           );
     case TEMPLATE_IDS.ID10_VOCAB_SINGLE_SELECT_6:
       return getGrammarDropdownTemplate(
-        quizData.paragraphText,
-        quizData.optionsForBlanks || '',
+        quizData.paragraphText || '',
+        quizData.answerContent || quizData.optionsForBlanks || '',
         quizData.audioFile || '',
         quizData.startTime || 0,
         quizData.endTime || 0,
         quizData.instructions || '音声を聞いて、正しい答えを選んでください。',
         quizData.scriptText || '',
         quizData.imageFile || '',
-        quizData.answerContent || ''
+        quizData.paragraphText || ''
       );
     case TEMPLATE_IDS.ID12_VOCAB_DRAG_DROP:
       const vocabDragDropWords2 = quizData.wordBank.split(',').map(word => convertFurigana(word.trim()));
@@ -1450,35 +1457,35 @@ const generateQuizTemplate = (templateId, quizData) => {
     case TEMPLATE_IDS.ID13_VOCAB_SINGLE_SELECT_7:
       return getGrammarSingleSelectTemplate(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '_______　の文と　だいたい　同じ　いみの　文が　あります。１～４から　１つ　えらんで　ください。',
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID14_VOCAB_SINGLE_SELECT_8:
       return getGrammarSingleSelectTemplate(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '_____の　ことばは　ひらがなで　どう　かきますか。1・2・3・4から　いちばん　いい　ものを　ひとつ　えらんで　ください。',
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9:
       return getGrammarSingleSelectTemplate(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '_____の　ことばは　どう　かきますか。1・2・3・4から　いちばん　いい　ものを　ひとつ　えらんで　ください。',
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10:
       return getGrammarSingleSelectTemplate7(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '（ー）に　何を　入れますか。1～4から　１つ　えらんで　ください。',
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11:
       return getGrammarSingleSelectTemplate7(
         quizData.paragraphText || '',
-        quizData.blankOptions || '',
+        quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '_______　のぶんと　だいたい　同じ　いみの　ぶんは　どれですか。',
         quizData.scriptText || ''
       );
@@ -1755,11 +1762,21 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
         setProgress({ current: i + 1, total: quizzes.length });
 
         // Convert Excel data to quiz format
+        // For template 18 and related IDs: Excel columns map directly:
+        // - Excel paragraphText → quizData.paragraphText (content with ー placeholders)
+        // - Excel answerContent → quizData.answerContent (dropdown options)
+        const isGrammarDropdown = [18, 19, 6, 21, 23, 24, 26, 30, 62, 5, 10].includes(parseInt(quiz.problemTypeId) || 0);
         const quizData = {
           problemTypeId: parseInt(quiz.problemTypeId) || 39, // Default to ID 39
           unitTitle: String(quiz.unitTitle || `Quiz ${i + 1}`),
-          paragraphText: String(quiz.paragraphText || quiz.questionText || ''),
-          blankOptions: String(quiz.blankOptions || quiz.answerOptions || ''),
+          paragraphText: String(
+            quiz.paragraphText || quiz.questionText || ''
+          ),
+          answerContent: String(
+            quiz.answerContent || quiz.optionsForBlanks || quiz.blankOptions || quiz.answerOptions || ''
+          ),
+          blankOptions: String(quiz.blankOptions || quiz.answerOptions || ''), // Keep for backward compatibility
+          optionsForBlanks: String(quiz.optionsForBlanks || ''), // Keep for backward compatibility
           scriptText: String(quiz.scriptText || ''),
           instructions: String(quiz.instructions || '音声を聞いて、正しい答えを選んでください。'),
           audioFile: String(quiz.audioFile || '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3'),
@@ -1773,8 +1790,6 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           correctAnswers: String(quiz.correctAnswers || ''),
           wordBank: String(quiz.wordBank || ''),
           fixedWordsExplanation: String(quiz.fixedWordsExplanation || ''),
-          optionsForBlanks: String(quiz.optionsForBlanks || ''),
-          answerContent: String(quiz.answerContent || quiz.answers || ''),
           questionText: String(quiz.questionText || ''),
           words: String(quiz.words || ''),
           dropZones: String(quiz.dropZones || '[]')
@@ -1917,7 +1932,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
             <Form.Text>
               Upload an Excel file with quiz data. The first row should contain column headers.
               <br />
-              <strong>Required columns:</strong> problemTypeId, unitTitle, paragraphText, blankOptions
+              <strong>Required columns:</strong> problemTypeId, unitTitle, paragraphText, answerContent (or blankOptions for backward compatibility)
               <br />
               <strong>Optional columns:</strong> scriptText, instructions, audioFile, imageFile, images, startTime, endTime, timeLimit, published
               <br />

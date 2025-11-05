@@ -120,7 +120,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             width: 100%;
             max-width: 100%;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             overflow: hidden;
         }
@@ -414,6 +414,9 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                     {{QUESTIONS}}
                 </div>
                 <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
+                <div style="display: none;">
+                    <span id="script-text-hidden">{{EXPLANATION_TEXT}}</span>
+                </div>
             </form>
         </div>
         
@@ -550,6 +553,25 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                 answerContainer.style.display = 'none';
             }
 
+            // Function to encode script text for safe transmission (like template 67)
+            function encodeScriptText(text) {
+                if (!text) return '';
+                
+                // Script text already has underline styling from template processing
+                // Just encode special characters for safe transmission
+                return text
+                    .replace(/\\\\/g, '\\\\\\\\')  // Escape backslashes first
+                    .replace(/"/g, '\\\\"')    // Escape double quotes
+                    .replace(/'/g, "\\\\'")    // Escape single quotes
+                    .replace(/\\n/g, '\\\\n')   // Escape newlines
+                    .replace(/\\r/g, '\\\\r')   // Escape carriage returns
+                    .replace(/\\t/g, '\\\\t')   // Escape tabs
+                    .replace(/「/g, '\\\\u300c') // Escape Japanese opening bracket
+                    .replace(/」/g, '\\\\u300d') // Escape Japanese closing bracket
+                    .replace(/（/g, '\\\\u3008') // Escape Japanese opening parenthesis
+                    .replace(/）/g, '\\\\u3009'); // Escape Japanese closing parenthesis
+            }
+
             function getGrade() {
                 console.log('🎯 getGrade() called - Processing quiz submission');
                 
@@ -561,6 +583,31 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                 
                 updateDisplay(result);
                 console.log('📊 Quiz results:', result);
+                
+                // Send quiz data to parent for ShowScript button (like template 67)
+                try {
+                    // Get script text from the template - use innerHTML to preserve HTML tags
+                    const scriptTextElement = document.getElementById('script-text-hidden');
+                    const scriptText = scriptTextElement ? scriptTextElement.innerHTML : '';
+                    
+                    // Encode script text to handle special characters (like template 67)
+                    const encodedScriptText = encodeScriptText(scriptText);
+                    
+                    const quizData = {
+                        templateId: 31,
+                        scriptText: encodedScriptText
+                    };
+                    
+                    // Send message to parent to show ShowScript button (like template 67)
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'quiz.data.ready',
+                            quizData: quizData
+                        }, '*');
+                    }
+                } catch (error) {
+                    console.error('Error sending quiz data to parent:', error);
+                }
                 
                 // ✅ CALL COMPLETION API (NON-BLOCKING)
                 setTimeout(() => {

@@ -42,11 +42,16 @@ const ReadingMultipleQuestionForm = ({ quizData, setQuizData }) => {
         />
         <Form.Text>
           Enter image URLs separated by commas (,) or semicolons (;).<br/>
-          Images will be displayed vertically above the reading text.<br/>
+          <strong>Image Placement:</strong><br/>
+          • Images with <code>.1.</code> in filename (e.g., <code>1.1.png</code>, <code>ID31_1.1.png</code>) → Left container (with reading text)<br/>
+          • Images with <code>.2.</code> in filename (e.g., <code>1.2.png</code>, <code>ID31_1.2.png</code>) → Right container (with questions)<br/>
+          • Images without .1. or .2. → Default to left container (backward compatibility)<br/>
+          <br/>
           Example:<br/>
-          "image1.jpg, image2.jpg, image3.jpg"<br/>
+          "image1.1.jpg, image1.2.jpg"<br/>
           or<br/>
-          "image1.jpg; image2.jpg; image3.jpg"<br/>
+          "/asset-v1:.../ID31_1.1.png; /asset-v1:.../ID31_1.2.png"<br/>
+          <br/>
           Leave empty if no images are needed for this quiz.
         </Form.Text>
       </Form.Group>

@@ -1285,33 +1285,57 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.READING_MULTIPLE_QUESTION:
       quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
+      // Ensure paragraphText (readingText) is not fallback to questionText
+      // readingText should only come from paragraphText, not questionText
+      const readingText31 = quizData.paragraphText ? quizData.paragraphText.trim() : '';
+      // Apply furigana conversion to text values (like template 7)
+      // Note: blankOptions will be converted in template 31 for each option separately
+      const processedReadingText31 = convertFurigana(readingText31);
+      const processedQuestionText31 = convertFurigana(quizData.questionText || '');
+      const processedInstructions31 = convertFurigana(quizData.instructions);
       return getReadingMultipleQuestionTemplate(
-        quizData.paragraphText || '',
-        quizData.questionText || '',
-        quizData.blankOptions || '',
-        quizData.instructions,
+        processedReadingText31,
+        processedQuestionText31,
+        quizData.blankOptions || '', // Pass original blankOptions, template will convert each option
+        processedInstructions31,
         quizData.scriptText || '',
         quizData.images || ''
       );
 
       case TEMPLATE_IDS.ID34_READING_MULTIPLE_QUESTION:
         quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
+        // Ensure paragraphText (readingText) is not fallback to questionText
+        // readingText should only come from paragraphText, not questionText
+        const readingText34 = quizData.paragraphText ? quizData.paragraphText.trim() : '';
+        // Apply furigana conversion to text values (like template 7)
+        // Note: blankOptions will be converted in template 31 for each option separately
+        const processedReadingText34 = convertFurigana(readingText34);
+        const processedQuestionText34 = convertFurigana(quizData.questionText || '');
+        const processedInstructions34 = convertFurigana(quizData.instructions);
         return getReadingMultipleQuestionTemplate(
-          quizData.paragraphText || '',
-          quizData.questionText || '',
-          quizData.blankOptions || '',
-          quizData.instructions,
+          processedReadingText34,
+          processedQuestionText34,
+          quizData.blankOptions || '', // Pass original blankOptions, template will convert each option
+          processedInstructions34,
           quizData.scriptText || '',
           quizData.images || ''
         );
 
     case TEMPLATE_IDS.READING_MULTIPLE_QUESTION_ALT:
       quizData.instructions = quizData.instructions || '次の文章を読んで、質問に答えてください。';
+      // Ensure paragraphText (readingText) is not fallback to questionText
+      // readingText should only come from paragraphText, not questionText
+      const readingTextAlt = quizData.paragraphText ? quizData.paragraphText.trim() : '';
+      // Apply furigana conversion to text values (like template 7)
+      // Note: blankOptions will be converted in template 31 for each option separately
+      const processedReadingTextAlt = convertFurigana(readingTextAlt);
+      const processedQuestionTextAlt = convertFurigana(quizData.questionText || '');
+      const processedInstructionsAlt = convertFurigana(quizData.instructions);
       return getReadingMultipleQuestionTemplate(
-        quizData.paragraphText || '',
-        quizData.questionText || '',
-        quizData.blankOptions || '',
-        quizData.instructions,
+        processedReadingTextAlt,
+        processedQuestionTextAlt,
+        quizData.blankOptions || '', // Pass original blankOptions, template will convert each option
+        processedInstructionsAlt,
         quizData.scriptText || '',
         quizData.images || ''
       );
@@ -1328,11 +1352,19 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.READING_MULTIPLE_QUESTION_CONVERSATION:
       quizData.instructions = quizData.instructions || 'つぎのぶんしょうを読(よ)んで、質問(しつもん)にこたえてください。答(こた)えは、１・２・３・４からいちばん いいものを一(ひと)つ えらんでください。';
+      // Ensure paragraphText (readingText) is not fallback to questionText
+      // readingText should only come from paragraphText, not questionText
+      const readingTextConv = quizData.paragraphText ? quizData.paragraphText.trim() : '';
+      // Apply furigana conversion to text values (like template 7)
+      // Note: blankOptions will be converted in template 31 for each option separately
+      const processedReadingTextConv = convertFurigana(readingTextConv);
+      const processedQuestionTextConv = convertFurigana(quizData.questionText || '');
+      const processedInstructionsConv = convertFurigana(quizData.instructions);
       return getReadingMultipleQuestionTemplate(
-        quizData.paragraphText || '',
-        quizData.questionText || '',
-        quizData.blankOptions || '',
-        quizData.instructions,
+        processedReadingTextConv,
+        processedQuestionTextConv,
+        quizData.blankOptions || '', // Pass original blankOptions, template will convert each option
+        processedInstructionsConv,
         quizData.scriptText || '',
         quizData.images || ''
       );
@@ -1769,9 +1801,9 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
         const quizData = {
           problemTypeId: parseInt(quiz.problemTypeId) || 39, // Default to ID 39
           unitTitle: String(quiz.unitTitle || `Quiz ${i + 1}`),
-          paragraphText: String(
-            quiz.paragraphText || quiz.questionText || ''
-          ),
+          // For template 31, paragraphText is readingText and should NOT fallback to questionText
+          // Only use paragraphText if it exists, otherwise leave empty
+          paragraphText: String(quiz.paragraphText || ''),
           answerContent: String(
             quiz.answerContent || quiz.optionsForBlanks || quiz.blankOptions || quiz.answerOptions || ''
           ),

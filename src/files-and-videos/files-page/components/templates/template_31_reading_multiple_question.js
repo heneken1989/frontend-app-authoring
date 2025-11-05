@@ -52,6 +52,17 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             background-color: #fff;
             width: 100%;
         }
+        .images-container-right {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            margin: 0;
+            width: 100%;
+            overflow-x: hidden;
+            border: none;
+            padding: 0;
+            background-color: #fff;
+        }
         .instructions {
             font-size: 1.1rem;
             line-height: 1.5;
@@ -59,7 +70,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             font-weight: bold;
             font-style: italic;
             margin: 0;
-            padding: 10px;
+            padding: 5px 10px;
             background-color: #fff;
             word-wrap: break-word;
             overflow-wrap: break-word;
@@ -71,20 +82,24 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             overflow-y: auto;
             overflow-x: hidden;
             flex-grow: 1;
-            padding: 10px;
+            padding: 0;
+            margin: 0;
             background-color: #fff;
         }
         .images-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 3px;
+            margin: 0;
             width: 100%;
             overflow-x: hidden;
-            min-height: 300px;
-            border: 1px dashed #ccc;
-            padding: 10px;
-            background-color: #f9f9f9;
+            overflow-y: auto;
+            border: none;
+            padding: 0;
+            background-color: #fff;
+            flex: 1;
+            max-height: 100%;
+            height: 100%;
         }
         .image-item {
             width: 100%;
@@ -92,10 +107,16 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
+            max-height: 90vh;
+            flex: 1;
         }
         .image-item img {
             max-width: 100%;
+            max-height: 90vh;
+            width: auto;
             height: auto;
+            object-fit: contain;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -150,76 +171,91 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             flex: 0 1 auto;
             min-width: 120px;
             max-width: 100%;
-            padding: 6px 6px 6px 24px;
+            padding: 12px 16px;
             border: none;
+            outline: none;
             background: transparent;
-            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1rem;
-            font-weight: 400;
-            line-height: 1.5;
-            color: #212529;
+            font-weight: normal;
+            line-height: 1.4;
+            color: #333;
             text-align: left;
             position: relative;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             white-space: normal;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            border-radius: 3px;
+            border-radius: 4px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
         }
-        .option-button:hover {
-            background-color: #e9ecef;
+        .option-button:hover:not(.selected):not(.correct):not(.incorrect) {
+            background-color: #f8f9fa;
+        }
+        .option-button:hover:not(.selected):not(.correct):not(.incorrect)::before {
+            border-color: #999;
         }
         .option-button::before {
             content: '';
-            position: absolute;
-            left: 6px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 14px;
-            height: 14px;
-            border: 1px solid #666;
-            border-radius: 2px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-radius: 3px;
             background: white;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        .option-button.selected {
+            background: transparent;
+            border: none;
+            color: #333;
         }
         .option-button.selected::before {
-            background: #0075b4;
-            border-color: #0075b4;
-        }
-        .option-button.selected::after {
+            background: #000;
+            border-color: #000;
             content: '✓';
-            position: absolute;
-            left: 11px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 12px;
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .option-button.correct {
+            background: transparent;
+            border: none;
+            color: #333;
         }
         .option-button.correct::before {
-            background: #2e7d32;
-            border-color: #2e7d32;
-        }
-        .option-button.correct::after {
+            background: #4caf50;
+            border-color: #4caf50;
             content: '✓';
-            position: absolute;
-            left: 11px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 12px;
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .option-button.incorrect {
+            background: transparent;
+            border: none;
+            color: #333;
         }
         .option-button.incorrect::before {
-            background: #b40000;
-            border-color: #b40000;
-        }
-        .option-button.incorrect::after {
+            background: #f44336;
+            border-color: #f44336;
             content: '✗';
-            position: absolute;
-            left: 11px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 12px;
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
         }
         .answer-feedback {
             margin-top: 6px;
@@ -338,15 +374,19 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             </div>
             <div class="content-container">
                 <div class="images-container">
-                    <!-- Images will be inserted here -->
-                    {{IMAGES}}
+                    <!-- Images with .1. in filename will be inserted here -->
+                    {{IMAGES_LEFT}}
                 </div>
-                <div class="reading-text">{{READING_TEXT}}</div>
             </div>
         </div>
         
         <div class="right-container">
             <form id="quizForm" onsubmit="return false;">
+                <div class="images-container-right">
+                    <!-- Images with .2. in filename will be inserted here -->
+                    {{IMAGES_RIGHT}}
+                </div>
+                {{READING_TEXT_CONTAINER}}
                 <div class="questions-container" id="questions-container">
                     {{QUESTIONS}}
                 </div>
@@ -356,10 +396,6 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         
         <div class="answer-paragraph-container" id="answer-paragraph-container" style="display: none;">
             <div class="answer-paragraph-inner">
-                <div class="explanation-section">
-                    <div class="explanation-title">解説</div>
-                    <div id="explanation-paragraph" class="explanation-text">{{EXPLANATION_TEXT}}</div>
-                </div>
                 <div class="your-answer-section">
                     <div id="answer-paragraph" class="answer-paragraph"></div>
                 </div>
@@ -421,8 +457,43 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             }
 
             function updateDisplay(result) {
+                // Update option buttons with correct/incorrect colors (like template 7)
+                // Only update if result is provided (after check), otherwise just update based on current state
+                const shouldShowAnswer = window.quizState.showAnswer;
+                
+                for (let questionId in questions) {
+                    const questionBlock = document.getElementById(questionId);
+                    if (!questionBlock) continue;
+                    
+                    const selectedAnswer = window.selectedAnswers[questionId];
+                    const correctAnswer = questions[questionId].correctAnswer;
+                    const options = questionBlock.querySelectorAll('.option-button');
+                    
+                    options.forEach(button => {
+                        const isSelected = button.dataset.value === selectedAnswer;
+                        const isCorrect = button.dataset.value === correctAnswer;
+                        
+                        button.classList.remove('selected', 'correct', 'incorrect');
+                        
+                        if (shouldShowAnswer) {
+                            // When showing answer, show correct/incorrect colors
+                            if (isCorrect) {
+                                button.classList.add('correct'); // Xanh cho đáp án đúng
+                            } else if (isSelected) {
+                                button.classList.add('incorrect'); // Đỏ cho lựa chọn sai
+                            }
+                            button.disabled = true;
+                        } else {
+                            // When not showing answer, just show selected state (màu đen)
+                            if (isSelected) {
+                                button.classList.add('selected');
+                            }
+                            button.disabled = false;
+                        }
+                    });
+                }
+                
                 const answerContainer = document.getElementById('answer-paragraph-container');
-                const explanationSection = document.querySelector('.explanation-section');
                 
                 // Update answer paragraph with results
                 let answerHtml = '';
@@ -452,8 +523,8 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                 const answerParagraph = document.getElementById('answer-paragraph');
                 answerParagraph.innerHTML = answerHtml;
                 
-                // Only toggle the visibility of the answer container
-                answerContainer.style.display = window.quizState.showAnswer ? 'block' : 'none';
+                // Always hide answer container - no toggle needed
+                answerContainer.style.display = 'none';
             }
 
             function getGrade() {
@@ -461,9 +532,9 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                 
                 const result = calculateResults();
                 
-                // Toggle show/hide answers
-                window.quizState.showAnswer = !window.quizState.showAnswer;
-                document.getElementById('showAnswerFlag').value = window.quizState.showAnswer ? 'true' : 'false';
+                // Always show answers (no toggle) - but don't show answer container
+                window.quizState.showAnswer = true;
+                document.getElementById('showAnswerFlag').value = 'true';
                 
                 updateDisplay(result);
                 console.log('📊 Quiz results:', result);
@@ -613,6 +684,66 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                 }
             }
 
+            // Listen for messages from parent (reset functionality like template 7)
+            window.addEventListener('message', function(event) {
+                // Handle JSChannel messages (from EdX)
+                if (event.data && event.data.method === 'JSInput::getGrade') {
+                    getGrade();
+                    return;
+                }
+                
+                // Process postMessage from parent window
+                if (event.source !== window.parent && event.source !== window) {
+                    return;
+                }
+                
+                if (event.data && event.data.type === 'problem.check') {
+                    // Reset quiz state
+                    resetQuiz();
+                }
+                
+                if (event.data && event.data.type === 'problem.submit') {
+                    if (event.data.action === 'check') {
+                        // Trigger quiz submission when Check button is clicked
+                        getGrade();
+                    } else if (event.data.action === 'reset') {
+                        // Reset quiz when reset action is received
+                        resetQuiz();
+                    }
+                }
+            });
+            
+            // Reset quiz function (like template 7)
+            function resetQuiz() {
+                // Reset all option buttons
+                document.querySelectorAll('.option-button').forEach(button => {
+                    button.classList.remove('selected', 'correct', 'incorrect');
+                    button.disabled = false;
+                });
+                
+                // Clear selected answers
+                window.selectedAnswers = {};
+                
+                // Reset state
+                window.quizState.answer = '';
+                window.quizState.score = 0;
+                window.quizState.showAnswer = false;
+                
+                // Reset show flag
+                const showFlag = document.getElementById('showAnswerFlag');
+                if (showFlag) {
+                    showFlag.value = 'false';
+                }
+                
+                // Hide answer container
+                const answerContainer = document.getElementById('answer-paragraph-container');
+                if (answerContainer) {
+                    answerContainer.style.display = 'none';
+                }
+                
+                console.log('🔄 Quiz reset completed');
+            }
+
             if (window.parent !== window) {
                 var channel = Channel.build({
                     window: window.parent,
@@ -629,26 +760,80 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
 </body>
 </html>`;
 
+// Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+function convertFurigana(text) {
+    if (!text || typeof text !== "string") return text;
+    
+    // Chỉ Kanji (và vài ký tự đặc biệt)
+    const kanjiWord = "[\u4E00-\u9FFF々〆〤ヶ]+";
+    
+    // Dấu ngoặc Nhật (全角)
+    const reJaParens = new RegExp("(" + kanjiWord + ")（([^）]+)）", "g");
+    text = text.replace(reJaParens, (match, p1, p2) => {
+        return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
+    });
+    
+    // Dấu ngoặc ASCII (半角)
+    const reAsciiParens = new RegExp("(" + kanjiWord + ")\\(([^)]+)\\)", "g");
+    text = text.replace(reAsciiParens, (match, p1, p2) => {
+        return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
+    });
+    
+    return text;
+}
+
 export const getReadingMultipleQuestionTemplate = (readingText, questionText, blankOptions, instructions = '以下の文章を読んで、質問に答えてください。', explanationText = '', images = []) => {
     // Split questions, options and explanations by semicolons
     const questions = questionText.split(';').map(q => q.trim()).filter(q => q);
     const optionsList = blankOptions.split(';').map(o => o.trim()).filter(o => o);
     const explanations = explanationText.split(';').map(e => e.trim()).filter(e => e);
 
-    // Process images - support both single image string and array of images
-    let imagesHtml = '';
-    let hasImages = false;
+    // Process images - separate images with .1 and .2 in filename
+    let imagesLeftHtml = '';
+    let imagesRightHtml = '';
+    let hasImagesLeft = false;
+    let hasImagesRight = false;
     
     if (images) {
         // If images is a string, split by comma or semicolon
         const imageArray = Array.isArray(images) ? images : images.split(/[,;]/).map(img => img.trim()).filter(img => img);
         
-        // Only generate HTML if we have valid image paths
-        if (imageArray.length > 0) {
-            imagesHtml = imageArray.map((imagePath) => {
+        // Separate images based on .1 or .2 in filename
+        const leftImages = [];
+        const rightImages = [];
+        
+        imageArray.forEach((imagePath) => {
+            // Check if filename contains .1 or .2 pattern (e.g., 1.1.png, ID31_1.1.png, 20251103_ID31_1.1.png)
+            const filename = imagePath.split('/').pop() || imagePath;
+            
+            // Pattern: tìm .1. hoặc .2. trong tên file (số.chấm.số.chấm.extension)
+            // Ví dụ: 1.1.png, ID31_1.1.png, 20251103_ID31_1.1.png
+            if (/\.1\./.test(filename)) {
+                // File có .1. → hiển thị bên trái
+                leftImages.push(imagePath);
+            } else if (/\.2\./.test(filename)) {
+                // File có .2. → hiển thị bên phải
+                rightImages.push(imagePath);
+            } else {
+                // Default: if no .1. or .2., put in left container (backward compatibility)
+                leftImages.push(imagePath);
+            }
+        });
+        
+        // Generate HTML for left images (container bên trái)
+        if (leftImages.length > 0) {
+            imagesLeftHtml = leftImages.map((imagePath) => {
                 return '<div class="image-item"><img src="' + imagePath + '" alt="Reading Image" /></div>';
             }).join('');
-            hasImages = true;
+            hasImagesLeft = true;
+        }
+        
+        // Generate HTML for right images (container bên phải)
+        if (rightImages.length > 0) {
+            imagesRightHtml = rightImages.map((imagePath) => {
+                return '<div class="image-item"><img src="' + imagePath + '" alt="Reading Image" /></div>';
+            }).join('');
+            hasImagesRight = true;
         }
     }
 
@@ -659,17 +844,29 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
         const correctAnswer = options[0];
         const sortedOptions = [...options].sort((a, b) => a.localeCompare(b, 'ja'));
         
+        // If only 1 question, show "問" without number; if multiple, show "問1", "問2", etc.
+        const questionNumber = questions.length === 1 ? '問' : '問' + (index + 1);
+        
         return '<div class="question-block" id="' + questionId + '">' +
-               '<div class="question-text">問' + (index + 1) + '　' + questionText + '</div>' +
+               '<div class="question-text">' + questionNumber + '　' + questionText + '</div>' +
                '<div class="options-container">' + 
-               sortedOptions.map((option, optIndex) => 
-                   '<button type="button" class="option-button" data-value="' + option + '" onclick="' +
+               sortedOptions.map((option, optIndex) => {
+                   // Convert furigana for display (like template 7)
+                   // data-value keeps original value for comparison, innerHTML shows converted value
+                   const optionDisplay = convertFurigana(option);
+                   const escapedOption = option.replace(/"/g, '&quot;');
+                   return '<button type="button" class="option-button" data-value="' + escapedOption + '" data-question-id="' + questionId + '" onclick="' +
+                   'if(this.disabled) return false;' +
                    'const questionBlock=this.closest(\'.question-block\');' +
-                   'questionBlock.querySelectorAll(\'.option-button\').forEach(btn=>btn.classList.remove(\'selected\'));' +
+                   'if(!questionBlock) return false;' +
+                   'questionBlock.querySelectorAll(\'.option-button\').forEach(function(btn){btn.classList.remove(\'selected\');});' +
                    'this.classList.add(\'selected\');' +
+                   'window.selectedAnswers=window.selectedAnswers||{};' +
                    'window.selectedAnswers[questionBlock.id]=this.dataset.value;' +
-                   '">' + (optIndex + 1) + '. ' + option + '</button>'
-               ).join('') +
+                   'console.log(\'Selected:\', questionBlock.id, this.dataset.value);' +
+                   'return false;' +
+                   '">' + optionDisplay + '</button>';
+               }).join('') +
                '</div>' +
                '</div>';
     }).join('');
@@ -693,19 +890,35 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
                '</div>';
     }).join('');
     
+    // Ensure readingText is empty if not provided, don't use questionText as fallback
+    const finalReadingText = readingText ? readingText.trim() : '';
+    
+    // Only show reading-text container if readingText is not empty
+    const readingTextContainer = finalReadingText 
+        ? `<div class="reading-text">${finalReadingText}</div>`
+        : '';
+    
     let template = readingMultipleQuestionTemplate
-        .replace('{{READING_TEXT}}', readingText)
+        .replace('{{READING_TEXT_CONTAINER}}', readingTextContainer)
         .replace('{{QUESTIONS}}', questionsHtml)
         .replace('{{QUESTIONS_DATA}}', JSON.stringify(questionsData))
         .replace('{{INSTRUCTIONS}}', instructions)
         .replace('{{EXPLANATION_TEXT}}', processedExplanationText || '');
 
-    // Handle images conditionally - hide container if no images
-    if (hasImages) {
-        template = template.replace('{{IMAGES}}', imagesHtml);
+    // Handle left images conditionally - hide container if no images
+    if (hasImagesLeft) {
+        template = template.replace('{{IMAGES_LEFT}}', imagesLeftHtml);
     } else {
         // Remove the entire images-container when no images
-        template = template.replace(/<div class="images-container">[\s\S]*?{{IMAGES}}[\s\S]*?<\/div>/g, '');
+        template = template.replace(/<div class="images-container">[\s\S]*?{{IMAGES_LEFT}}[\s\S]*?<\/div>/g, '');
+    }
+    
+    // Handle right images conditionally - hide container if no images
+    if (hasImagesRight) {
+        template = template.replace('{{IMAGES_RIGHT}}', imagesRightHtml);
+    } else {
+        // Remove the entire images-container-right when no images
+        template = template.replace(/<div class="images-container-right">[\s\S]*?{{IMAGES_RIGHT}}[\s\S]*?<\/div>/g, '');
     }
 
     return template;

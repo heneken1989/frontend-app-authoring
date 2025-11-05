@@ -59,9 +59,12 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             margin: 0;
             width: 100%;
             overflow-x: hidden;
+            overflow-y: auto;
             border: none;
             padding: 0;
             background-color: #fff;
+            max-height: 45vh;
+            flex-shrink: 0;
         }
         .instructions {
             font-size: 1.1rem;
@@ -111,12 +114,32 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             max-height: 90vh;
             flex: 1;
         }
+        .images-container-right .image-item {
+            max-height: 45vh !important;
+            flex: 0 0 auto;
+            width: 100%;
+            max-width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
         .image-item img {
             max-width: 100%;
             max-height: 90vh;
             width: auto;
             height: auto;
             object-fit: contain;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        /* Override for images in right container - must be after .image-item img */
+        .images-container-right .image-item img {
+            max-width: 100% !important;
+            max-height: 45vh !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }

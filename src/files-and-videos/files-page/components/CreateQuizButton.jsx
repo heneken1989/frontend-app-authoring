@@ -33,6 +33,7 @@ import { getListenSingleChoiceNoImageTemplate } from './templates/template_40_li
 import { getListenImageSelectMultipleAnswerTemplate } from './templates/template_63_listen_image_select_multiple_answer';
 import { getListenImageSelectMultipleAnswerTemplate65 } from './templates/template_65_listen_image_select_multiple_answer';
 import { getListenWriteAnswerWithImageTemplate } from './templates/template_67_listen_write_answer_with_image';
+import { getReadingMultipleQuestionTemplate311 } from './templates/template_311_reading_multiple_question';
 import FORM_COMPONENTS, { getFormComponent } from './forms';
 import { getVocabMatchingTemplate } from './templates/template_2_vocab_matching';
 import * as XLSX from 'xlsx'; // Added for Excel parsing
@@ -107,13 +108,41 @@ const parseExcelFile = (file) => {
         const headers = jsonData[0];
         const quizRows = jsonData.slice(1);
         
+        // Debug: Log headers to see available columns
+        console.log('🔍 Excel Headers:', headers);
+        console.log('🔍 Has "images" column?', headers.some(h => h && h.trim().toLowerCase() === 'images'));
+        
         const quizzes = quizRows.map((row, index) => {
           const quiz = {};
           headers.forEach((header, colIndex) => {
             if (header && row[colIndex] !== undefined) {
-              quiz[header.trim()] = row[colIndex];
+              // Trim header and normalize (case-insensitive for common fields)
+              const normalizedHeader = header.trim();
+              const normalizedLower = normalizedHeader.toLowerCase();
+              
+              // Map common variations of column names
+              let finalHeader = normalizedHeader;
+              if (normalizedLower === 'images' || normalizedLower === 'image' || normalizedLower === 'imageurls') {
+                finalHeader = 'images';
+              }
+              
+              quiz[finalHeader] = row[colIndex];
             }
           });
+          
+          // Debug: Log images value for each quiz row
+          if (quiz.images !== undefined) {
+            console.log(`🔍 Quiz row ${index + 1} - images value:`, {
+              images: quiz.images,
+              type: typeof quiz.images,
+              isUndefined: quiz.images === undefined,
+              isNull: quiz.images === null,
+              isEmpty: quiz.images === '',
+              value: String(quiz.images || 'undefined/empty')
+            });
+          } else {
+            console.log(`🔍 Quiz row ${index + 1} - images column NOT FOUND in Excel`);
+          }
           
           // Parse time range if exists (format: "1-1.1" means 1 second to 1 minute 10 seconds = 70 seconds)
           if (quiz.timeRange && typeof quiz.timeRange === 'string') {
@@ -260,6 +289,7 @@ const shouldShowAudioField = (problemTypeId) => ![
   TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11, // Add ID17 to the list
   TEMPLATE_IDS.ID19_GRAMMAR_DROPDOWN,
   TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT,
+  TEMPLATE_IDS.ID311_READING_MULTIPLE_QUESTION, // Add ID311 to the list (same as template 31)
   
 ].includes(problemTypeId);
 
@@ -395,6 +425,7 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
               <option value={TEMPLATE_IDS.ID62_GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.ID62_GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
               <option value={TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER}>{TEMPLATE_IDS.ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER} - Listen and Image Select Multiple Answer</option>
               <option value={TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT}>{TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT} - Grammar Single Select Quiz 29</option>
+              <option value={TEMPLATE_IDS.ID311_READING_MULTIPLE_QUESTION}>{TEMPLATE_IDS.ID311_READING_MULTIPLE_QUESTION} - Reading Multiple Question (Dropdown)</option>
             </Form.Control>
             <Form.Text>
               Select the type of quiz you want to create.
@@ -1369,6 +1400,44 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.images || ''
       );
 
+    case TEMPLATE_IDS.ID311_READING_MULTIPLE_QUESTION:
+      quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
+      // Template 311: questionText contains paragraph with placeholders (ー) for dropdowns
+      // blankOptions contains options for dropdowns (format: "option1,option2,option3" or "opt1,opt2;opt3,opt4")
+      // readingText is not used (pass empty), questionText is the paragraph with dropdowns
+      const processedInstructions311 = convertFurigana(quizData.instructions);
+      // Note: questionText will be processed in template to replace （ー） with dropdowns
+      // blankOptions will be parsed in template to create options for each dropdown
+      
+      // Debug: Log images parameter before passing to template
+      console.log('🔍 CreateQuizButton - Template 311 - quizData:', {
+        paragraphText: quizData.paragraphText,
+        paragraphTextType: typeof quizData.paragraphText,
+        paragraphTextLength: quizData.paragraphText ? quizData.paragraphText.length : 0,
+        paragraphTextValue: quizData.paragraphText || 'undefined/empty',
+        images: quizData.images,
+        imageFile: quizData.imageFile,
+        imagesType: typeof quizData.images,
+        imagesValue: quizData.images || 'undefined/empty',
+        imageFileValue: quizData.imageFile || 'undefined/empty',
+        questionText: quizData.questionText,
+        blankOptions: quizData.blankOptions,
+        answerContent: quizData.answerContent
+      });
+      
+      // Use images if available, otherwise fallback to imageFile
+      const imagesFor311 = (quizData.images && quizData.images.trim() !== '') ? quizData.images : (quizData.imageFile || '');
+      
+      return getReadingMultipleQuestionTemplate311(
+        quizData.paragraphText || '', // paragraphText (reading text) - displayed below image 2
+        quizData.questionText || '', // questionText contains paragraph with （ー） placeholders
+        quizData.blankOptions || quizData.answerContent || '', // Options for dropdowns
+        processedInstructions311,
+        quizData.scriptText || '',
+        quizData.images || '', // images parameter
+        quizData.imageFile || '' // imageFile parameter (fallback)
+      );
+
     case TEMPLATE_IDS.READING_DROPLIST:
       return getReadingDroplistTemplate(
         quizData.paragraphText,
@@ -1798,10 +1867,11 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
         // - Excel paragraphText → quizData.paragraphText (content with ー placeholders)
         // - Excel answerContent → quizData.answerContent (dropdown options)
         const isGrammarDropdown = [18, 19, 6, 21, 23, 24, 26, 30, 62, 5, 10].includes(parseInt(quiz.problemTypeId) || 0);
+        const isReadingMultipleQuestion = [31, 34, 37, 311].includes(parseInt(quiz.problemTypeId) || 0);
         const quizData = {
           problemTypeId: parseInt(quiz.problemTypeId) || 39, // Default to ID 39
           unitTitle: String(quiz.unitTitle || `Quiz ${i + 1}`),
-          // For template 31, paragraphText is readingText and should NOT fallback to questionText
+          // For template 31, 34, 37, and 311: paragraphText is readingText and should NOT fallback to questionText
           // Only use paragraphText if it exists, otherwise leave empty
           paragraphText: String(quiz.paragraphText || ''),
           answerContent: String(
@@ -1810,7 +1880,10 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           blankOptions: String(quiz.blankOptions || quiz.answerOptions || ''), // Keep for backward compatibility
           optionsForBlanks: String(quiz.optionsForBlanks || ''), // Keep for backward compatibility
           scriptText: String(quiz.scriptText || ''),
-          instructions: String(quiz.instructions || '音声を聞いて、正しい答えを選んでください。'),
+          // Set default instructions based on template type
+          // For reading templates (31, 34, 37, 311): default to reading instruction
+          // For other templates: default to listening instruction
+          instructions: String(quiz.instructions || (isReadingMultipleQuestion ? '以下の文章を読んで、質問に答えてください。' : '音声を聞いて、正しい答えを選んでください。')),
           audioFile: String(quiz.audioFile || '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3'),
           imageFile: String(quiz.imageFile || '/asset-v1:Manabi+N51+2026+type@asset+block/1.png'),
           images: String(quiz.images || ''), // Add mapping for images column
@@ -1822,10 +1895,20 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           correctAnswers: String(quiz.correctAnswers || ''),
           wordBank: String(quiz.wordBank || ''),
           fixedWordsExplanation: String(quiz.fixedWordsExplanation || ''),
+          // For template 31, 34, 37, and 311: questionText is separate from paragraphText (readingText)
+          // questionText contains the questions, paragraphText contains the reading passage
           questionText: String(quiz.questionText || ''),
           words: String(quiz.words || ''),
           dropZones: String(quiz.dropZones || '[]')
         };
+        
+        // For template 311: use imageFile as fallback if images is empty
+        if (quizData.problemTypeId === 311 && (!quizData.images || quizData.images.trim() === '')) {
+          if (quizData.imageFile && quizData.imageFile.trim() !== '') {
+            quizData.images = quizData.imageFile;
+            console.log(`🔍 Template 311 - Using imageFile as fallback for images: "${quizData.imageFile}"`);
+          }
+        }
 
         // Debug: Log the quiz data to check startTime and endTime
         console.log(`Creating quiz ${i + 1}:`, {
@@ -1835,6 +1918,9 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           timeSegmentsString: quizData.timeSegmentsString,
           audioFile: quizData.audioFile,
           imageFile: quizData.imageFile,
+          images: quizData.images, // Add images to debug log
+          imagesFromExcel: quiz.images, // Original value from Excel
+          imagesType: typeof quizData.images,
           problemTypeId: quizData.problemTypeId,
           originalStartTime: quiz.startTime,
           originalEndTime: quiz.endTime,
@@ -1848,7 +1934,13 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           isTemplate67: quizData.problemTypeId === 67,
           template63TimeSegments: quizData.problemTypeId === 63 ? quizData.timeSegmentsString : 'N/A',
           template65TimeSegments: quizData.problemTypeId === 65 ? quizData.timeSegmentsString : 'N/A',
-          template67TimeSegments: quizData.problemTypeId === 67 ? quizData.timeSegmentsString : 'N/A'
+          template67TimeSegments: quizData.problemTypeId === 67 ? quizData.timeSegmentsString : 'N/A',
+          // Special handling for template 311
+          isTemplate311: quizData.problemTypeId === 311,
+          template311Images: quizData.problemTypeId === 311 ? quizData.images : 'N/A',
+          template311QuestionText: quizData.problemTypeId === 311 ? quizData.questionText : 'N/A',
+          template311ParagraphText: quizData.problemTypeId === 311 ? quizData.paragraphText : 'N/A',
+          template311ParagraphTextLength: quizData.problemTypeId === 311 ? (quizData.paragraphText ? quizData.paragraphText.length : 0) : 'N/A'
         });
 
         // Create quiz using existing createQuiz function

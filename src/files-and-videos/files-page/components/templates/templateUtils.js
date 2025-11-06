@@ -161,6 +161,7 @@ export const TEMPLATE_IDS = {
   ID45_LISTEN_HIGHTLIGHT: 45,
   ID47_LISTEN_SINGLE_CHOICE: 47,  
   ID64_LISTEN_IMAGE_SELECT_MULTIPLE_ANSWER: 64,
+  ID311_READING_MULTIPLE_QUESTION: 311,  // template_311_reading_multiple_question.js (with dropdown)
 };
 
 export {

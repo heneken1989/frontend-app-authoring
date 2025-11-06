@@ -70,6 +70,7 @@ const FORM_COMPONENTS = {
   64: Form63,   // Listen and Image Select Multiple Answer (uses same form as ID 63)
   65: Form65,   // Listen and Image Select Multiple Answer (MultiOptions)
   67: Form67,   // Listen Write Answer with Image Quiz
+  311: Form31,  // Reading Multiple Question with Dropdown (uses same form as 31)
 };
 
 export const getFormComponent = (problemTypeId) => {

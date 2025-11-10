@@ -50,7 +50,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             overflow-y: auto;
             overflow-x: hidden;
             padding-left: 15px;
-            padding-top: 50px;
+            padding-top: 20px;
             background-color: #fff;
             width: 100%;
             gap: 0;
@@ -117,6 +117,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             flex: 1;
             max-height: 100%;
             height: 100%;
+            min-height: 0;
         }
         .images-container:empty {
             display: none;
@@ -126,10 +127,10 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             max-width: 100%;
             display: flex;
             justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            max-height: 90vh;
-            flex: 1;
+            align-items: flex-start;
+            overflow: visible;
+            flex: 0 0 auto;
+            min-height: 0;
         }
         .images-container-right .image-item {
             max-height: 45vh !important;
@@ -143,12 +144,12 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
         }
         .image-item img {
             max-width: 100%;
-            max-height: 90vh;
             width: auto;
             height: auto;
             object-fit: contain;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: block;
         }
         .images-container-right .image-item img {
             max-width: 100% !important;
@@ -162,7 +163,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
         .paragraph-text {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
-            font-weight: bold;
+            font-weight: normal;
             font-style: italic;
             padding: 0;
             margin: 0;
@@ -198,9 +199,9 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
             font-weight: normal;
-            line-height: 1.2;
+            line-height: 1.4;
             text-align: left;
-            margin: 0;
+            margin: 0 0 0 0;
             padding: 0;
             color: #333;
             display: block;
@@ -282,6 +283,15 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             border-bottom: none;
             border-radius: 4px 4px 0 0;
             box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+        .dropdown-options.show-center {
+            display: block;
+            top: 50%;
+            transform: translateY(-50%);
+            border-top: 1px solid #666;
+            border-bottom: 1px solid #666;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .dropdown-option {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
@@ -658,10 +668,11 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                     // Toggle dropdown
                     button.addEventListener('click', function() {
                         var isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show') || 
-                                     this.parentNode.querySelector('.dropdown-options').classList.contains('show-up');
+                                     this.parentNode.querySelector('.dropdown-options').classList.contains('show-up') ||
+                                     this.parentNode.querySelector('.dropdown-options').classList.contains('show-center');
                         // Close all other dropdowns
                         document.querySelectorAll('.dropdown-options').forEach(function(opt) {
-                            opt.classList.remove('show', 'show-up');
+                            opt.classList.remove('show', 'show-up', 'show-center');
                         });
                         document.querySelectorAll('.custom-dropdown').forEach(function(dropdown) {
                             dropdown.classList.remove('open');
@@ -669,8 +680,6 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                         // Toggle current dropdown
                         if (!isOpen) {
                             var dropdownOptions = this.parentNode.querySelector('.dropdown-options');
-                            var buttonRect = this.getBoundingClientRect();
-                            var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
                             
                             // First, show dropdown temporarily to measure its height
                             dropdownOptions.style.display = 'block';
@@ -710,23 +719,12 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                             var finalWidth = Math.max(buttonWidth, maxWidth);
                             dropdownOptions.style.width = finalWidth + 'px';
                             
-                            // Now measure actual dropdown height
-                            var dropdownHeight = dropdownOptions.offsetHeight;
-                            var spaceBelow = viewportHeight - buttonRect.bottom;
-                            var spaceAbove = buttonRect.top;
-                            
                             // Reset visibility and remove inline display to let CSS classes control it
                             dropdownOptions.style.visibility = '';
                             dropdownOptions.style.display = ''; // Remove inline style to let CSS class control display
                             
-                            // Determine if dropdown should open upward or downward
-                            if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-                                // Open upward - not enough space below, more space above
-                                dropdownOptions.classList.add('show-up');
-                            } else {
-                                // Open downward - default behavior
-                                dropdownOptions.classList.add('show');
-                            }
+                            // Always open dropdown centered on button
+                            dropdownOptions.classList.add('show-center');
                             this.parentNode.classList.add('open');
                         }
                     });
@@ -769,7 +767,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                             dropdown.style.width = newWidth + 'px';
                             
                             // Close dropdown
-                            this.parentNode.classList.remove('show', 'show-up');
+                            this.parentNode.classList.remove('show', 'show-up', 'show-center');
                             this.parentNode.parentNode.classList.remove('open');
                             
                             // Update selected answers
@@ -788,7 +786,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.custom-dropdown')) {
                     document.querySelectorAll('.dropdown-options').forEach(function(opt) {
-                        opt.classList.remove('show', 'show-up');
+                        opt.classList.remove('show', 'show-up', 'show-center');
                     });
                     document.querySelectorAll('.custom-dropdown').forEach(function(dropdown) {
                         dropdown.classList.remove('open');
@@ -1246,8 +1244,19 @@ export const getReadingMultipleQuestionTemplate311 = (readingText, questionText,
                 const options = blanksOptionsArray[answerDropdownIndex] || [];
                 const correctAnswer = options[0] || '';
                 
+                // Remove duplicate options (case-sensitive)
+                const uniqueOptions = [];
+                const seenOptions = new Set();
+                for (let i = 0; i < options.length; i++) {
+                    const option = options[i];
+                    if (!seenOptions.has(option)) {
+                        seenOptions.add(option);
+                        uniqueOptions.push(option);
+                    }
+                }
+                
                 // Sort options alphabetically while keeping the correct answer reference
-                const sortedOptions = [...options].sort((a, b) => {
+                const sortedOptions = [...uniqueOptions].sort((a, b) => {
                     try {
                         return a.localeCompare(b, 'ja');
                     } catch (e) {

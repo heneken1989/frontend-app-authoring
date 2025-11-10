@@ -456,7 +456,6 @@ export const listenWithImageMultipleDifferentBlankOptionsTemplate = `<!DOCTYPE h
             
             audioElement.volume = volumeSlider.value / 100;
             updateVolumeDisplay();
-            
             function startWithDelay() {
                 playerStatus.textContent = 'Current Status: Starting in 3s...';
                 let countdown = 3;

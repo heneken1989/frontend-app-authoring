@@ -34,6 +34,7 @@ import { getListenImageSelectMultipleAnswerTemplate } from './templates/template
 import { getListenImageSelectMultipleAnswerTemplate65 } from './templates/template_65_listen_image_select_multiple_answer';
 import { getListenWriteAnswerWithImageTemplate } from './templates/template_67_listen_write_answer_with_image';
 import { getReadingMultipleQuestionTemplate311 } from './templates/template_311_reading_multiple_question';
+import { getReadingMultipleQuestionTemplate as getReadingMultipleQuestionTemplate37 } from './templates/template_37_reading_multiple_question';
 import FORM_COMPONENTS, { getFormComponent } from './forms';
 import { getVocabMatchingTemplate } from './templates/template_2_vocab_matching';
 import * as XLSX from 'xlsx'; // Added for Excel parsing
@@ -1353,20 +1354,20 @@ const generateQuizTemplate = (templateId, quizData) => {
         );
 
     case TEMPLATE_IDS.READING_MULTIPLE_QUESTION_ALT:
-      quizData.instructions = quizData.instructions || '次の文章を読んで、質問に答えてください。';
+      quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
       // Ensure paragraphText (readingText) is not fallback to questionText
       // readingText should only come from paragraphText, not questionText
-      const readingTextAlt = quizData.paragraphText ? quizData.paragraphText.trim() : '';
+      const readingText37 = quizData.paragraphText ? quizData.paragraphText.trim() : '';
       // Apply furigana conversion to text values (like template 7)
-      // Note: blankOptions will be converted in template 31 for each option separately
-      const processedReadingTextAlt = convertFurigana(readingTextAlt);
-      const processedQuestionTextAlt = convertFurigana(quizData.questionText || '');
-      const processedInstructionsAlt = convertFurigana(quizData.instructions);
-      return getReadingMultipleQuestionTemplate(
-        processedReadingTextAlt,
-        processedQuestionTextAlt,
+      // Note: blankOptions will be converted in template 37 for each option separately
+      const processedReadingText37 = convertFurigana(readingText37);
+      const processedQuestionText37 = convertFurigana(quizData.questionText || '');
+      const processedInstructions37 = convertFurigana(quizData.instructions);
+      return getReadingMultipleQuestionTemplate37(
+        processedReadingText37,
+        processedQuestionText37,
         quizData.blankOptions || '', // Pass original blankOptions, template will convert each option
-        processedInstructionsAlt,
+        processedInstructions37,
         quizData.scriptText || '',
         quizData.images || ''
       );

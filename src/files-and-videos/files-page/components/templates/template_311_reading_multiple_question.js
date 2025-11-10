@@ -12,7 +12,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             font-size: 1.2rem;
             margin: 0;
             padding: 0;
-            line-height: 1.6;
+            line-height: 1.2;
             color: #414141;
             height: 100vh;
             overflow-y: hidden;
@@ -26,7 +26,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             height: 100%;
             padding: 0;
             margin: 0;
-            gap: 0;
+            gap: 20px;
             box-sizing: border-box;
             background-color: #fff;
             max-width: 100%;
@@ -49,8 +49,8 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             flex-direction: column;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-left: 5px;
-            padding-top: 0;
+            padding-left: 15px;
+            padding-top: 50px;
             background-color: #fff;
             width: 100%;
             gap: 0;
@@ -81,7 +81,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
         }
         .instructions {
             font-size: 1.1rem;
-            line-height: 1.5;
+            line-height: 1.2;
             color: #333;
             font-weight: bold;
             font-style: italic;
@@ -160,7 +160,10 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .paragraph-text {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
+            font-weight: bold;
+            font-style: italic;
             padding: 0;
             margin: 0;
             color: #333;
@@ -185,7 +188,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             overflow-wrap: break-word;
             width: 100%;
             max-width: 100%;
-            line-height: 1.1;
+            line-height: 1.2;
         }
         .reading-text .custom-dropdown {
             vertical-align: middle;
@@ -195,7 +198,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
             font-weight: normal;
-            line-height: 1.1;
+            line-height: 1.2;
             text-align: left;
             margin: 0;
             padding: 0;
@@ -284,7 +287,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
             font-weight: normal;
-            line-height: 1.6;
+            line-height: 1.2;
             text-align: left;
             color: #333;
             padding: 12px 16px;
@@ -317,7 +320,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: bold;
-            line-height: 1.6;
+            line-height: 1.2;
             text-align: left;
             color: #fff; 
             padding: 4px 8px; 
@@ -327,12 +330,14 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             margin: 2px;
             letter-spacing: 0.4px;
         }
-        .correct-answer rt { color: #fff !important; }
+        .correct-answer rt { 
+            color: #fff !important; 
+        }
         .wrong-answer { 
             font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: bold;
-            line-height: 1.6;
+            line-height: 1.2;
             text-align: left;
             color: #fff; 
             padding: 4px 8px; 
@@ -347,7 +352,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: normal;
-            line-height: 1.6;
+            line-height: 1.2;
             text-align: left;
             color: #666; 
             border-bottom: 2px solid #666; 
@@ -399,7 +404,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: 400;
-            line-height: 1.5;
+            line-height: 1.2;
             text-align: left;
             margin-bottom: 1rem;
             white-space: pre-wrap;
@@ -491,6 +496,27 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
         window.selectedAnswers = {};
         var originalReadingTextHTML = ''; // Store original HTML of reading-text container
 
+        // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+        function convertFurigana(text) {
+            if (!text || typeof text !== "string") return text;
+            
+            // Chỉ Kanji (và vài ký tự đặc biệt)
+            const kanjiWord = "[\\u4E00-\\u9FFF々〆〤ヶ]+";
+            
+            // Dấu ngoặc Nhật (全角)
+            const reJaParens = new RegExp("(" + kanjiWord + ")（([^）]+)）", "g");
+            text = text.replace(reJaParens, function(match, p1, p2) {
+                return "<ruby>" + p1 + "<rt>" + p2 + "</rt></ruby>";
+            });
+            
+            // Dấu ngoặc ASCII (半角)
+            const reAsciiParens = new RegExp("(" + kanjiWord + ")\\(([^)]+)\\)", "g");
+            text = text.replace(reAsciiParens, function(match, p1, p2) {
+                return "<ruby>" + p1 + "<rt>" + p2 + "</rt></ruby>";
+            });
+            return text;
+        }
+
         (function() {
             const correctAnswers = JSON.parse('{{CORRECT_ANSWERS}}');
 
@@ -528,16 +554,18 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
 
             function updateDisplay(result) {
                 const shouldShowAnswer = window.quizState.showAnswer;
-                
                 if (shouldShowAnswer) {
                     // Replace dropdowns with text display (like template 18)
                     const dropdowns = document.querySelectorAll('.custom-dropdown');
                     for (let i = 0; i < dropdowns.length; i++) {
                         const dropdown = dropdowns[i];
                         const blankNumber = dropdown.getAttribute('data-blank-number');
+                        const button = dropdown.querySelector('.dropdown-button');
+                        // Get userAnswer from selectedAnswers (text value, like template 18)
                         const userAnswer = window.selectedAnswers[blankNumber] || '';
-                        const correctAnswer = correctAnswers[parseInt(blankNumber) - 1] || '';
-                        const isCorrect = userAnswer === correctAnswer;
+                        // Get correctAnswer from dropdown data-correct attribute (like template 18)
+                        const correctAnswer = dropdown.getAttribute('data-correct') || '';
+                        const isCorrect = correctAnswer === userAnswer;
                         
                         // Preserve whitespace after dropdown (nextSibling text node)
                         const nextSibling = dropdown.nextSibling;
@@ -546,14 +574,37 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                         const replacementSpan = document.createElement('span');
                         replacementSpan.className = 'answer-replacement';
                         
+                        // Get HTML from dropdown options (like template 18 - options already have furigana)
+                        let userAnswerHtml = '';
+                        let correctAnswerHtml = '';
+                        
+                        const options = dropdown.querySelectorAll('.dropdown-option');
+                        for (let j = 0; j < options.length; j++) {
+                            const optionValue = options[j].getAttribute('data-value');
+                            if (optionValue === userAnswer) {
+                                userAnswerHtml = options[j].innerHTML;
+                            }
+                            if (optionValue === correctAnswer) {
+                                correctAnswerHtml = options[j].innerHTML;
+                            }
+                        }
+                        
+                        // Fallback: if not found, use text directly (should not happen)
+                        if (!userAnswerHtml && userAnswer) {
+                            userAnswerHtml = userAnswer;
+                        }
+                        if (!correctAnswerHtml && correctAnswer) {
+                            correctAnswerHtml = correctAnswer;
+                        }
+                        
                         if (userAnswer) {
                             if (isCorrect) {
-                                replacementSpan.innerHTML = '<span class="correct-answer">' + userAnswer + '</span>';
+                                replacementSpan.innerHTML = '<span class="correct-answer">' + correctAnswerHtml + '</span>';
                             } else {
-                                replacementSpan.innerHTML = '<span class="wrong-answer">' + userAnswer + '</span> <span class="correct-answer">' + correctAnswer + '</span>';
+                                replacementSpan.innerHTML = '<span class="wrong-answer">' + userAnswerHtml + '</span> <span class="correct-answer">' + correctAnswerHtml + '</span>';
                             }
                         } else {
-                            replacementSpan.innerHTML = '<span class="wrong-answer">*</span> <span class="correct-answer">' + correctAnswer + '</span>';
+                            replacementSpan.innerHTML = '<span class="wrong-answer">*</span> <span class="correct-answer">' + correctAnswerHtml + '</span>';
                         }
                         
                         // Replace the dropdown with the text display
@@ -1118,7 +1169,6 @@ function convertFurigana(text) {
     text = text.replace(reAsciiParens, (match, p1, p2) => {
         return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
     });
-    
     return text;
 }
 

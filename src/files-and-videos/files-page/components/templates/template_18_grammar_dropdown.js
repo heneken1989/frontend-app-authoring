@@ -803,9 +803,10 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                         });
                     }
 
-                    // Respond to parent with answers array
+                    // Respond to parent with answers array (include template_id for TestNavigationBar)
                     window.parent.postMessage({
                         type: 'quiz.answers',
+                        templateId: 18,
                         answers: payload
                     }, '*');
                     console.log('📤 Sent quiz.answers to parent:', payload);

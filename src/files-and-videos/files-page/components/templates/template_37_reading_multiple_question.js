@@ -1,7 +1,7 @@
 export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
 <html>
 <head>
-    <title>Reading Multiple Question Quiz</title>
+    <title>Reading Multiple Question Quiz ID37</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
@@ -26,11 +26,12 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             height: 100%;
             padding: 0;
             margin: 0;
+            gap: 20px;
             box-sizing: border-box;
             background-color: #fff;
             max-width: 100%;
-            overflow-x: hidden;
-            gap: 20px;
+            overflow-x: visible;
+            min-width: 0;
         }
         .left-container {
             display: flex;
@@ -47,11 +48,14 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: visible;
             padding-left: 5px;
-            padding-top: 20px;
+            padding-top: 10px;
+            padding-right: 5px;
             background-color: #fff;
             width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
         .images-container-right {
             display: flex;
@@ -68,7 +72,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             flex-shrink: 0;
         }
         .instructions {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             line-height: 1.5;
             color: #333;
             font-weight: bold;
@@ -89,6 +93,8 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             padding: 0;
             margin: 0;
             background-color: #fff;
+            box-sizing: border-box;
+            width: 100%;
         }
         .images-container {
             display: flex;
@@ -145,7 +151,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .reading-text {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             padding: 0;
             margin: 0;
             color: #333;
@@ -157,22 +163,45 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             width: 100%;
             max-width: 100%;
         }
+        .paragraph-text-left {
+            font-size: 1.2rem;
+            padding: 15px 25px 15px 15px;
+            margin: 0;
+            color: #333;
+            background-color: #fff;
+            border: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            line-height: 1.6;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex: 1;
+        }
         .questions-container {
             display: flex;
             flex-direction: column;
             background-color: #fff;
             width: 100%;
-            overflow-x: hidden;
+            overflow-x: visible;
+            box-sizing: border-box;
         }
         .question-block {
             background: #fff;
             padding: 8px;
             width: 100%;
+            max-width: 100%;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            box-sizing: border-box;
+            overflow-x: visible;
         }
         .question-text {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #333;
             font-weight: bold;
             margin-bottom: 8px;
@@ -184,9 +213,12 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 3px;
             margin-top: 6px;
             width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow-x: visible;
         }
         .option-button {
             appearance: none;
@@ -194,13 +226,13 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             -moz-appearance: none;
             flex: 0 1 auto;
             min-width: 120px;
-            max-width: 100%;
-            padding: 12px 16px;
+            max-width: calc(100% - 6px);
+            padding: 5px 5px;
             border: none;
             outline: none;
             background: transparent;
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: normal;
             line-height: 1.4;
             color: #333;
@@ -216,6 +248,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             align-items: center;
             justify-content: flex-start;
             gap: 12px;
+            box-sizing: border-box;
         }
         .option-button:hover:not(.selected):not(.correct):not(.incorrect) {
             background-color: #f8f9fa;
@@ -283,7 +316,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         }
         .answer-feedback {
             margin-top: 6px;
-            font-size: 1.2rem;
+            font-size: 1rem;
             padding: 6px;
             border-radius: 3px;
             display: none;
@@ -397,9 +430,8 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                 {{INSTRUCTIONS}}
             </div>
             <div class="content-container">
-                <div class="images-container">
-                    <!-- Images with .1. in filename will be inserted here -->
-                    {{IMAGES_LEFT}}
+                <div class="paragraph-text-left">
+                    {{PARAGRAPH_TEXT_LEFT}}
                 </div>
             </div>
         </div>
@@ -410,7 +442,6 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                     <!-- Images with .2. in filename will be inserted here -->
                     {{IMAGES_RIGHT}}
                 </div>
-                {{READING_TEXT_CONTAINER}}
                 <div class="questions-container" id="questions-container">
                     {{QUESTIONS}}
                 </div>
@@ -595,7 +626,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                     const encodedScriptText = encodeScriptText(scriptText);
                     
                     const quizData = {
-                        templateId: 31,
+                        templateId: 37,
                         scriptText: encodedScriptText
                     };
                     
@@ -783,10 +814,10 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                     }
                 }
                 
-                // Parent (TestNavigationBar) requests answers for saving (like template 18 and 37)
+                // Parent (TestNavigationBar) requests answers for saving (like template 18)
                 if (event.data && event.data.type === 'quiz.get_answers') {
                     try {
-                        // Build answers payload: one item per question (like template 37)
+                        // Build answers payload: one item per question (like template 18 but for multiple questions)
                         var payload = [];
                         for (let questionId in questions) {
                             var userAnswer = window.selectedAnswers[questionId] || '';
@@ -802,7 +833,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                         // Respond to parent with answers array (include template_id for TestNavigationBar)
                         window.parent.postMessage({
                             type: 'quiz.answers',
-                            templateId: 31,
+                            templateId: 37,
                             answers: payload
                         }, '*');
                         console.log('📤 Sent quiz.answers to parent:', payload);
@@ -864,14 +895,14 @@ function convertFurigana(text) {
     if (!text || typeof text !== "string") return text;
     // Chỉ Kanji (và vài ký tự đặc biệt)
     const kanjiWord = "[\u4E00-\u9FFF々〆〤ヶ]+";
-    // Dấu ngoặc Nhật (全角) - xử lý cả có và không có khoảng trắng: 上（うえ）hoặc 上 （うえ）
-    const reJaParens = new RegExp("(" + kanjiWord + ")\\s*（([^）]+)）", "g");
+    // Dấu ngoặc Nhật (全角)
+    const reJaParens = new RegExp("(" + kanjiWord + ")（([^）]+)）", "g");
     text = text.replace(reJaParens, (match, p1, p2) => {
         return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
     });
     
-    // Dấu ngoặc ASCII (半角) - xử lý cả có và không có khoảng trắng: 上(うえ) hoặc 上 (うえ)
-    const reAsciiParens = new RegExp("(" + kanjiWord + ")\\s*\\(([^)]+)\\)", "g");
+    // Dấu ngoặc ASCII (半角)
+    const reAsciiParens = new RegExp("(" + kanjiWord + ")\\(([^)]+)\\)", "g");
     text = text.replace(reAsciiParens, (match, p1, p2) => {
         return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
     });
@@ -937,7 +968,7 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
     // Generate questions HTML and data
     const questionsHtml = questions.map((questionText, index) => {
         const questionId = 'question_' + (index + 1);
-        const options = (optionsList[index] || '').split(',').map(opt => opt.trim());
+        const options = (optionsList[index] || '').split(',').map(opt => opt.trim()).filter(opt => opt); // Filter out empty options
         const correctAnswer = options[0];
         const sortedOptions = [...options].sort((a, b) => a.localeCompare(b, 'ja'));
         
@@ -987,28 +1018,21 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
                '</div>';
     }).join('');
     
-    // Ensure readingText is empty if not provided, don't use questionText as fallback
-    const finalReadingText = readingText ? readingText.trim() : '';
-    
-    // Only show reading-text container if readingText is not empty
-    const readingTextContainer = finalReadingText 
-        ? `<div class="reading-text">${finalReadingText}</div>`
-        : '';
+    // Paragraph text for left container (replaces images)
+    // Template 37: paragraphText is displayed in left container, not in right container
+    const paragraphTextLeft = readingText ? readingText.trim() : '';
     
     let template = readingMultipleQuestionTemplate
-        .replace('{{READING_TEXT_CONTAINER}}', readingTextContainer)
+        .replace('{{READING_TEXT_CONTAINER}}', '') // Remove reading text container (not needed for template 37)
         .replace('{{QUESTIONS}}', questionsHtml)
         .replace('{{QUESTIONS_DATA}}', JSON.stringify(questionsData))
         .replace('{{INSTRUCTIONS}}', instructions)
-        .replace('{{EXPLANATION_TEXT}}', processedExplanationText || '');
-
-    // Handle left images conditionally - hide container if no images
-    if (hasImagesLeft) {
-        template = template.replace('{{IMAGES_LEFT}}', imagesLeftHtml);
-    } else {
-        // Remove the entire images-container when no images
-        template = template.replace(/<div class="images-container">[\s\S]*?{{IMAGES_LEFT}}[\s\S]*?<\/div>/g, '');
-    }
+        .replace('{{EXPLANATION_TEXT}}', processedExplanationText || '')
+        .replace('{{PARAGRAPH_TEXT_LEFT}}', paragraphTextLeft);
+    
+    // Template 37: Always hide images containers (no images for this template)
+    // Remove left images container
+    template = template.replace(/<div class="images-container">[\s\S]*?{{IMAGES_LEFT}}[\s\S]*?<\/div>/g, '');
     
     // Handle right images conditionally - hide container if no images
     if (hasImagesRight) {

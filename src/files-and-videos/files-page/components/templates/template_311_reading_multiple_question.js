@@ -797,6 +797,100 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             // Initialize dropdowns on page load
             initializeDropdowns();
 
+            // Function to adjust image container scroll based on image height
+            function adjustImageContainerScroll() {
+                var imagesContainer = document.querySelector('.images-container');
+                if (!imagesContainer) return;
+                
+                var containerHeight = imagesContainer.clientHeight;
+                var imageItemElements = imagesContainer.querySelectorAll('.image-item');
+                
+                if (imageItemElements.length === 0) return;
+                
+                var totalImageHeight = 0;
+                var allImagesLoaded = true;
+                
+                imageItemElements.forEach(function(imageItem) {
+                    var img = imageItem.querySelector('img');
+                    if (!img) return;
+                    
+                    // Wait for image to load if not already loaded
+                    if (img.complete && img.naturalHeight > 0) {
+                        // Use actual rendered height of image-item (includes gap)
+                        totalImageHeight += imageItem.offsetHeight;
+                    } else {
+                        allImagesLoaded = false;
+                        img.addEventListener('load', function() {
+                            setTimeout(function() {
+                                adjustImageContainerScroll();
+                            }, 50);
+                        }, { once: true });
+                    }
+                });
+                
+                // Don't adjust if images are still loading
+                if (!allImagesLoaded) return;
+                
+                // Check if total image height is more than 30% larger than container
+                var threshold = containerHeight * 1.3;
+                
+                if (totalImageHeight > threshold) {
+                    // Enable scroll - images are too large
+                    imagesContainer.style.overflowY = 'auto';
+                    imagesContainer.style.height = '100%';
+                    // Reset image sizes to natural size
+                    imageItemElements.forEach(function(imageItem) {
+                        var img = imageItem.querySelector('img');
+                        if (img) {
+                            img.style.maxHeight = '';
+                            img.style.height = '';
+                            img.style.width = '';
+                            img.style.objectFit = 'contain';
+                        }
+                    });
+                } else {
+                    // Disable scroll - adjust image sizes to fit container
+                    imagesContainer.style.overflowY = 'hidden';
+                    imagesContainer.style.height = '100%';
+                    
+                    // Calculate scale factor to fit all images in container
+                    // Account for gap between images (3px per gap)
+                    var gapCount = imageItemElements.length > 0 ? imageItemElements.length - 1 : 0;
+                    var totalGapHeight = gapCount * 3;
+                    var availableHeight = containerHeight - totalGapHeight;
+                    var scaleFactor = availableHeight / totalImageHeight;
+                    
+                    imageItemElements.forEach(function(imageItem) {
+                        var img = imageItem.querySelector('img');
+                        if (img && img.complete && img.naturalHeight > 0) {
+                            // Get current rendered height of image-item
+                            var currentItemHeight = imageItem.offsetHeight;
+                            // Calculate new height for image-item based on scale factor
+                            var newItemHeight = currentItemHeight * scaleFactor;
+                            
+                            // Set max-height on image to fit within scaled item height
+                            // Account for any padding/margin in image-item
+                            img.style.maxHeight = newItemHeight + 'px';
+                            img.style.height = 'auto';
+                            img.style.width = 'auto';
+                            img.style.objectFit = 'contain';
+                        }
+                    });
+                }
+            }
+            
+            // Adjust scroll on page load and when images load
+            setTimeout(function() {
+                adjustImageContainerScroll();
+            }, 100);
+            
+            // Also adjust when window is resized
+            window.addEventListener('resize', function() {
+                setTimeout(function() {
+                    adjustImageContainerScroll();
+                }, 100);
+            });
+
             // Function to encode script text for safe transmission (like template 67)
             function encodeScriptText(text) {
                 if (!text) return '';

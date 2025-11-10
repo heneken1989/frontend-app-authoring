@@ -151,7 +151,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .reading-text {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             padding: 0;
             margin: 0;
             color: #333;
@@ -165,7 +165,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         }
         .paragraph-text-left {
             font-size: 1.2rem;
-            padding: 15px 25px 15px 15px;
+            padding: 0px 0px 0px 0px;
             margin: 0;
             color: #333;
             background-color: #fff;
@@ -177,7 +177,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
-            line-height: 1.6;
+            line-height: 1.8;
             overflow-y: auto;
             overflow-x: hidden;
             flex: 1;

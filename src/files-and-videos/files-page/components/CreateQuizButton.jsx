@@ -1325,13 +1325,15 @@ const generateQuizTemplate = (templateId, quizData) => {
       const processedReadingText31 = convertFurigana(readingText31);
       const processedQuestionText31 = convertFurigana(quizData.questionText || '');
       const processedInstructions31 = convertFurigana(quizData.instructions);
+      // Use images if available, otherwise fallback to imageFile
+      const imagesFor31 = (quizData.images && quizData.images.trim() !== '') ? quizData.images : (quizData.imageFile || '');
       return getReadingMultipleQuestionTemplate(
         processedReadingText31,
         processedQuestionText31,
         quizData.blankOptions || '', // Pass original blankOptions, template will convert each option
         processedInstructions31,
         quizData.scriptText || '',
-        quizData.images || ''
+        imagesFor31
       );
 
       case TEMPLATE_IDS.ID34_READING_MULTIPLE_QUESTION:
@@ -1435,7 +1437,7 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.blankOptions || quizData.answerContent || '', // Options for dropdowns
         processedInstructions311,
         quizData.scriptText || '',
-        quizData.images || '', // images parameter
+        imagesFor311, // images parameter (with fallback to imageFile)
         quizData.imageFile || '' // imageFile parameter (fallback)
       );
 
@@ -1903,11 +1905,11 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           dropZones: String(quiz.dropZones || '[]')
         };
         
-        // For template 311: use imageFile as fallback if images is empty
-        if (quizData.problemTypeId === 311 && (!quizData.images || quizData.images.trim() === '')) {
+        // For template 31 and 311: use imageFile as fallback if images is empty
+        if ([31, 311].includes(quizData.problemTypeId) && (!quizData.images || quizData.images.trim() === '')) {
           if (quizData.imageFile && quizData.imageFile.trim() !== '') {
             quizData.images = quizData.imageFile;
-            console.log(`🔍 Template 311 - Using imageFile as fallback for images: "${quizData.imageFile}"`);
+            console.log(`🔍 Template ${quizData.problemTypeId} - Using imageFile as fallback for images: "${quizData.imageFile}"`);
           }
         }
 

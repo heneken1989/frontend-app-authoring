@@ -895,24 +895,43 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
         // If images is a string, split by comma or semicolon
         const imageArray = Array.isArray(images) ? images : images.split(/[,;]/).map(img => img.trim()).filter(img => img);
         
+        console.log('🔍 Template 31 - Images parameter:', {
+            images: images,
+            imageArray: imageArray,
+            type: typeof images,
+            isArray: Array.isArray(images)
+        });
+        
         // Separate images based on .1. or .2. in filename
         const leftImages = [];
         const rightImages = [];
         
         imageArray.forEach((imagePath) => {
-            // Check if filename contains .1. or .2. pattern (e.g., 1.1.png, ID31_1.1.png, 20251103_ID31_1.1.png)
+            // Check if filename contains .1./_1. or .2./_2. pattern 
+            // (e.g., 1.1.png, ID31_1.1.png, 20251103_ID31_1.1.png, 20251113_ID38_1.jpeg)
             const filename = imagePath.split('/').pop() || imagePath;
             
-            // Pattern: tìm .1. hoặc .2. trong tên file (số.chấm.số.chấm.extension)
-            // Ví dụ: 1.1.png, ID31_1.1.png, 20251103_ID31_1.1.png
-            if (/\.1\./.test(filename)) {
-                // File có .1. → hiển thị bên trái
+            console.log('🔍 Template 31 - Processing image:', {
+                imagePath: imagePath,
+                filename: filename,
+                hasPattern1: /[._]1[._]/.test(filename),
+                hasPattern2: /[._]2[._]/.test(filename)
+            });
+            
+            // Pattern: tìm .1. hoặc _1. hoặc _1 trong tên file (chấm/gạch dưới-số-chấm/gạch dưới)
+            // Hỗ trợ cả .1. và _1. và _1 (ví dụ: 1.1.png, ID38_1.jpeg, ID38_1jpeg)
+            // Pattern [._]1[._] sẽ match: .1., _1., .1, _1 (với hoặc không có dấu chấm sau)
+            if (/[._]1[._]/.test(filename)) {
+                // File có .1. hoặc _1. hoặc _1 → hiển thị bên trái
+                console.log('✅ Template 31 - Image goes to LEFT:', filename);
                 leftImages.push(imagePath);
-            } else if (/\.2\./.test(filename)) {
-                // File có .2. → hiển thị bên phải
+            } else if (/[._]2[._]/.test(filename)) {
+                // File có .2. hoặc _2. hoặc _2 → hiển thị bên phải
+                console.log('✅ Template 31 - Image goes to RIGHT:', filename);
                 rightImages.push(imagePath);
             } else {
-                // Default: if no .1. or .2., put in left container (image bên trái)
+                // Default: if no pattern, put in left container (image bên trái)
+                console.log('✅ Template 31 - Image goes to LEFT (default):', filename);
                 leftImages.push(imagePath);
             }
         });

@@ -918,15 +918,18 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
                 hasPattern2: /[._]2[._]/.test(filename)
             });
             
-            // Pattern: tìm .1. hoặc _1. hoặc _1 trong tên file (chấm/gạch dưới-số-chấm/gạch dưới)
-            // Hỗ trợ cả .1. và _1. và _1 (ví dụ: 1.1.png, ID38_1.jpeg, ID38_1jpeg)
-            // Pattern [._]1[._] sẽ match: .1., _1., .1, _1 (với hoặc không có dấu chấm sau)
+            // Pattern: 
+            // Image 1: .1. hoặc _1. hoặc _1 (hỗ trợ cả chấm và gạch dưới)
+            // Image 2: _ + số bất kỳ + .2 (ví dụ: _1.2, _2.2, _38.2)
+            // Ví dụ: 1.1.png, ID38_1.jpeg → image 1 (left)
+            // Ví dụ: ID38_1.2.jpeg, ID38_2.2.png → image 2 (right)
+            // Ví dụ: 1.2.png → image 1 (left, vì không phải _số.2)
             if (/[._]1[._]/.test(filename)) {
-                // File có .1. hoặc _1. hoặc _1 → hiển thị bên trái
+                // File có .1. hoặc _1. hoặc _1 → hiển thị bên trái (image 1)
                 console.log('✅ Template 31 - Image goes to LEFT:', filename);
                 leftImages.push(imagePath);
-            } else if (/[._]2[._]/.test(filename)) {
-                // File có .2. hoặc _2. hoặc _2 → hiển thị bên phải
+            } else if (/_\d+\.2/.test(filename)) {
+                // File có _số.2 (gạch dưới + số bất kỳ + .2) → hiển thị bên phải (image 2)
                 console.log('✅ Template 31 - Image goes to RIGHT:', filename);
                 rightImages.push(imagePath);
             } else {

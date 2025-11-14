@@ -895,24 +895,23 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
         // If images is a string, split by comma or semicolon
         const imageArray = Array.isArray(images) ? images : images.split(/[,;]/).map(img => img.trim()).filter(img => img);
         
-        // Separate images based on .1 or .2 in filename
+        // Separate images based on (1) or (2) in filename
         const leftImages = [];
         const rightImages = [];
         
         imageArray.forEach((imagePath) => {
-            // Check if filename contains .1 or .2 pattern (e.g., 1.1.png, ID31_1.1.png, 20251103_ID31_1.1.png)
+            // Check if filename contains (1) or (2) pattern (e.g., image(1).png, ID31(1).png, 20251103_ID31(1).png)
             const filename = imagePath.split('/').pop() || imagePath;
             
-            // Pattern: tìm .1. hoặc .2. trong tên file (số.chấm.số.chấm.extension)
-            // Ví dụ: 1.1.png, ID31_1.1.png, 20251103_ID31_1.1.png
-            if (/\.1\./.test(filename)) {
-                // File có .1. → hiển thị bên trái
+            // Pattern: tìm (1) hoặc (2) trong tên file
+            if (/\(1\)/.test(filename)) {
+                // File có (1) → hiển thị bên trái
                 leftImages.push(imagePath);
-            } else if (/\.2\./.test(filename)) {
-                // File có .2. → hiển thị bên phải
+            } else if (/\(2\)/.test(filename)) {
+                // File có (2) → hiển thị bên phải
                 rightImages.push(imagePath);
             } else {
-                // Default: if no .1. or .2., put in left container (backward compatibility)
+                // Default: if no (1) or (2), put in left container (image 1)
                 leftImages.push(imagePath);
             }
         });

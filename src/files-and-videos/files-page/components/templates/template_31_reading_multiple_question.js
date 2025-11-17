@@ -880,6 +880,14 @@ function convertFurigana(text) {
 }
 
 export const getReadingMultipleQuestionTemplate = (readingText, questionText, blankOptions, instructions = '以下の文章を読んで、質問に答えてください。', explanationText = '', images = []) => {
+    // Helper function to split by both English and Japanese commas
+    function splitByComma(text) {
+        if (!text) return [];
+        // Replace Japanese comma with English comma for consistent splitting
+        const normalized = text.replace(/，/g, ',');
+        return normalized.split(',').map(item => item.trim()).filter(item => item);
+    }
+    
     // Split questions, options and explanations by semicolons
     const questions = questionText.split(';').map(q => q.trim()).filter(q => q);
     const optionsList = blankOptions.split(';').map(o => o.trim()).filter(o => o);
@@ -959,7 +967,8 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
     // Generate questions HTML and data
     const questionsHtml = questions.map((questionText, index) => {
         const questionId = 'question_' + (index + 1);
-        const options = (optionsList[index] || '').split(',').map(opt => opt.trim());
+        // Use helper function to split by both English and Japanese commas
+        const options = splitByComma(optionsList[index] || '');
         const correctAnswer = options[0];
         const sortedOptions = [...options].sort((a, b) => a.localeCompare(b, 'ja'));
         
@@ -994,7 +1003,8 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
     const questionsData = {};
     questions.forEach((questionText, index) => {
         const questionId = 'question_' + (index + 1);
-        const options = (optionsList[index] || '').split(',').map(opt => opt.trim());
+        // Use helper function to split by both English and Japanese commas
+        const options = splitByComma(optionsList[index] || '');
         questionsData[questionId] = {
             correctAnswer: options[0],
             options: options

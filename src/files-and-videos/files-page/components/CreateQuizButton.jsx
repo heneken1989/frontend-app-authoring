@@ -888,7 +888,8 @@ const generateQuizTemplate = (templateId, quizData) => {
             .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions)
             .replace('{{AUDIO_FILE}}', quizData.audioFile || '')
             .replace('{{START_TIME}}', quizData.startTime || 0)
-            .replace('{{END_TIME}}', quizData.endTime || 0);
+            .replace('{{END_TIME}}', quizData.endTime || 0)
+            .replace('{{TIME_SEGMENTS}}', quizData.timeSegmentsString || '');
 
       case TEMPLATE_IDS.ID45_LISTEN_HIGHTLIGHT: // Highlight Word Quiz (Japanese) - ID 45
         const correctWords45 = quizData.fixedWordsExplanation.split(',')
@@ -926,7 +927,8 @@ const generateQuizTemplate = (templateId, quizData) => {
             .replace('{{INSTRUCTIONS}}', quizData.instructions || defaultInstructions45)
             .replace('{{AUDIO_FILE}}', quizData.audioFile || '')
             .replace('{{START_TIME}}', quizData.startTime || 0)
-            .replace('{{END_TIME}}', quizData.endTime || 0);
+            .replace('{{END_TIME}}', quizData.endTime || 0)
+            .replace('{{TIME_SEGMENTS}}', quizData.timeSegmentsString || '');
 
       case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE: // Listen and Choose Quiz
       // Use timeSegmentsString if available, otherwise convert startTime and endTime
@@ -1866,19 +1868,28 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
         setProgress({ current: i + 1, total: quizzes.length });
 
         // Convert Excel data to quiz format
-        // For template 18 and related IDs: Excel columns map directly:
-        // - Excel paragraphText → quizData.paragraphText (content with ー placeholders)
-        // - Excel answerContent → quizData.answerContent (dropdown options)
+        // For template 18 and related IDs (grammar dropdown): Excel columns map as:
+        // - Excel questionText → quizData.paragraphText (content with ー placeholders)
+        // - Excel blankOptions → quizData.answerContent (dropdown options)
         const isGrammarDropdown = [18, 19, 6, 21, 23, 24, 26, 30, 62, 5, 10].includes(parseInt(quiz.problemTypeId) || 0);
         const isReadingMultipleQuestion = [31, 34, 37, 311].includes(parseInt(quiz.problemTypeId) || 0);
         const quizData = {
           problemTypeId: parseInt(quiz.problemTypeId) || 39, // Default to ID 39
           unitTitle: String(quiz.unitTitle || `Quiz ${i + 1}`),
+          // For grammar dropdown templates (18, 19, 6, 21, 23, 24, 26, 30, 62, 5, 10):
+          // - questionText from Excel → paragraphText (content with ー placeholders)
+          // - blankOptions from Excel → answerContent (dropdown options)
           // For template 31, 34, 37, and 311: paragraphText is readingText and should NOT fallback to questionText
           // Only use paragraphText if it exists, otherwise leave empty
-          paragraphText: String(quiz.paragraphText || ''),
+          paragraphText: String(
+            isGrammarDropdown 
+              ? (quiz.questionText || quiz.paragraphText || '') // For grammar dropdown: prefer questionText
+              : (quiz.paragraphText || '') // For others: use paragraphText
+          ),
           answerContent: String(
-            quiz.answerContent || quiz.optionsForBlanks || quiz.blankOptions || quiz.answerOptions || ''
+            isGrammarDropdown
+              ? (quiz.blankOptions || quiz.answerContent || quiz.optionsForBlanks || quiz.answerOptions || '') // For grammar dropdown: prefer blankOptions
+              : (quiz.answerContent || quiz.optionsForBlanks || quiz.blankOptions || quiz.answerOptions || '') // For others: prefer answerContent
           ),
           blankOptions: String(quiz.blankOptions || quiz.answerOptions || ''), // Keep for backward compatibility
           optionsForBlanks: String(quiz.optionsForBlanks || ''), // Keep for backward compatibility
@@ -2059,7 +2070,17 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
             <Form.Text>
               Upload an Excel file with quiz data. The first row should contain column headers.
               <br />
-              <strong>Required columns:</strong> problemTypeId, unitTitle, paragraphText, answerContent (or blankOptions for backward compatibility)
+              <strong>Required columns:</strong> problemTypeId, unitTitle
+              <br />
+              <strong>For Grammar Dropdown (ID 18, 19, 6, 21, 23, 24, 26, 30, 62, 5, 10):</strong>
+              <br />
+              • questionText (content with ー placeholders) - maps to paragraphText
+              <br />
+              • blankOptions (dropdown options) - maps to answerContent
+              <br />
+              <strong>For other templates:</strong>
+              <br />
+              • paragraphText, answerContent (or blankOptions for backward compatibility)
               <br />
               <strong>Optional columns:</strong> scriptText, instructions, audioFile, imageFile, images, startTime, endTime, timeLimit, published
               <br />
@@ -2075,7 +2096,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               <br />
               • timeSegments (format: "0.04-0.09;0.21-0.30" = multiple segments for ID 40, 63, 65, and 67)
               <br />
-              <strong>Problem Type IDs:</strong> 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 63 (Listen Image Select Multiple Answer), 65 (Listen Image Select Multiple Answer Template 65), 67 (Listen Write Answer with Image), 20 (Drag Drop), etc.
+              <strong>Problem Type IDs:</strong> 18 (Grammar Dropdown), 39 (Listen Single Choice), 40 (Listen Single Choice No Image), 63 (Listen Image Select Multiple Answer), 65 (Listen Image Select Multiple Answer Template 65), 67 (Listen Write Answer with Image), 20 (Drag Drop), etc.
             </Form.Text>
           </Form.Group>
 
@@ -2235,6 +2256,18 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
   const downloadTemplate = () => {
     // Create sample data for Excel template
     const sampleData = [
+      {
+        problemTypeId: '18',
+        unitTitle: 'Sample Quiz - Grammar Dropdown',
+        questionText: 'A：サントスさんはブラジル人です。マリアさん（ー）ブラジル人ですか。\nB：はい、マリアさん（ー）ブラジル人です。\nA：ミラーさん（ー）ブラジル人ですか。\nB：いいえ、ミラーさん（ー）ブラジル人じゃありません。',
+        blankOptions: 'は,が,で,に,を',
+        scriptText: 'A：サントスさんはブラジル人です。マリアさんはブラジル人ですか。\nB：はい、マリアさんはブラジル人です。\nA：ミラーさんはブラジル人ですか。\nB：いいえ、ミラーさんはブラジル人じゃありません。',
+        instructions: '（ー）に何を　入れますか。',
+        audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
+        imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
+        timeLimit: '60',
+        published: 'true'
+      },
       {
         problemTypeId: '39',
         unitTitle: 'Sample Quiz 1 - Listen Single Choice with Image',

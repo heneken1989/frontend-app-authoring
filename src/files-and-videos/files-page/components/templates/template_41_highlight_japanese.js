@@ -84,6 +84,13 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             font-size: 14px;
             padding-bottom: 5px;
         }
+        .audio-range-debug {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+            text-align: left;
+            word-break: break-word;
+        }
         .divider {
             height: 1px;
             background-color: transparent;
@@ -539,6 +546,7 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             <div class="custom-audio-player">
                 <!-- Status display -->
                 <div id="player-status" class="player-status">Current Status: Playing</div>
+                    <div id="audio-range-debug" class="audio-range-debug"></div>
                 
                 <div class="controls-row">
                     <div id="progress-container" class="progress-container">
@@ -565,6 +573,7 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 <span id="duration">0:00</span>
                 <span id="start-time">{{START_TIME}}</span>
                 <span id="end-time">{{END_TIME}}</span>
+                <span id="time-segments">{{TIME_SEGMENTS}}</span>
             </div>
         </div>
         <div class="paragraph" id="quiz-paragraph">
@@ -930,15 +939,103 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 const progressBar = document.getElementById('progress-bar');
                 const volumeSlider = document.getElementById('volume-slider');
                 const volumeLevel = document.getElementById('volume-level');
-                const startTimeElement = document.getElementById('start-time');
-                const endTimeElement = document.getElementById('end-time');
+                const timeSegmentsElement = document.getElementById('time-segments');
                 const playerStatus = document.getElementById('player-status');
+                const audioRangeDebug = document.getElementById('audio-range-debug');
                 
-                const startTime = parseFloat(startTimeElement.textContent) || 0;
-                let endTime = parseFloat(endTimeElement.textContent) || 0;
+                // Log audio source
+                console.log('🎵 Audio element:', audioElement);
+                console.log('🎵 Audio src:', audioElement ? audioElement.src : 'null');
+                console.log('🎵 Audio currentSrc:', audioElement ? audioElement.currentSrc : 'null');
+                
+                // Set initial status to Starting countdown
+                playerStatus.textContent = 'Current Status: Starting in 3s...';
+                
+                // Parse time segments from input (format: "0.04-0.09;0.21-0.30")
+                function parseTimeSegments(timeString) {
+                    if (!timeString || timeString.trim() === '') {
+                        return [];
+                    }
+                    
+                    const segments = [];
+                    const segmentStrings = timeString.split(';');
+                    
+                    segmentStrings.forEach((segmentStr, index) => {
+                        const parts = segmentStr.split('-');
+                        
+                        if (parts.length === 2) {
+                            // Parse time format: 0.04 = 4 seconds, 1.21 = 1 minute 21 seconds
+                            const parseTime = (timeStr) => {
+                                const time = parseFloat(timeStr.trim());
+                                if (isNaN(time)) return 0;
+                                
+                                if (timeStr.includes('.')) {
+                                    const [minutes, secondsPart] = timeStr.split('.');
+                                    const minutesNum = parseInt(minutes) || 0;
+                                    const secondsNum = parseInt(secondsPart.padEnd(2, '0').substring(0, 2)) || 0;
+                                    return minutesNum * 60 + secondsNum;
+                                } else {
+                                    return time;
+                                }
+                            };
+                            
+                            const start = parseTime(parts[0]);
+                            const end = parseTime(parts[1]);
+                            
+                            if (!isNaN(start) && !isNaN(end) && start >= 0 && end > start) {
+                                segments.push({ start, end });
+                            }
+                        }
+                    });
+                    
+                    return segments;
+                }
+                
+                const timeSegmentsString = timeSegmentsElement ? timeSegmentsElement.textContent : '';
+                console.log('🎵 Time segments string:', timeSegmentsString);
+                
+                const timeSegments = parseTimeSegments(timeSegmentsString);
+                console.log('🎵 Parsed time segments:', timeSegments);
+                
+                let currentSegmentIndex = 0;
+                let totalDuration = 0;
                 let isPlaying = false;
                 let isTransitioning = false; // Flag to prevent multiple transitions
                 let countdownInterval = null; // Store countdown interval reference
+                
+                // Calculate total duration of all segments
+                if (timeSegments.length > 0) {
+                    totalDuration = timeSegments.reduce((total, segment) => total + (segment.end - segment.start), 0);
+                    console.log('🎵 Total duration from segments:', totalDuration);
+                } else {
+                    // Fallback to single time range from timeSegmentsElement
+                    const timeString = timeSegmentsString || '0-0';
+                    console.log('🎵 Fallback to single time range:', timeString);
+                    const parts = timeString.split('-');
+                    if (parts.length === 2) {
+                        const startTime = parseFloat(parts[0]) || 0;
+                        const endTime = parseFloat(parts[1]) || 0;
+                        if (endTime > startTime) {
+                            timeSegments.push({ start: startTime, end: endTime });
+                            totalDuration = endTime - startTime;
+                            console.log('🎵 Created fallback segment:', { start: startTime, end: endTime });
+                        }
+                    }
+                }
+                
+                // Update debug display with segments info
+                function updateRangeDebug(actualDuration) {
+                    if (!audioRangeDebug) return;
+                    if (timeSegments.length === 0) {
+                        audioRangeDebug.textContent = 'Audio Range: No segments';
+                    } else if (timeSegments.length === 1) {
+                        audioRangeDebug.textContent = 'Audio Range: ' + timeSegments[0].start + 's → ' + timeSegments[0].end + 's';
+                    } else {
+                        const segmentStrs = timeSegments.map(s => s.start + 's-' + s.end + 's').join('; ');
+                        audioRangeDebug.textContent = 'Audio Segments: ' + segmentStrs;
+                    }
+                }
+                updateRangeDebug();
                 
                 // Update volume level display based on slider value
                 function updateVolumeDisplay() {
@@ -949,7 +1046,7 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 // Initialize volume display
                 updateVolumeDisplay();
                 
-                // Format time in mm:ss (still needed for internal calculations)
+                // Format time in mm:ss
                 function formatTime(seconds) {
                     const minutes = Math.floor(seconds / 60);
                     const secs = Math.floor(seconds % 60);
@@ -965,14 +1062,24 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 
                 // Initialize with 3-second delay
                 function initializePlayer() {
+                    console.log('🎵 initializePlayer called - timeSegments.length:', timeSegments.length);
+                    
+                    if (timeSegments.length === 0) {
+                        console.log('🎵 No segments found, setting status to Ready');
+                        playerStatus.textContent = 'Current Status: Ready';
+                        return;
+                    }
+                    
                     // Clear any existing countdown interval
                     if (countdownInterval) {
                         clearInterval(countdownInterval);
                         countdownInterval = null;
                     }
                     
-                    // Set to start time
-                    audioElement.currentTime = startTime;
+                    // Set to first segment start time
+                    currentSegmentIndex = 0;
+                    audioElement.currentTime = timeSegments[0].start;
+                    console.log('🎵 Set currentTime to first segment start:', timeSegments[0].start);
                     
                     // Update status to show countdown
                     playerStatus.textContent = 'Current Status: Starting in 3s...';
@@ -981,56 +1088,31 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                     let countdown = 3;
                     countdownInterval = setInterval(function() {
                         countdown--;
+                        console.log('🎵 Countdown:', countdown);
                         if (countdown > 0) {
                             playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
                         } else {
+                            console.log('🎵 Countdown finished, calling playNextSegment()');
                             clearInterval(countdownInterval);
                             countdownInterval = null;
                             // Auto-play when countdown reaches 0
-                            playAudio();
+                            playNextSegment();
                         }
                     }, 1000);
                 }
                 
-                // Play audio function
-                function playAudio() {
-                    audioElement.play()
-                        .then(function() {
-                            isPlaying = true;
-                            playerStatus.textContent = 'Current Status: Playing';
-                        })
-                        .catch(function(error) {
-                            console.error('Error playing audio:', error);
-                            isPlaying = false;
-                            playerStatus.textContent = 'Current Status: Error';
-                        });
-                }
-                
-                // Update progress bar
-                function updateProgress() {
-                    if (audioElement.duration) {
-                        // Calculate relative to the start/end times
-                        const currentRelative = audioElement.currentTime - startTime;
-                        const durationRelative = (endTime > 0 ? endTime : audioElement.duration) - startTime;
-                        
-                        // Don't update if already completed
-                        if (playerStatus.textContent === 'Current Status: Completed') {
-                            return;
-                        }
-                        
-                        // Update progress bar width
-                        const progressPercent = Math.min(100, Math.max(0, (currentRelative / durationRelative) * 100));
-                        progressBar.style.width = progressPercent + '%';
-                    }
+                // Play the current segment
+                function playNextSegment() {
+                    console.log('🎵 playNextSegment called - currentSegmentIndex:', currentSegmentIndex, 'total segments:', timeSegments.length);
                     
-                    // Check if we've reached the end time
-                    if (endTime > 0 && audioElement.currentTime >= endTime && !isTransitioning) {
-                        isTransitioning = true; // Prevent multiple transitions
+                    if (currentSegmentIndex >= timeSegments.length) {
+                        // All segments played, stop and reset to first segment
+                        console.log('🎵 All segments completed');
+                        currentSegmentIndex = 0;
+                        audioElement.currentTime = timeSegments[0].start;
                         audioElement.pause();
-                        audioElement.currentTime = startTime;
                         isPlaying = false;
                         playerStatus.textContent = 'Current Status: Completed';
-                        isTransitioning = false; // Reset flag
                         
                         // Force update status to ensure it's set correctly
                         setTimeout(() => {
@@ -1038,81 +1120,133 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                                 playerStatus.textContent = 'Current Status: Completed';
                             }
                         }, 50);
+                        return;
                     }
+                    
+                    const currentSegment = timeSegments[currentSegmentIndex];
+                    console.log('🎵 Playing segment', currentSegmentIndex, ':', currentSegment.start, 's →', currentSegment.end, 's');
+                    console.log('🎵 Audio element ready state:', audioElement.readyState, 'duration:', audioElement.duration);
+                    audioElement.currentTime = currentSegment.start;
+                    
+                    audioElement.play()
+                        .then(function() {
+                            console.log('🎵 Audio play() succeeded');
+                            isPlaying = true;
+                            playerStatus.textContent = 'Current Status: Playing';
+                        })
+                        .catch(function(error) {
+                            console.error('🎵 Error playing audio:', error);
+                            isPlaying = false;
+                            playerStatus.textContent = 'Current Status: Error';
+                        });
                 }
                 
-                // Play/Pause toggle
-                function togglePlayPause() {
-                    if (isPlaying) {
-                        audioElement.pause();
-                        isPlaying = false;
-                        playerStatus.textContent = 'Current Status: Paused';
-                    } else {
-                        // If at start time or outside valid range, play from start with delay
-                        if (audioElement.currentTime === startTime || 
-                            audioElement.currentTime < startTime || 
-                            (endTime > 0 && audioElement.currentTime >= endTime)) {
+                // Update progress bar
+                function updateProgress() {
+                    if (audioElement.duration && timeSegments.length > 0) {
+                        const currentTime = audioElement.currentTime;
+                        const currentSegment = timeSegments[currentSegmentIndex];
+                        
+                        // Don't update if already completed
+                        if (playerStatus.textContent === 'Current Status: Completed') {
+                            return;
+                        }
+                        
+                        // Calculate progress within current segment
+                        if (currentTime >= currentSegment.start && currentTime <= currentSegment.end) {
+                            const segmentProgress = (currentTime - currentSegment.start) / (currentSegment.end - currentSegment.start);
                             
-                            audioElement.currentTime = startTime;
+                            // Calculate total progress across all segments
+                            let totalElapsed = 0;
+                            for (let i = 0; i < currentSegmentIndex; i++) {
+                                totalElapsed += (timeSegments[i].end - timeSegments[i].start);
+                            }
+                            totalElapsed += (currentTime - currentSegment.start);
                             
-                            // Update status to show countdown
-                            playerStatus.textContent = 'Current Status: Starting in 3s...';
+                            const progressPercent = Math.min(100, Math.max(0, (totalElapsed / totalDuration) * 100));
+                            progressBar.style.width = progressPercent + '%';
+                        }
+                        
+                        // Check if we've reached the end of current segment
+                        if (currentTime >= currentSegment.end && !isTransitioning) {
+                            isTransitioning = true; // Prevent multiple transitions
+                            audioElement.pause();
+                            currentSegmentIndex++;
                             
-                            // Countdown timer
-                            let countdown = 3;
-                            countdownInterval = setInterval(function() {
-                                countdown--;
-                                if (countdown > 0) {
-                                    playerStatus.textContent = 'Current Status: Starting in ' + countdown + 's...';
-                                } else {
-                                    clearInterval(countdownInterval);
-                                    countdownInterval = null;
-                                    // Auto-play when countdown reaches 0
-                                    playAudio();
-                                }
-                            }, 1000);
-                        } else {
-                            // Resume immediately from current position
-                            playAudio();
+                            if (currentSegmentIndex < timeSegments.length) {
+                                // Move to next segment
+                                setTimeout(() => {
+                                    isTransitioning = false; // Reset flag
+                                    playNextSegment();
+                                }, 100); // Small delay for smooth transition
+                            } else {
+                                // All segments completed
+                                isPlaying = false;
+                                playerStatus.textContent = 'Current Status: Completed';
+                                currentSegmentIndex = 0; // Reset for next play
+                                isTransitioning = false; // Reset flag
+                                
+                                // Force update status to ensure it's set correctly
+                                setTimeout(() => {
+                                    if (playerStatus.textContent !== 'Current Status: Completed') {
+                                        playerStatus.textContent = 'Current Status: Completed';
+                                    }
+                                }, 50);
+                            }
                         }
                     }
                 }
                 
-                // Click on progress bar to seek
-                progressContainer.addEventListener('click', (e) => {
-                    const clickPosition = (e.offsetX / progressContainer.offsetWidth);
-                    const durationRelative = (endTime > 0 ? endTime : audioElement.duration) - startTime;
-                    const seekTime = startTime + (clickPosition * durationRelative);
-                    
-                    // Ensure we stay within bounds
-                    audioElement.currentTime = Math.min(
-                        endTime > 0 ? endTime : audioElement.duration,
-                        Math.max(startTime, seekTime)
-                    );
-                    
-                    updateProgress();
-                });
+                // Disable seeking by click; make progress bar non-interactive
+                progressContainer.style.pointerEvents = 'none';
                 
                 // Update progress during playback
                 audioElement.addEventListener('timeupdate', updateProgress);
                 
                 // When metadata is loaded, set up the player
                 audioElement.addEventListener('loadedmetadata', () => {
-                    // If endTime is not set or is greater than duration, use full duration
-                    if (endTime <= 0 || endTime > audioElement.duration) {
-                        endTime = audioElement.duration;
+                    // Get actual duration of the audio file
+                    const actualDuration = audioElement.duration;
+                    
+                    // Validate and adjust time segments
+                    if (timeSegments.length > 0) {
+                        timeSegments.forEach((segment, index) => {
+                            if (segment.end > actualDuration) {
+                                segment.end = actualDuration;
+                            }
+                            if (segment.start > actualDuration) {
+                                segment.start = 0;
+                                segment.end = 0;
+                            }
+                        });
+                        
+                        // Remove invalid segments
+                        const validSegments = timeSegments.filter(segment => segment.end > segment.start);
+                        timeSegments.length = 0;
+                        timeSegments.push(...validSegments);
+                        
+                        // Recalculate total duration
+                        totalDuration = timeSegments.reduce((total, segment) => total + (segment.end - segment.start), 0);
+                        
+                    } else {
+                        // Fallback to full audio
+                        timeSegments.push({ start: 0, end: actualDuration });
+                        totalDuration = actualDuration;
                     }
                     
-                    // Set to start time
-                    audioElement.currentTime = startTime;
+                    // Set to first segment start time
+                    if (timeSegments.length > 0) {
+                        audioElement.currentTime = timeSegments[0].start;
+                    }
                     
                     // Initialize player with delay
                     initializePlayer();
+                    updateRangeDebug(actualDuration);
                 });
                 
                 // Auto-start countdown when page loads (fallback if loadedmetadata doesn't fire)
                 setTimeout(() => {
-                    if (!isPlaying && audioElement.duration) {
+                    if (timeSegments.length > 0 && !isPlaying) {
                         initializePlayer();
                     }
                 }, 500); // Delay to ensure audio metadata is loaded
@@ -1135,15 +1269,21 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 
                 // Function to update player status with countdown
                 function startWithDelay() {
+                    if (timeSegments.length === 0) {
+                        playerStatus.textContent = 'Current Status: Ready';
+                        return;
+                    }
+                    
                     // Clear any existing countdown interval
                     if (countdownInterval) {
                         clearInterval(countdownInterval);
                         countdownInterval = null;
                     }
                     
-                    // Reset to start time
-                    audioElement.currentTime = startTime;
+                    // Reset to first segment
+                    currentSegmentIndex = 0;
                     isTransitioning = false; // Reset transition flag
+                    audioElement.currentTime = timeSegments[0].start;
                     
                     // Update status with countdown
                     playerStatus.textContent = 'Current Status: Starting in 3s...';
@@ -1158,7 +1298,7 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                             clearInterval(countdownInterval);
                             countdownInterval = null;
                             // Auto-play when countdown reaches 0
-                            playAudio();
+                            playNextSegment();
                         }
                     }, 1000);
                 }
@@ -1186,16 +1326,24 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                             countdownInterval = null;
                         }
                         
-                        audioElement.currentTime = startTime;
-                        playerStatus.textContent = 'Current Status: Starting in 3s...';
-                        // Restart countdown after reset
-                        setTimeout(() => {
-                            initializePlayer();
-                        }, 100);
+                        if (timeSegments.length > 0) {
+                            currentSegmentIndex = 0;
+                            audioElement.currentTime = timeSegments[0].start;
+                            playerStatus.textContent = 'Current Status: Starting in 3s...';
+                            // Restart countdown after reset
+                            setTimeout(() => {
+                                initializePlayer();
+                            }, 100);
+                        } else {
+                            playerStatus.textContent = 'Current Status: Ready';
+                        }
                         audioElement.pause();
                     },
                     getTimeRange: () => {
-                        return { startTime: startTime, endTime: endTime };
+                        if (timeSegments.length === 1) {
+                            return { startTime: timeSegments[0].start, endTime: timeSegments[0].end };
+                        }
+                        return { segments: timeSegments, totalDuration: totalDuration };
                     }
                 };
             }

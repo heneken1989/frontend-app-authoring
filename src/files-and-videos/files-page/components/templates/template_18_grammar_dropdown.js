@@ -113,11 +113,19 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
     
     // Parse the options for each blank from optionsForBlanks (parameter 2)
     // This parameter receives quizData.answerContent from CreateQuizButton (contains dropdown options like "は,が,で,に,を")
+    // Supports both English comma (,) and Japanese comma (，) as separators
     var blanksOptionsArray = [];
     if (optionsForBlanks && optionsForBlanks.trim()) {
+        // Helper function to split by both English and Japanese commas
+        function splitByComma(text) {
+            // Replace Japanese comma with English comma for consistent splitting
+            var normalized = text.replace(/，/g, ',');
+            return normalized.split(',');
+        }
+        
         // If there's no semicolon, use first N words as correct answers in order, rest as wrong options
         if (optionsForBlanks.indexOf(';') === -1) {
-            var allOptions = optionsForBlanks.split(',');
+            var allOptions = splitByComma(optionsForBlanks);
             for (var i = 0; i < allOptions.length; i++) {
                 allOptions[i] = allOptions[i].trim();
             }
@@ -151,10 +159,11 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
             }
         } else {
             // Original behavior: split by semicolon for different options per blank
+            // Supports format: "は，か，と，の;あります，います，読（よ）みます，します;だから，では，それから，でも"
             var semicolonSplit = optionsForBlanks.split(';');
             blanksOptionsArray = [];
             for (var m = 0; m < semicolonSplit.length; m++) {
-                var commaSplit = semicolonSplit[m].split(',');
+                var commaSplit = splitByComma(semicolonSplit[m]);
                 var trimmedOptions = [];
                 for (var n = 0; n < commaSplit.length; n++) {
                     var trimmed = commaSplit[n].trim();
@@ -162,7 +171,9 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
                         trimmedOptions.push(trimmed);
                     }
                 }
-                blanksOptionsArray.push(trimmedOptions);
+                if (trimmedOptions.length > 0) {
+                    blanksOptionsArray.push(trimmedOptions);
+                }
             }
         }
     }

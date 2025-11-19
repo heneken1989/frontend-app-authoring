@@ -48,12 +48,14 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: visible;
             padding-left: 15px;
+            padding-right: 15px;
             padding-top: 20px;
             background-color: #fff;
             width: 100%;
             gap: 0;
+            box-sizing: border-box;
         }
         .right-container form {
             display: flex;
@@ -81,7 +83,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
         }
         .instructions {
             font-size: 1.1rem;
-            line-height: 1.2;
+            line-height: 1.6;
             color: #333;
             font-weight: bold;
             font-style: italic;
@@ -90,6 +92,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             background-color: #fff;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            word-break: keep-all;
             flex-shrink: 0;
         }
         .content-container {
@@ -179,21 +182,34 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
         }
         .reading-text {
             font-size: 1.2rem;
-            padding: 0;
+            padding: 1em 0 0.5em 0;
             margin: 0;
             color: #333;
             background-color: #fff;
             border: none;
-            white-space: pre-wrap;
+            white-space: pre-line;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            word-break: keep-all;
             width: 100%;
             max-width: 100%;
-            line-height: 1.2;
+            line-height: 2;
+            overflow: visible;
+            box-sizing: border-box;
+        }
+        .reading-text * {
+            overflow: visible !important;
         }
         .reading-text .custom-dropdown {
             vertical-align: middle;
             display: inline-block;
+        }
+        .reading-text ruby {
+            overflow: visible !important;
+            margin: 0 0.2em;
+        }
+        .reading-text rt {
+            font-size: 0.5em;
         }
         .answer-item {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
@@ -414,11 +430,20 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: 400;
-            line-height: 1.2;
+            line-height: 1.8;
             text-align: left;
             margin-bottom: 1rem;
             white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: keep-all;
             padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .transcript-text ruby {
+            display: inline;
+            white-space: nowrap;
         }
         @media (max-width: 768px) {
             .container {

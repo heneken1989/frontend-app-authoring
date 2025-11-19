@@ -211,7 +211,8 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         }
         .options-container {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            flex-wrap: wrap;
             gap: 3px;
             margin-top: 6px;
             width: 100%;
@@ -223,7 +224,9 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            width: 100%;
+            flex: 0 1 auto;
+            min-width: 120px;
+            max-width: calc(100% - 6px);
             padding: 5px 5px;
             border: none;
             outline: none;
@@ -413,6 +416,9 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             }
             .right-container {
                 border-left: none;
+            }
+            .option-button {
+                max-width: 100%;
             }
         }
     </style>

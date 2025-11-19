@@ -1458,20 +1458,16 @@ export const getReadingMultipleQuestionTemplate311 = (readingText, questionText,
             // (e.g., 1.1.png, ID31_1.1.png, 20251103_ID31_1.1.png, 20251113_ID38_1.jpeg)
             const filename = imagePath.split('/').pop() || imagePath;
             
-            // Pattern: 
-            // Image 1: .1. hoặc _1. (hỗ trợ cả chấm và gạch dưới)
-            // Image 2: _ + số bất kỳ + .2 (ví dụ: _1.2, _2.2, _38.2)
-            // Ví dụ: 1.1.png, ID38_1.jpeg → image 1 (left)
-            // Ví dụ: ID38_1.2.jpeg, ID38_2.2.png → image 2 (right)
-            // Ví dụ: 1.2.png → image 1 (left, vì không phải _số.2)
-            if (/[._]1\./.test(filename)) {
-                // File có .1. hoặc _1. → hiển thị bên trái (image 1)
-                leftImages.push(imagePath);
-            } else if (/_\d+\.2/.test(filename)) {
+            // Pattern logic: 
+            // Image 2 (RIGHT): File có pattern _<số>.2 (ví dụ: _1.2, _27.2, _999.2)
+            // Image 1 (LEFT): Tất cả các file còn lại (default)
+            if (/_\d+\.2/.test(filename)) {
                 // File có _số.2 (gạch dưới + số bất kỳ + .2) → hiển thị bên phải (image 2)
+                console.log('✅ Template 311 - Image goes to RIGHT (pattern _số.2):', filename);
                 rightImages.push(imagePath);
             } else {
-                // Default: if no pattern, put in left container (image bên trái)
+                // Default: Tất cả file không match image 2 đều vào left (image 1)
+                console.log('✅ Template 311 - Image goes to LEFT (default - không match _số.2):', filename);
                 leftImages.push(imagePath);
             }
         });

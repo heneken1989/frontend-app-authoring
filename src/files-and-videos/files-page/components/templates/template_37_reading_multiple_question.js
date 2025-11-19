@@ -170,7 +170,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             color: #333;
             background-color: #fff;
             border: none;
-            white-space: pre-wrap;
+            white-space: pre-line;
             word-wrap: break-word;
             overflow-wrap: break-word;
             word-break: break-word;
@@ -211,8 +211,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         }
         .options-container {
             display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 3px;
             margin-top: 6px;
             width: 100%;
@@ -224,9 +223,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            flex: 0 1 auto;
-            min-width: 120px;
-            max-width: calc(100% - 6px);
+            width: 100%;
             padding: 5px 5px;
             border: none;
             outline: none;
@@ -416,9 +413,6 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             }
             .right-container {
                 border-left: none;
-            }
-            .option-button {
-                max-width: 100%;
             }
         }
     </style>
@@ -983,6 +977,7 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
                    // data-value keeps original value for comparison, innerHTML shows converted value
                    const optionDisplay = convertFurigana(option);
                    const escapedOption = option.replace(/"/g, '&quot;');
+                   const optionNumber = (optIndex + 1) + '. '; // Add number prefix: 1., 2., 3., 4.
                    return '<button type="button" class="option-button" data-value="' + escapedOption + '" data-question-id="' + questionId + '" onclick="' +
                    'if(this.disabled) return false;' +
                    'const questionBlock=this.closest(\'.question-block\');' +
@@ -993,7 +988,7 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
                    'window.selectedAnswers[questionBlock.id]=this.dataset.value;' +
                    'console.log(\'Selected:\', questionBlock.id, this.dataset.value);' +
                    'return false;' +
-                   '">' + optionDisplay + '</button>';
+                   '">' + optionNumber + optionDisplay + '</button>';
                }).join('') +
                '</div>' +
                '</div>';
@@ -1020,7 +1015,8 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
     
     // Paragraph text for left container (replaces images)
     // Template 37: paragraphText is displayed in left container, not in right container
-    const paragraphTextLeft = readingText ? readingText.trim() : '';
+    // Add 全角 space (　) at the beginning for first line indent
+    const paragraphTextLeft = readingText ? '　' + readingText.trim() : '';
     
     let template = readingMultipleQuestionTemplate
         .replace('{{READING_TEXT_CONTAINER}}', '') // Remove reading text container (not needed for template 37)

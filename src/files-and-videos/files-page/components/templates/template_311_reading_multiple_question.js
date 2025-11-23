@@ -47,11 +47,11 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
         .right-container {
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            overflow-y: hidden;
             overflow-x: visible;
             padding-left: 15px;
             padding-right: 15px;
-            padding-top: 20px;
+            padding-top: 5px;
             background-color: #fff;
             width: 100%;
             gap: 0;
@@ -63,6 +63,20 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             gap: 0;
             margin: 0;
             padding: 0;
+            height: 100%;
+            overflow-y: hidden;
+        }
+        .reading-text-container {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex-grow: 1;
+            padding: 0;
+            margin: 0;
+            background-color: #fff;
+            box-sizing: border-box;
+            width: 100%;
         }
         .images-container-right {
             display: flex;
@@ -182,19 +196,22 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
         }
         .reading-text {
             font-size: 1.2rem;
-            padding: 1em 0 0.5em 0;
+            padding: 0;
             margin: 0;
+            margin-top: -2.5rem;
             color: #333;
             background-color: #fff;
             border: none;
-            white-space: pre-line;
+            white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: break-word;
             word-break: keep-all;
             width: 100%;
             max-width: 100%;
-            line-height: 2;
-            overflow: visible;
+            line-height: 1.8;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex: 1;
             box-sizing: border-box;
         }
         .reading-text * {
@@ -484,8 +501,10 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                     {{IMAGES_RIGHT}}
                 </div>
                 {{PARAGRAPH_TEXT_CONTAINER}}
-                <div class="reading-text">
-                    {{READING_TEXT_WITH_DROPDOWNS}}
+                <div class="reading-text-container">
+                    <div class="reading-text">
+                        {{READING_TEXT_WITH_DROPDOWNS}}
+                    </div>
                 </div>
                 <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
                 <div style="display: none;">
@@ -1349,7 +1368,7 @@ export const getReadingMultipleQuestionTemplate311 = (readingText, questionText,
     
     if (questionText && questionText.trim()) {
         // questionText contains content with （ー） placeholders
-        const answerLines = questionText.split('\n').map(line => line.trim()).filter(line => line);
+        const answerLines = questionText.split('\n').filter(line => line);
         
         const processedAnswerLines = [];
         for (let j = 0; j < answerLines.length; j++) {

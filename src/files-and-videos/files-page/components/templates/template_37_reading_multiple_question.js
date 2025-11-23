@@ -167,6 +167,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             font-size: 1.2rem;
             padding: 0px 0px 0px 0px;
             margin: 0;
+            margin-top: -1.5rem;
             color: #333;
             background-color: #fff;
             border: none;
@@ -181,6 +182,9 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             overflow-y: auto;
             overflow-x: hidden;
             flex: 1;
+        }
+        .paragraph-text-left .underline-text {
+            text-decoration: underline;
         }
         .questions-container {
             display: flex;
@@ -211,8 +215,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         }
         .options-container {
             display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 3px;
             margin-top: 6px;
             width: 100%;
@@ -224,17 +227,15 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            flex: 0 1 auto;
-            min-width: 120px;
-            max-width: calc(100% - 6px);
-            padding: 5px 5px;
+            width: 100%;
+            padding: 8px 12px;
             border: none;
             outline: none;
             background: transparent;
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1rem;
             font-weight: normal;
-            line-height: 1.4;
+            line-height: 1.6;
             color: #333;
             text-align: left;
             position: relative;
@@ -245,10 +246,16 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             border-radius: 4px;
             cursor: pointer;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: flex-start;
             gap: 12px;
             box-sizing: border-box;
+            min-height: 40px;
+        }
+        .option-button > span {
+            flex: 1;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         .option-button:hover:not(.selected):not(.correct):not(.incorrect) {
             background-color: #f8f9fa;
@@ -968,7 +975,8 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
     // Generate questions HTML and data
     const questionsHtml = questions.map((questionText, index) => {
         const questionId = 'question_' + (index + 1);
-        const options = (optionsList[index] || '').split(',').map(opt => opt.trim()).filter(opt => opt); // Filter out empty options
+        // Support both Japanese comma (，) and English comma (,) for splitting options
+        const options = (optionsList[index] || '').split(/[，,]/).map(opt => opt.trim()).filter(opt => opt); // Filter out empty options
         const correctAnswer = options[0];
         const sortedOptions = [...options].sort((a, b) => a.localeCompare(b, 'ja'));
         
@@ -994,7 +1002,7 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
                    'window.selectedAnswers[questionBlock.id]=this.dataset.value;' +
                    'console.log(\'Selected:\', questionBlock.id, this.dataset.value);' +
                    'return false;' +
-                   '">' + optionNumber + optionDisplay + '</button>';
+                   '"><span>' + optionNumber + optionDisplay + '</span></button>';
                }).join('') +
                '</div>' +
                '</div>';
@@ -1004,7 +1012,8 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
     const questionsData = {};
     questions.forEach((questionText, index) => {
         const questionId = 'question_' + (index + 1);
-        const options = (optionsList[index] || '').split(',').map(opt => opt.trim());
+        // Support both Japanese comma (，) and English comma (,) for splitting options
+        const options = (optionsList[index] || '').split(/[，,]/).map(opt => opt.trim());
         questionsData[questionId] = {
             correctAnswer: options[0],
             options: options
@@ -1021,8 +1030,16 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
     
     // Paragraph text for left container (replaces images)
     // Template 37: paragraphText is displayed in left container, not in right container
+    // Process text: underline quoted text and convert furigana
+    let processedParagraphText = readingText ? readingText.trim() : '';
+    if (processedParagraphText) {
+        // First convert furigana
+        processedParagraphText = convertFurigana(processedParagraphText);
+        // Then underline text in quotes
+        processedParagraphText = processedParagraphText.replace(/"([^"]+)"/g, '<span class="underline-text">$1</span>');
+    }
     // Add 全角 space (　) at the beginning for first line indent
-    const paragraphTextLeft = readingText ? '　' + readingText.trim() : '';
+    const paragraphTextLeft = processedParagraphText ? '　' + processedParagraphText : '';
     
     let template = readingMultipleQuestionTemplate
         .replace('{{READING_TEXT_CONTAINER}}', '') // Remove reading text container (not needed for template 37)

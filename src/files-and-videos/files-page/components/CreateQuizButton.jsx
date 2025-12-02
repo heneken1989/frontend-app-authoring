@@ -773,7 +773,7 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE:
       return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || 'どう　かきますか',
         quizData.scriptText || ''
@@ -781,7 +781,7 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1:
       return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || 'どう　よみますか',
         quizData.scriptText || ''
@@ -1108,7 +1108,7 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.ID29_GRAMMAR_SINGLE_SELECT:
       return getGrammarSingleSelectTemplate29(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '正しい文を選んでください。',
         quizData.scriptText || ''
@@ -1303,7 +1303,7 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT:
       return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '正しい文を選んでください。',
         quizData.scriptText || ''
@@ -1311,7 +1311,7 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT:
       return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '★＿＿＿に　入る　ものは　どれですか。',
         quizData.scriptText || ''
@@ -1496,7 +1496,7 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.ID3_VOCAB_SINGLE_CHOICE:
       return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || 'どう　かきますか',
         quizData.scriptText || ''
@@ -1504,7 +1504,7 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.ID4_VOCAB_SINGLE_SELECT_1:
       return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || 'どう　かきますか',
         quizData.scriptText || ''
@@ -1513,21 +1513,21 @@ const generateQuizTemplate = (templateId, quizData) => {
 
     case TEMPLATE_IDS.ID7_VOCAB_SINGLE_SELECT_3:
         return getGrammarSingleSelectTemplate7(
-          quizData.paragraphText || '',
+          quizData.questionText || '',
           quizData.answerContent || quizData.blankOptions || '',
           quizData.instructions || '_______　の文と　だいたい　同じ　いみの　文が　あります。１～４から　１つ　えらんで　ください。',
           quizData.scriptText || ''
         );
     case TEMPLATE_IDS.ID8_VOCAB_SINGLE_SELECT_4:
           return getGrammarSingleSelectTemplate(
-            quizData.paragraphText || '',
+            quizData.questionText || '',
             quizData.answerContent || quizData.blankOptions || '',
             quizData.instructions || 'どう　かきますか',
             quizData.scriptText || ''
           );
     case TEMPLATE_IDS.ID9_VOCAB_SINGLE_SELECT_5:
           return getGrammarSingleSelectTemplate(
-            quizData.paragraphText || '',
+            quizData.questionText || '',
             quizData.answerContent || quizData.blankOptions || '',
             quizData.instructions || 'どう　よみますか',
             quizData.scriptText || ''
@@ -1562,35 +1562,35 @@ const generateQuizTemplate = (templateId, quizData) => {
       );
     case TEMPLATE_IDS.ID13_VOCAB_SINGLE_SELECT_7:
       return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '_______　の文と　だいたい　同じ　いみの　文が　あります。１～４から　１つ　えらんで　ください。',
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID14_VOCAB_SINGLE_SELECT_8:
       return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '_____の　ことばは　ひらがなで　どう　かきますか。1・2・3・4から　いちばん　いい　ものを　ひとつ　えらんで　ください。',
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID15_VOCAB_SINGLE_SELECT_9:
       return getGrammarSingleSelectTemplate(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '_____の　ことばは　どう　かきますか。1・2・3・4から　いちばん　いい　ものを　ひとつ　えらんで　ください。',
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID16_VOCAB_SINGLE_SELECT_10:
       return getGrammarSingleSelectTemplate7(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '（ー）に　何を　入れますか。1～4から　１つ　えらんで　ください。',
         quizData.scriptText || ''
       );
     case TEMPLATE_IDS.ID17_VOCAB_SINGLE_SELECT_11:
       return getGrammarSingleSelectTemplate7(
-        quizData.paragraphText || '',
+        quizData.questionText || '',
         quizData.answerContent || quizData.blankOptions || '',
         quizData.instructions || '_______　のぶんと　だいたい　同じ　いみの　ぶんは　どれですか。',
         quizData.scriptText || ''
@@ -1871,7 +1871,11 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
         // For template 18 and related IDs (grammar dropdown): Excel columns map as:
         // - Excel questionText → quizData.paragraphText (content with ー placeholders)
         // - Excel blankOptions → quizData.answerContent (dropdown options)
+        // For template 28 and related IDs (grammar single select): Excel columns map as:
+        // - Excel questionText → quizData.questionText
+        // - Excel blankOptions → quizData.answerContent
         const isGrammarDropdown = [18, 19, 6, 21, 23, 24, 26, 30, 62, 5, 10].includes(parseInt(quiz.problemTypeId) || 0);
+        const isGrammarSingleSelect = [3, 4, 7, 8, 9, 13, 14, 15, 16, 17, 28, 29].includes(parseInt(quiz.problemTypeId) || 0);
         const isReadingMultipleQuestion = [31, 34, 37, 311].includes(parseInt(quiz.problemTypeId) || 0);
         const quizData = {
           problemTypeId: parseInt(quiz.problemTypeId) || 39, // Default to ID 39
@@ -1885,6 +1889,13 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
             isGrammarDropdown 
               ? (quiz.questionText || quiz.paragraphText || '') // For grammar dropdown: prefer questionText
               : (quiz.paragraphText || '') // For others: use paragraphText
+          ),
+          // For grammar single select templates (3, 4, 7, 8, 9, 13, 14, 15, 16, 17, 28, 29):
+          // - questionText from Excel → questionText
+          questionText: String(
+            isGrammarSingleSelect
+              ? (quiz.questionText || quiz.paragraphText || '') // For grammar single select: prefer questionText, fallback to paragraphText
+              : (quiz.questionText || '') // For others: use questionText if exists
           ),
           answerContent: String(
             isGrammarDropdown
@@ -2078,6 +2089,12 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               <br />
               • blankOptions (dropdown options) - maps to answerContent
               <br />
+              <strong>For Grammar Single Select (ID 3, 4, 7, 8, 9, 13, 14, 15, 16, 17, 28, 29):</strong>
+              <br />
+              • questionText - maps to questionText
+              <br />
+              • blankOptions (or answerContent) - maps to answerContent
+              <br />
               <strong>For other templates:</strong>
               <br />
               • paragraphText, answerContent (or blankOptions for backward compatibility)
@@ -2265,6 +2282,16 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
         instructions: '（ー）に何を　入れますか。',
         audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
         imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
+        timeLimit: '60',
+        published: 'true'
+      },
+      {
+        problemTypeId: '28',
+        unitTitle: 'Sample Quiz - Grammar Single Select',
+        questionText: '正しい文を選んでください。',
+        blankOptions: '私は毎日日本語を勉強します,私が毎日日本語を勉強します,私は毎日日本語が勉強します',
+        scriptText: '私は毎日日本語を勉強します。',
+        instructions: '正しい文を選んでください。',
         timeLimit: '60',
         published: 'true'
       },
@@ -2483,7 +2510,7 @@ B:赤色です。`,
           imageFile: quizData.imageFile,
           images: quizData.images,
           answerContent: quizData.answerContent,
-          questionText: quizData.questionText,
+          questionText: quizData.questionText || '',
           words: quizData.words,
           dropZones: quizData.dropZones
         },

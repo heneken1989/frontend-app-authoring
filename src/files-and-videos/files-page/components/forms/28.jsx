@@ -10,11 +10,11 @@ const GrammarSingleSelectForm = ({ quizData, setQuizData }) => {
         <Form.Control
           as="textarea"
           rows={3}
-          value={quizData.paragraphText}
+          value={quizData.questionText}
           onChange={(e) => {
             setQuizData(prev => ({
               ...prev,
-              paragraphText: e.target.value
+              questionText: e.target.value
             }));
           }}
           placeholder="Enter the question text. For example: 正しい文を選んでください。"

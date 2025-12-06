@@ -146,6 +146,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         }
         .reading-text {
             font-size: 1.2rem;
+            line-height: 2.0;
             padding: 0;
             margin: 0;
             color: #333;
@@ -154,6 +155,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            word-break: normal;
             width: 100%;
             max-width: 100%;
         }
@@ -182,8 +184,8 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         }
         .options-container {
             display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
+            flex-direction: column;
+            flex-wrap: nowrap;
             gap: 6px;
             margin-top: 6px;
             width: 100%;
@@ -192,7 +194,8 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            flex: 0 1 auto;
+            flex: 0 0 auto;
+            width: 100%;
             min-width: 120px;
             max-width: 100%;
             padding: 12px 16px;
@@ -1013,7 +1016,8 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
     }).join('');
     
     // Ensure readingText is empty if not provided, don't use questionText as fallback
-    const finalReadingText = readingText ? readingText.trim() : '';
+    // Only trim trailing whitespace, preserve leading whitespace (for indentation)
+    const finalReadingText = readingText ? readingText.replace(/\s+$/, '') : '';
     
     // Only show reading-text container if readingText is not empty
     const readingTextContainer = finalReadingText 

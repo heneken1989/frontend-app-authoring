@@ -232,7 +232,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
             font-weight: normal;
-            line-height: 1.4;
+            line-height: 2.1;
             text-align: left;
             margin: 0 0 0 0;
             padding: 0;

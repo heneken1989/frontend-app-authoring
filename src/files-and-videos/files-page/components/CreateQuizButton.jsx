@@ -1321,7 +1321,8 @@ const generateQuizTemplate = (templateId, quizData) => {
       quizData.instructions = quizData.instructions || '以下の文章を読んで、質問に答えてください。';
       // Ensure paragraphText (readingText) is not fallback to questionText
       // readingText should only come from paragraphText, not questionText
-      const readingText31 = quizData.paragraphText ? quizData.paragraphText.trim() : '';
+      // Only trim trailing whitespace, preserve leading whitespace (for indentation)
+      const readingText31 = quizData.paragraphText ? quizData.paragraphText.replace(/\s+$/, '') : '';
       // Apply furigana conversion to text values (like template 7)
       // Note: blankOptions will be converted in template 31 for each option separately
       const processedReadingText31 = convertFurigana(readingText31);

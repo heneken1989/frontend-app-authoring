@@ -48,10 +48,10 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            overflow-x: visible;
+            overflow-x: hidden;
             padding-left: 5px;
             padding-top: 10px;
-            padding-right: 5px;
+            padding-right: 15px;
             background-color: #fff;
             width: 100%;
             min-width: 0;
@@ -82,7 +82,9 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             background-color: #fff;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            word-break: keep-all;
             flex-shrink: 0;
+            box-sizing: border-box;
         }
         .content-container {
             display: flex;
@@ -153,7 +155,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         .reading-text {
             font-size: 1.2rem;
             line-height: 2.0;
-            padding: 0;
+            padding: 0 5px 0 0;
             margin: 0;
             color: #333;
             background-color: #fff;
@@ -161,9 +163,11 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            word-break: normal;
+            word-break: keep-all;
             width: 100%;
             max-width: 100%;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
         .questions-container {
             display: flex;

@@ -82,7 +82,9 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             background-color: #fff;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            word-break: keep-all;
             flex-shrink: 0;
+            box-sizing: border-box;
         }
         .content-container {
             display: flex;
@@ -160,8 +162,10 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            word-break: keep-all;
             width: 100%;
             max-width: 100%;
+            box-sizing: border-box;
         }
         .paragraph-text-left {
             font-size: 1.2rem;
@@ -171,10 +175,10 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             color: #333;
             background-color: #fff;
             border: none;
-            white-space: pre-line;
+            white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            word-break: break-word;
+            word-break: keep-all;
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;

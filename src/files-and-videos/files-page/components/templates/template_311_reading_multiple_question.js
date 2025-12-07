@@ -215,6 +215,10 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             box-sizing: border-box;
         }
         .reading-text * {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .reading-text * {
             overflow: visible !important;
         }
         .reading-text .custom-dropdown {
@@ -248,10 +252,27 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             position: relative;
             display: inline-block;
             min-width: 100px;
+            max-width: 250px;
             width: auto;
             z-index: 1;
             margin: 0 2px;
             vertical-align: middle;
+            flex-shrink: 0;
+        }
+        .dropdown-text-spacer {
+            display: inline-block;
+            min-width: 0.5em;
+            width: 0.5em;
+            height: 0;
+            vertical-align: baseline;
+            flex-shrink: 0;
+            white-space: pre;
+        }
+        /* Ensure text after dropdown has space and can wrap */
+        .custom-dropdown + .dropdown-text-spacer + *,
+        .custom-dropdown + .dropdown-text-spacer {
+            word-break: keep-all;
+            overflow-wrap: break-word;
         }
         .custom-dropdown.open {
             z-index: 1000;
@@ -264,6 +285,7 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             text-align: left !important; 
             width: auto !important; 
             min-width: 120px !important; 
+            max-width: 250px !important;
             height: 40px !important;
             min-height: 40px !important;
             border: 1px solid #666 !important; 
@@ -285,6 +307,8 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             outline: none !important;
             letter-spacing: 0.4px !important;
             white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
         .dropdown-button:hover {
             background-color: #0075b4;
@@ -703,6 +727,10 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                         continue;
                     }
                     
+                    // Store original width of dropdown button for later calculation
+                    var originalButtonWidth = button.offsetWidth || 120;
+                    dropdown.setAttribute('data-original-width', originalButtonWidth);
+                    
                     // Remove existing event listeners by cloning and replacing
                     // This prevents duplicate event listeners
                     var newButton = button.cloneNode(true);
@@ -805,10 +833,32 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                             document.body.removeChild(tempSpan);
                             
                             // Set width to fit content (add padding: 16px left + 50px right = 66px total)
-                            var newWidth = Math.max(120, textWidth + 66);
+                            // Limit max width to prevent covering next text
+                            // Use a more conservative max width to ensure text after is not covered
+                            var newWidth = Math.min(250, Math.max(120, textWidth + 66));
                             button.style.width = newWidth + 'px';
+                            button.style.maxWidth = '250px';
                             // Also update the dropdown container width
                             dropdown.style.width = newWidth + 'px';
+                            dropdown.style.maxWidth = '250px';
+                            
+                            // Ensure spacer after dropdown has enough space
+                            var spacer = dropdown.nextElementSibling;
+                            if (spacer && spacer.classList.contains('dropdown-text-spacer')) {
+                                // Get original width from data attribute, fallback to 120 if not set
+                                var originalWidth = parseInt(dropdown.getAttribute('data-original-width')) || 120;
+                                var expansion = newWidth - originalWidth;
+                                
+                                // Calculate spacer width: base 0.5em + proportional expansion
+                                // Convert pixel expansion to em (assuming 1em ≈ 16px for 1.2rem font)
+                                var expansionEm = expansion / 16;
+                                // Base spacer is 0.5em, add expansion but cap at reasonable max
+                                var calculatedSpacer = 0.5 + Math.min(expansionEm, 1.0); // Max additional 1em
+                                var spacerWidth = calculatedSpacer + 'em';
+                                
+                                spacer.style.minWidth = spacerWidth;
+                                spacer.style.width = spacerWidth;
+                            }
                             
                             // Close dropdown
                             this.parentNode.classList.remove('show', 'show-up', 'show-center');
@@ -1153,10 +1203,32 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                                         document.body.removeChild(tempSpan);
                                         
                                         // Set width to fit content (add padding for dropdown arrow)
-                                        const newWidth = Math.max(120, textWidth + 66); // 66px for padding and arrow
+                                        // Limit max width to prevent covering next text
+                                        // Use a more conservative max width to ensure text after is not covered
+                                        const newWidth = Math.min(250, Math.max(120, textWidth + 66)); // 66px for padding and arrow
                                         button.style.width = newWidth + 'px';
+                                        button.style.maxWidth = '250px';
                                         // Also update the dropdown container width
                                         dropdown.style.width = newWidth + 'px';
+                                        dropdown.style.maxWidth = '250px';
+                                        
+                                        // Ensure spacer after dropdown has enough space
+                                        const spacer = dropdown.nextElementSibling;
+                                        if (spacer && spacer.classList.contains('dropdown-text-spacer')) {
+                                            // Get original width from data attribute, fallback to 120 if not set
+                                            const originalWidth = parseInt(dropdown.getAttribute('data-original-width')) || 120;
+                                            const expansion = newWidth - originalWidth;
+                                            
+                                            // Calculate spacer width: base 0.5em + proportional expansion
+                                            // Convert pixel expansion to em (assuming 1em ≈ 16px for 1.2rem font)
+                                            const expansionEm = expansion / 16;
+                                            // Base spacer is 0.5em, add expansion but cap at reasonable max
+                                            const calculatedSpacer = 0.5 + Math.min(expansionEm, 1.0); // Max additional 1em
+                                            const spacerWidth = calculatedSpacer + 'em';
+                                            
+                                            spacer.style.minWidth = spacerWidth;
+                                            spacer.style.width = spacerWidth;
+                                        }
                                     }
                                 }
                             }
@@ -1411,12 +1483,11 @@ export const getReadingMultipleQuestionTemplate311 = (readingText, questionText,
                 const dropdown = '<div class="custom-dropdown" data-blank-number="' + (answerDropdownIndex + 1) + '" data-correct="' + escapeHtml(correctAnswer) + '">' +
                         '<div class="dropdown-button" data-value=""></div>' +
                         '<div class="dropdown-options">' + optionsHtml + '</div>' +
-                    '</div>';
+                    '</div><span class="dropdown-text-spacer"></span>';
                 answerDropdownIndex++;
-                // Preserve whitespace before and after dropdown from original text
-                // Use original spaceAfter from text, don't force add spaces
-                const finalSpaceAfter = spaceAfter || ''; // Use original whitespace from text
-                return spaceBefore + dropdown + finalSpaceAfter;
+                // Preserve whitespace before dropdown from original text
+                // Use spacer element to ensure text after dropdown is not covered when dropdown expands
+                return spaceBefore + dropdown + (spaceAfter || '');
             });
             
             processedAnswerLines.push(processedLine);

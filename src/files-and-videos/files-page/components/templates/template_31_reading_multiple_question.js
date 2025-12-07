@@ -26,11 +26,12 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             height: 100%;
             padding: 0;
             margin: 0;
+            gap: 20px;
             box-sizing: border-box;
             background-color: #fff;
             max-width: 100%;
-            overflow-x: hidden;
-            gap: 20px;
+            overflow-x: visible;
+            min-width: 0;
         }
         .left-container {
             display: flex;
@@ -47,11 +48,14 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: visible;
             padding-left: 5px;
-            padding-top: 20px;
+            padding-top: 10px;
+            padding-right: 5px;
             background-color: #fff;
             width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
         .images-container-right {
             display: flex;
@@ -89,6 +93,8 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             padding: 0;
             margin: 0;
             background-color: #fff;
+            box-sizing: border-box;
+            width: 100%;
         }
         .images-container {
             display: flex;
@@ -164,17 +170,21 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             flex-direction: column;
             background-color: #fff;
             width: 100%;
-            overflow-x: hidden;
+            overflow-x: visible;
+            box-sizing: border-box;
         }
         .question-block {
             background: #fff;
             padding: 8px;
             width: 100%;
+            max-width: 100%;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            box-sizing: border-box;
+            overflow-x: visible;
         }
         .question-text {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #333;
             font-weight: bold;
             margin-bottom: 8px;
@@ -185,27 +195,26 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         .options-container {
             display: flex;
             flex-direction: column;
-            flex-wrap: nowrap;
-            gap: 6px;
+            gap: 3px;
             margin-top: 6px;
             width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow-x: visible;
         }
         .option-button {
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            flex: 0 0 auto;
             width: 100%;
-            min-width: 120px;
-            max-width: 100%;
-            padding: 12px 16px;
+            padding: 8px 12px;
             border: none;
             outline: none;
             background: transparent;
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
             font-weight: normal;
-            line-height: 1.4;
+            line-height: 1.6;
             color: #333;
             text-align: left;
             position: relative;
@@ -216,9 +225,16 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             border-radius: 4px;
             cursor: pointer;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: flex-start;
             gap: 12px;
+            box-sizing: border-box;
+            min-height: 40px;
+        }
+        .option-button > span {
+            flex: 1;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         .option-button:hover:not(.selected):not(.correct):not(.incorrect) {
             background-color: #f8f9fa;
@@ -989,7 +1005,7 @@ export const getReadingMultipleQuestionTemplate = (readingText, questionText, bl
                    'window.selectedAnswers[questionBlock.id]=this.dataset.value;' +
                    'console.log(\'Selected:\', questionBlock.id, this.dataset.value);' +
                    'return false;' +
-                   '">' + optionDisplay + '</button>';
+                   '"><span>' + optionDisplay + '</span></button>';
                }).join('') +
                '</div>' +
                '</div>';

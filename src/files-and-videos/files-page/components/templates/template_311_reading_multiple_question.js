@@ -261,8 +261,8 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
         }
         .dropdown-text-spacer {
             display: inline-block;
-            min-width: 0.5em;
-            width: 0.5em;
+            min-width: 0.7em;
+            width: 0.7em;
             height: 0;
             vertical-align: baseline;
             flex-shrink: 0;
@@ -849,11 +849,11 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                                 var originalWidth = parseInt(dropdown.getAttribute('data-original-width')) || 120;
                                 var expansion = newWidth - originalWidth;
                                 
-                                // Calculate spacer width: base 0.5em + proportional expansion
+                                // Calculate spacer width: base 0.7em + proportional expansion with buffer
                                 // Convert pixel expansion to em (assuming 1em ≈ 16px for 1.2rem font)
                                 var expansionEm = expansion / 16;
-                                // Base spacer is 0.5em, add expansion but cap at reasonable max
-                                var calculatedSpacer = 0.5 + Math.min(expansionEm, 1.0); // Max additional 1em
+                                // Base spacer is 0.7em, add expansion with small buffer to ensure no text is covered
+                                var calculatedSpacer = 0.7 + Math.min(expansionEm + 0.1, 1.1); // Add 0.1em buffer, max additional 1.1em
                                 var spacerWidth = calculatedSpacer + 'em';
                                 
                                 spacer.style.minWidth = spacerWidth;
@@ -1173,6 +1173,12 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                                 const selectedValue = window.selectedAnswers[blankNumber];
                                 const button = dropdown.querySelector('.dropdown-button');
                                 
+                                // Ensure original width is stored if not already set (for all dropdowns)
+                                if (!dropdown.getAttribute('data-original-width') && button) {
+                                    const originalButtonWidth = button.offsetWidth || 120;
+                                    dropdown.setAttribute('data-original-width', originalButtonWidth);
+                                }
+                                
                                 if (button && selectedValue) {
                                     // Find the option text for this value
                                     const options = dropdown.querySelectorAll('.dropdown-option');
@@ -1219,11 +1225,11 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                                             const originalWidth = parseInt(dropdown.getAttribute('data-original-width')) || 120;
                                             const expansion = newWidth - originalWidth;
                                             
-                                            // Calculate spacer width: base 0.5em + proportional expansion
+                                            // Calculate spacer width: base 0.7em + proportional expansion with buffer
                                             // Convert pixel expansion to em (assuming 1em ≈ 16px for 1.2rem font)
                                             const expansionEm = expansion / 16;
-                                            // Base spacer is 0.5em, add expansion but cap at reasonable max
-                                            const calculatedSpacer = 0.5 + Math.min(expansionEm, 1.0); // Max additional 1em
+                                            // Base spacer is 0.7em, add expansion with small buffer to ensure no text is covered
+                                            const calculatedSpacer = 0.7 + Math.min(expansionEm + 0.1, 1.1); // Add 0.1em buffer, max additional 1.1em
                                             const spacerWidth = calculatedSpacer + 'em';
                                             
                                             spacer.style.minWidth = spacerWidth;

@@ -175,7 +175,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             color: #333;
             background-color: #fff;
             border: none;
-            white-space: pre-wrap;
+            white-space: pre-line;
             word-wrap: break-word;
             overflow-wrap: break-word;
             word-break: keep-all;

@@ -20,6 +20,7 @@ import {
   getReadingDroplistTemplate,
   getReadingDroplistNoImageTemplate,
   getReadingSelectTemplate,
+  getImageFlipPracticeTemplate,
   TEMPLATE_IDS 
 } from './templates/templateUtils';
 import { getGrammarSingleSelectTemplate29 } from './templates/template_29_grammar_single_select';
@@ -263,6 +264,7 @@ const parseExcelFile = (file) => {
 
 // Helper functions for field visibility
 const shouldShowAudioField = (problemTypeId) => ![
+  TEMPLATE_IDS.ID1_IMAGE_FLIP_PRACTICE,
   TEMPLATE_IDS.FILL_IN_BLANK,
   TEMPLATE_IDS.GRAMMAR_DROPDOWN,
   TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT,
@@ -361,7 +363,9 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
                 setQuizData(prev => ({
                     ...prev,
                     problemTypeId: newTypeId,
-                    instructions: newTypeId === TEMPLATE_IDS.READING_MULTIPLE_QUESTION 
+                    instructions: newTypeId === TEMPLATE_IDS.ID1_IMAGE_FLIP_PRACTICE
+                      ? '画像をクリックして答えを確認しましょう。'
+                      : newTypeId === TEMPLATE_IDS.READING_MULTIPLE_QUESTION 
                       ? '以下の文章を読んで、質問に答えてください。'
                       : newTypeId === TEMPLATE_IDS.READING_MULTIPLE_QUESTION_ALT
                       ? 'つぎのぶんしょうを読(よ)んで、質問(しつもん)にこたえてください。答(こた)えは、１・２・３・４からいちばん いいものを一(ひと)つ えらんでください。'
@@ -373,6 +377,7 @@ const QuizModal = ({ isOpen, onClose, onSubmit, quizData, setQuizData, intl, cou
             >
           
               <option value={TEMPLATE_IDS.GRAMMAR_DROPDOWN}>{TEMPLATE_IDS.GRAMMAR_DROPDOWN} - Grammar Dropdown Quiz</option>
+              <option value={TEMPLATE_IDS.ID1_IMAGE_FLIP_PRACTICE}>{TEMPLATE_IDS.ID1_IMAGE_FLIP_PRACTICE} - Image Flip Practice</option>
               <option value={TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT}>{TEMPLATE_IDS.GRAMMAR_SENTENCE_REARRANGEMENT} - Grammar Sentence Rearrangement Quiz</option>
               <option value={TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT}>{TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT} - Grammar Single Select Quiz</option>
               <option value={TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT}>{TEMPLATE_IDS.GRAMMAR_SINGLE_SELECT_ALT} - Grammar Single Select Quiz (Alternative)</option>
@@ -761,6 +766,30 @@ QuizModal.propTypes = {
 // Add this function before createQuiz
 const generateQuizTemplate = (templateId, quizData) => {
   switch (templateId) {
+    case TEMPLATE_IDS.ID1_IMAGE_FLIP_PRACTICE:
+      // Force safe defaults so the back face always has content
+      {
+        const instructionsSafe = quizData.instructions && quizData.instructions.trim()
+          ? quizData.instructions
+          : '画像をクリックして答えを確認しましょう。';
+        const questionSafe = quizData.questionText && quizData.questionText.trim()
+          ? quizData.questionText
+          : 'この人は誰ですか？';
+        const answersSafe = quizData.blankOptions && quizData.blankOptions.trim()
+          ? quizData.blankOptions
+          : 'Đáp án 1,Đáp án 2,Đáp án 3';
+        const imagesSafe = quizData.images && quizData.images.trim()
+          ? quizData.images
+          : (quizData.imageFile || '');
+
+        return getImageFlipPracticeTemplate(
+          convertFurigana(instructionsSafe),
+          convertFurigana(questionSafe),
+          answersSafe,
+          imagesSafe
+        );
+      }
+
     case TEMPLATE_IDS.VOCAB_MATCHING:
       const wordList = quizData.words.split(',').map(word => word.trim());
       const dropZones = JSON.parse(quizData.dropZones || '[]');
@@ -1875,9 +1904,14 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
         // For template 28 and related IDs (grammar single select): Excel columns map as:
         // - Excel questionText → quizData.questionText
         // - Excel blankOptions → quizData.answerContent
+        // For template 1 (Image Flip Practice): Excel columns map as:
+        // - Excel questionText → quizData.questionText
+        // - Excel blankOptions → quizData.blankOptions (answer)
+        // - Excel images → quizData.images
         const isGrammarDropdown = [18, 19, 6, 21, 23, 24, 26, 30, 62, 5, 10].includes(parseInt(quiz.problemTypeId) || 0);
         const isGrammarSingleSelect = [3, 4, 7, 8, 9, 13, 14, 15, 16, 17, 28, 29].includes(parseInt(quiz.problemTypeId) || 0);
         const isReadingMultipleQuestion = [31, 34, 37, 311].includes(parseInt(quiz.problemTypeId) || 0);
+        const isImageFlipPractice = [1].includes(parseInt(quiz.problemTypeId) || 0);
         const quizData = {
           problemTypeId: parseInt(quiz.problemTypeId) || 39, // Default to ID 39
           unitTitle: String(quiz.unitTitle || `Quiz ${i + 1}`),
@@ -1893,9 +1927,11 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           ),
           // For grammar single select templates (3, 4, 7, 8, 9, 13, 14, 15, 16, 17, 28, 29):
           // - questionText from Excel → questionText
+          // For Image Flip Practice (ID1):
+          // - questionText from Excel → questionText
           questionText: String(
-            isGrammarSingleSelect
-              ? (quiz.questionText || quiz.paragraphText || '') // For grammar single select: prefer questionText, fallback to paragraphText
+            isGrammarSingleSelect || isImageFlipPractice
+              ? (quiz.questionText || quiz.paragraphText || '') // For grammar single select and ID1: prefer questionText, fallback to paragraphText
               : (quiz.questionText || '') // For others: use questionText if exists
           ),
           answerContent: String(
@@ -1903,13 +1939,26 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               ? (quiz.blankOptions || quiz.answerContent || quiz.optionsForBlanks || quiz.answerOptions || '') // For grammar dropdown: prefer blankOptions
               : (quiz.answerContent || quiz.optionsForBlanks || quiz.blankOptions || quiz.answerOptions || '') // For others: prefer answerContent
           ),
-          blankOptions: String(quiz.blankOptions || quiz.answerOptions || ''), // Keep for backward compatibility
+          blankOptions: String(
+            isImageFlipPractice
+              ? (quiz.blankOptions || quiz.answerOptions || quiz.answerContent || '') // For ID1: blankOptions is the answer
+              : (quiz.blankOptions || quiz.answerOptions || '') // For others: keep for backward compatibility
+          ),
           optionsForBlanks: String(quiz.optionsForBlanks || ''), // Keep for backward compatibility
           scriptText: String(quiz.scriptText || ''),
           // Set default instructions based on template type
           // For reading templates (31, 34, 37, 311): default to reading instruction
+          // For Image Flip Practice (ID1): default to image flip instruction
           // For other templates: default to listening instruction
-          instructions: String(quiz.instructions || (isReadingMultipleQuestion ? '以下の文章を読んで、質問に答えてください。' : '音声を聞いて、正しい答えを選んでください。')),
+          instructions: String(
+            quiz.instructions || (
+              isReadingMultipleQuestion 
+                ? '以下の文章を読んで、質問に答えてください。'
+                : isImageFlipPractice
+                ? '画像をクリックして答えを確認しましょう。'
+                : '音声を聞いて、正しい答えを選んでください。'
+            )
+          ),
           audioFile: String(quiz.audioFile || '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3'),
           imageFile: String(quiz.imageFile || '/asset-v1:Manabi+N51+2026+type@asset+block/1.png'),
           images: String(quiz.images || ''), // Add mapping for images column
@@ -1923,13 +1972,13 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           fixedWordsExplanation: String(quiz.fixedWordsExplanation || ''),
           // For template 31, 34, 37, and 311: questionText is separate from paragraphText (readingText)
           // questionText contains the questions, paragraphText contains the reading passage
-          questionText: String(quiz.questionText || ''),
+          // Note: questionText is already mapped above based on template type
           words: String(quiz.words || ''),
           dropZones: String(quiz.dropZones || '[]')
         };
         
-        // For template 31 and 311: use imageFile as fallback if images is empty
-        if ([31, 311].includes(quizData.problemTypeId) && (!quizData.images || quizData.images.trim() === '')) {
+        // For template 1, 31, and 311: use imageFile as fallback if images is empty
+        if ([1, 31, 311].includes(quizData.problemTypeId) && (!quizData.images || quizData.images.trim() === '')) {
           if (quizData.imageFile && quizData.imageFile.trim() !== '') {
             quizData.images = quizData.imageFile;
             console.log(`🔍 Template ${quizData.problemTypeId} - Using imageFile as fallback for images: "${quizData.imageFile}"`);
@@ -2095,6 +2144,16 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               • questionText - maps to questionText
               <br />
               • blankOptions (or answerContent) - maps to answerContent
+              <br />
+              <strong>For Image Flip Practice (ID 1):</strong>
+              <br />
+              • questionText - maps to questionText (displayed below instructions)
+              <br />
+              • blankOptions - maps to blankOptions (answer displayed on card back)
+              <br />
+              • images - maps to images (image URL for the card)
+              <br />
+              • instructions (optional, default: "画像をクリックして答えを確認しましょう。")
               <br />
               <strong>For other templates:</strong>
               <br />
@@ -2283,6 +2342,16 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
         instructions: '（ー）に何を　入れますか。',
         audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
         imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.png',
+        timeLimit: '60',
+        published: 'true'
+      },
+      {
+        problemTypeId: '1',
+        unitTitle: 'Sample Quiz - Image Flip Practice',
+        questionText: 'この人は誰ですか？',
+        blankOptions: 'これは学校です。',
+        images: '/asset-v1:Manabi+N51+2026+type@asset+block/school.png',
+        instructions: '画像をクリックして答えを確認しましょう。',
         timeLimit: '60',
         published: 'true'
       },

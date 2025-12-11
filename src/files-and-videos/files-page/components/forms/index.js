@@ -1,3 +1,4 @@
+import Form1 from './1';
 import Form2 from './2';
 import Form10 from './10';
 import Form18 from './18';
@@ -19,6 +20,7 @@ import Form65 from './65';
 import Form67 from './67';
 
 const FORM_COMPONENTS = {
+  1: Form1,    // Image Flip Practice
   2: Form2,    // Vocabulary Matching Quiz
   3: Form28,   // Vocabulary Single Choice Quiz (uses Form28)
   4: Form28,   // Vocabulary Single Choice Quiz 1 (uses Form28)

@@ -1,4 +1,5 @@
 // Import all template functions
+import { getImageFlipPracticeTemplate } from './template_1_image_flip_practice';
 import { dragDropQuizTemplate } from './template_20_drag_drop';
 import { getFillInBlankTemplate } from './template_10_fill_in_blank';
 import { listenFillInBlankTemplate, getListenFillInBlankTemplate } from './template_42_listen_fill_blank';
@@ -109,6 +110,7 @@ const processGrammarSentenceRearrangement = (paragraphText, words) => {
 
 // Template IDs - matching actual template files
 export const TEMPLATE_IDS = {
+  ID1_IMAGE_FLIP_PRACTICE: 1,                           // template_1_image_flip_practice.js
   VOCAB_MATCHING: 2,                                    // template_2_vocab_matching.js
   ID3_VOCAB_SINGLE_CHOICE: 3,                          // Uses template_28_grammar_single_select.js
   ID4_VOCAB_SINGLE_SELECT_1: 4,                        // Uses template_28_grammar_single_select.js
@@ -166,6 +168,7 @@ export const TEMPLATE_IDS = {
 
 export {
   getQuizTemplate,
+  getImageFlipPracticeTemplate,
   getDragDropQuizTemplate,
   processGrammarSentenceRearrangement,
   getListenFillInBlankTemplate,

@@ -58,18 +58,21 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             box-sizing: border-box;
         }
         .images-container-right {
-            display: flex;
+            display: flex !important;
             flex-direction: column;
             gap: 3px;
             margin: 0;
             width: 100%;
-            overflow-x: auto;
-            overflow-y: auto;
+            overflow-x: hidden;
+            overflow-y: hidden;
             border: none;
             padding: 0;
             background-color: #fff;
             max-height: 45vh;
+            height: 45vh;
             flex-shrink: 0;
+            min-height: 0;
+            visibility: visible !important;
         }
         .instructions {
             font-size: 1.2rem;
@@ -104,7 +107,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             gap: 3px;
             margin: 0;
             width: 100%;
-            overflow-x: auto;
+            overflow-x: hidden;
             overflow-y: auto;
             border: none;
             padding: 0;
@@ -114,48 +117,57 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             height: 100%;
             min-height: 0;
         }
-        .image-item {
+        /* Styles for image items in LEFT container */
+        .images-container .image-item {
             width: 100%;
             max-width: 100%;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            overflow: visible;
+            overflow: hidden;
             flex: 0 0 auto;
             min-height: 0;
             padding: 0;
             margin: 0;
         }
+        .images-container .image-item img {
+            width: 100% !important;
+            height: auto !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: contain !important;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: block !important;
+        }
+        
+        /* Styles for image items in RIGHT container - completely separate */
         .images-container-right .image-item {
-            flex: 0 0 auto;
+            flex: 1 1 0;
             width: 100%;
             max-width: 100%;
             display: flex;
             justify-content: flex-start;
             align-items: flex-start;
-            overflow: visible;
+            overflow: hidden;
             min-height: 0;
+            padding: 0;
+            margin: 0;
+            max-height: 100%;
+            box-sizing: border-box;
         }
-        .image-item img {
-            width: auto;
-            height: auto;
-            max-width: 100%;
-            max-height: none;
-            object-fit: contain;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: block;
-        }
-        /* Override for images in right container - must be after .image-item img */
         .images-container-right .image-item img {
-            width: auto !important;
-            height: auto !important;
+            width: 100% !important;
+            height: 100% !important;
             max-width: 100% !important;
-            max-height: none !important;
+            max-height: 100% !important;
             object-fit: contain !important;
+            object-position: left top !important;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         .reading-text {
             font-size: 1.2rem;

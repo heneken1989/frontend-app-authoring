@@ -84,8 +84,9 @@ export const imageFlipPracticeTemplate = `<!DOCTYPE html>
         }
         .card-front {
             background: #fff;
-            justify-content: center;
-            align-items: center;
+            justify-content: flex-start;
+            align-items: stretch;
+            flex-direction: column;
         }
         .card-back {
             background: #fff;
@@ -93,6 +94,7 @@ export const imageFlipPracticeTemplate = `<!DOCTYPE html>
             overflow-y: auto;
             justify-content: flex-start;
             align-items: stretch;
+            flex-direction: column;
         }
         .flip-card.flipped .card-back {
             backface-visibility: visible !important;
@@ -102,22 +104,50 @@ export const imageFlipPracticeTemplate = `<!DOCTYPE html>
         }
         .card-image {
             width: 100%;
-            height: 100%;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #f0f3f5;
             overflow: hidden;
+            min-height: 0;
         }
         .card-image img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
         }
+        .flip-hint-container {
+            width: 100%;
+            flex-shrink: 0;
+            padding: 0;
+            margin: 0;
+            background: transparent;
+        }
+        .flip-hint-button {
+            width: 100%;
+            background: linear-gradient(180deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            border: none;
+            border-radius: 0 0 10px 10px;
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            text-align: center;
+        }
+        .flip-hint-button:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
         .card-content {
             padding: 12px;
-            flex-shrink: 0;
-            min-height: 60px;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
         }
         .question {
             font-weight: bold;
@@ -263,6 +293,21 @@ export const imageFlipPracticeTemplate = `<!DOCTYPE html>
                 });
             });
 
+            // Function to send template ID to parent
+            function sendTemplateId() {
+                if (window.parent && window.parent !== window) {
+                    try {
+                        console.log('🔍 [Template 1] Sending template ID to parent');
+                        window.parent.postMessage({
+                            type: 'quiz.meta',
+                            templateId: 1
+                        }, '*');
+                    } catch (e) {
+                        console.error('🔍 [Template 1] Error sending template ID:', e);
+                    }
+                }
+            }
+            
             // JSChannel bindings
             var channel;
             if (window.parent !== window) {
@@ -276,13 +321,52 @@ export const imageFlipPracticeTemplate = `<!DOCTYPE html>
                 channel.bind('setState', setState);
                 channel.bind('reset', resetQuiz);
             }
+            
+            // Send template ID to parent when page loads (after DOM is ready)
+            // Wait for DOM to be ready first
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    sendTemplateId();
+                    // Also send after delays to ensure parent is ready
+                    setTimeout(sendTemplateId, 100);
+                    setTimeout(sendTemplateId, 500);
+                    setTimeout(sendTemplateId, 1000);
+                });
+            } else {
+                // DOM is already ready
+                sendTemplateId();
+                setTimeout(sendTemplateId, 100);
+                setTimeout(sendTemplateId, 500);
+                setTimeout(sendTemplateId, 1000);
+            }
+            
+            // Also send when window is fully loaded
+            if (document.readyState === 'complete') {
+                sendTemplateId();
+            } else {
+                window.addEventListener('load', function() {
+                    sendTemplateId();
+                });
+            }
 
             // Listen for postMessage from parent
             window.addEventListener('message', function(event) {
+                // Handle JSChannel messages (from EdX)
                 if (event.data && event.data.method === 'JSInput::getGrade') {
                     getGrade();
                     return;
                 }
+                
+                // Process postMessage from parent window (similar to template 7)
+                if (event.source !== window.parent && event.source !== window) {
+                    return;
+                }
+                
+                // Send template ID when receiving any message from parent (to ensure parent knows)
+                if (event.data && event.data.type) {
+                    sendTemplateId();
+                }
+                
                 if (event.data && event.data.type === 'problem.submit') {
                     if (event.data.action === 'check') {
                         getGrade();
@@ -292,6 +376,17 @@ export const imageFlipPracticeTemplate = `<!DOCTYPE html>
                 }
                 if (event.data && event.data.type === 'reset') {
                     resetQuiz();
+                }
+                
+                // Handle ping message (like template 7)
+                if (event.data && event.data.type === 'ping') {
+                    sendTemplateId();
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'pong',
+                            data: { message: 'Template 1 is ready!', templateId: 1, timestamp: new Date().toISOString() }
+                        }, '*');
+                    }
                 }
             });
         })();
@@ -372,10 +467,16 @@ export const getImageFlipPracticeTemplate = (
             <div class="card-inner">
                 <div class="card-face card-front">
                     <div class="card-image">${imageHtml}</div>
+                    <div class="flip-hint-container">
+                        <button class="flip-hint-button">Click the card to flip</button>
+                    </div>
                 </div>
                 <div class="card-face card-back" style="display: flex !important; visibility: visible !important;">
-                    <div class="card-content" style="background: #fff; padding: 20px; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; box-sizing: border-box;">
+                    <div class="card-content" style="background: #fff; padding: 20px; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; box-sizing: border-box;">
                         ${answerHtml}
+                    </div>
+                    <div class="flip-hint-container">
+                        <button class="flip-hint-button">Click the card to flip</button>
                     </div>
                 </div>
             </div>

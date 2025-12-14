@@ -63,7 +63,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             gap: 3px;
             margin: 0;
             width: 100%;
-            overflow-x: hidden;
+            overflow-x: auto;
             overflow-y: auto;
             border: none;
             padding: 0;
@@ -104,7 +104,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             gap: 3px;
             margin: 0;
             width: 100%;
-            overflow-x: hidden;
+            overflow-x: auto;
             overflow-y: auto;
             border: none;
             padding: 0;
@@ -112,45 +112,50 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             flex: 1;
             max-height: 100%;
             height: 100%;
+            min-height: 0;
         }
         .image-item {
             width: 100%;
             max-width: 100%;
             display: flex;
             justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            max-height: 90vh;
-            flex: 1;
+            align-items: flex-start;
+            overflow: visible;
+            flex: 0 0 auto;
+            min-height: 0;
+            padding: 0;
+            margin: 0;
         }
         .images-container-right .image-item {
-            max-height: 45vh !important;
             flex: 0 0 auto;
             width: 100%;
             max-width: 100%;
             display: flex;
             justify-content: flex-start;
-            align-items: center;
-            overflow: hidden;
+            align-items: flex-start;
+            overflow: visible;
+            min-height: 0;
         }
         .image-item img {
-            max-width: 100%;
-            max-height: 90vh;
             width: auto;
             height: auto;
+            max-width: 100%;
+            max-height: none;
             object-fit: contain;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: block;
         }
         /* Override for images in right container - must be after .image-item img */
         .images-container-right .image-item img {
-            max-width: 100% !important;
-            max-height: 45vh !important;
             width: auto !important;
             height: auto !important;
+            max-width: 100% !important;
+            max-height: none !important;
             object-fit: contain !important;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: block !important;
         }
         .reading-text {
             font-size: 1.2rem;

@@ -50,6 +50,11 @@ const convertFurigana = (text) => {
   // Dấu ngoặc Nhật (全角)
   const reJaParens = new RegExp("(" + kanjiWord + ")（([^）]+)）", "g");
   text = text.replace(reJaParens, (match, p1, p2) => {
+    // Ngoại lệ: nếu furigana là "ー" (placeholder dropdown), giữ nguyên để không phá "（ー）"
+    // Ví dụ: "（ー）時（ー）分" phải sinh 2 dropdown cho template 67
+    if (p2.trim() === "ー") {
+      return match;
+    }
     return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
   });
 

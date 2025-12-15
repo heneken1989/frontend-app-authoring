@@ -198,7 +198,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         }
         .main-content {
             display: flex;
-            gap: 0;
+            gap: 20px; /* Add horizontal spacing between left and right sections */
             height: 100%;
             background-color: white;
             overflow-y: auto;

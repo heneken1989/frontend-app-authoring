@@ -446,11 +446,11 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         
         <div class="right-container">
             <form id="quizForm" onsubmit="return false;">
+                {{READING_TEXT_CONTAINER}}
                 <div class="images-container-right">
                     <!-- Images with .2. in filename will be inserted here -->
                     {{IMAGES_RIGHT}}
                 </div>
-                {{READING_TEXT_CONTAINER}}
                 <div class="questions-container" id="questions-container">
                     {{QUESTIONS}}
                 </div>

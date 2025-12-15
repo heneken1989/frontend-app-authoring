@@ -56,13 +56,15 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
         // Process each line of answer content to replace placeholders with dropdowns
         let answerDropdownIndex = 0;
         const processedAnswerLines = answerLines.map((line, lineIndex) => {
-            // Process each placeholder in the line
+            // Process each placeholder "（ー）" in the line
             let processedLine = line;
-            let placeholderMatch;
-            const placeholderRegex = /（ー）/g;
-            
-            // Replace each placeholder in the line with a dropdown
-            while ((placeholderMatch = placeholderRegex.exec(line)) !== null) {
+            const placeholderToken = '（ー）';
+            let searchIndex = 0;
+
+            while (true) {
+                const matchIndex = processedLine.indexOf(placeholderToken, searchIndex);
+                if (matchIndex === -1) break;
+
                 // Determine correct answer purely from options order by index (cycle)
                 const correctAnswer = optionsArray[(answerDropdownIndex) % Math.max(1, optionsArray.length)] || '';
                 
@@ -89,12 +91,12 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
                 `;
                 
                 // Replace the placeholder with the dropdown
-                const beforePlaceholder = processedLine.substring(0, placeholderMatch.index);
-                const afterPlaceholder = processedLine.substring(placeholderMatch.index + 4); // 4 is the length of （ー）
+                const beforePlaceholder = processedLine.substring(0, matchIndex);
+                const afterPlaceholder = processedLine.substring(matchIndex + placeholderToken.length);
                 processedLine = beforePlaceholder + dropdown + afterPlaceholder;
-                
-                // Update the regex's lastIndex to account for the new dropdown
-                placeholderRegex.lastIndex = beforePlaceholder.length + dropdown.length;
+
+                // Next search should start after the dropdown we just inserted
+                searchIndex = beforePlaceholder.length + dropdown.length;
                 
                 answerDropdownIndex++;
             }

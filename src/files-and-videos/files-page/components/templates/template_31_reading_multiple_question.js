@@ -12,7 +12,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             font-size: 1.2rem;
             margin: 0;
             padding: 0;
-            line-height: 1.6;
+            line-height: 1.4;
             color: #414141;
             height: 100vh;
             overflow-y: hidden;
@@ -171,7 +171,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
         }
         .reading-text {
             font-size: 1.2rem;
-            line-height: 2.0;
+            line-height: 1.6;
             padding: 0 5px 0 0;
             margin: 0;
             color: #333;
@@ -205,7 +205,7 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             overflow-x: visible;
         }
         .question-text {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: #333;
             font-weight: bold;
             margin-bottom: 8px;

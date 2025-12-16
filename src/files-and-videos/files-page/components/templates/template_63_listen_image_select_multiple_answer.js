@@ -741,7 +741,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
 
         const correctAnswers = JSON.parse('{{CORRECT_ANSWERS}}');
         let selectedAnswers = new Array(correctAnswers.length).fill('');
-        let originalDropdowns = []; // Store original dropdowns for restoration
+        var originalAnswersListHTML = ''; // Store original HTML of answers-list container (like template 311)
         
         function calculateResults() {
             const totalQuestions = document.querySelectorAll('.custom-dropdown').length;
@@ -804,78 +804,105 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             }
         }
 
-        // Store original dropdowns immediately when page loads
-        const initialDropdowns = document.querySelectorAll('.custom-dropdown');
-        for (let i = 0; i < initialDropdowns.length; i++) {
-            originalDropdowns.push(initialDropdowns[i].cloneNode(true));
+        // Store original HTML of answers-list container when page loads (like template 311)
+        setTimeout(function() {
+            var answersListContainer = document.querySelector('.answers-list');
+            if (answersListContainer) {
+                originalAnswersListHTML = answersListContainer.innerHTML;
+                console.log('✅ Stored original answers-list HTML');
+            }
+        }, 100);
+
+        // Initialize dropdowns function (like template 311)
+        function initializeDropdowns() {
+            var dropdowns = document.querySelectorAll('.custom-dropdown');
+            console.log('🔍 Initializing ' + dropdowns.length + ' dropdowns');
+            
+            for (var i = 0; i < dropdowns.length; i++) {
+                var dropdown = dropdowns[i];
+                var button = dropdown.querySelector('.dropdown-button');
+                var options = dropdown.querySelectorAll('.dropdown-option');
+                var blankNumber = dropdown.getAttribute('data-blank-number');
+                var index = blankNumber ? (parseInt(blankNumber) - 1) : i;
+                
+                if (!button) {
+                    console.log('⚠️ Dropdown ' + (i + 1) + ' has no button');
+                    continue;
+                }
+                
+                // Remove existing event listeners by cloning and replacing
+                var newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+                button = newButton;
+                
+                // Toggle dropdown
+                button.addEventListener('click', function() {
+                    var isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show') || 
+                                 this.parentNode.querySelector('.dropdown-options').classList.contains('balanced');
+                    // Close all other dropdowns
+                    document.querySelectorAll('.dropdown-options').forEach(function(opt) {
+                        opt.classList.remove('show', 'dropup', 'balanced');
+                        opt.style.top = '';
+                        opt.style.height = '';
+                    });
+                    document.querySelectorAll('.custom-dropdown').forEach(function(dropdown) {
+                        dropdown.classList.remove('open');
+                    });
+                    // Toggle current dropdown
+                    if (!isOpen) {
+                        var dropdownOptions = this.parentNode.querySelector('.dropdown-options');
+                        
+                        // First show dropdown to get accurate measurements
+                        dropdownOptions.classList.add('show');
+                        this.parentNode.classList.add('open');
+                        
+                        // Check if we have more than 4 options - if so, balance the dropdown
+                        var optionCount = dropdownOptions.querySelectorAll('.dropdown-option').length;
+                        
+                        if (optionCount > 4) {
+                            // For more than 4 options, use balanced mode
+                            dropdownOptions.classList.add('balanced');
+                        } else {
+                            // For 4 or fewer options, use normal dropdown behavior
+                            dropdownOptions.classList.remove('balanced');
+                        }
+                    }
+                });
+                
+                // Handle option selection
+                for (var j = 0; j < options.length; j++) {
+                    options[j].addEventListener('click', function() {
+                        var selectedValue = this.getAttribute('data-value');
+                        var selectedText = this.innerHTML;
+                        var dropdown = this.parentNode.parentNode;
+                        var button = dropdown.querySelector('.dropdown-button');
+                        var blankNumber = dropdown.getAttribute('data-blank-number');
+                        var index = blankNumber ? (parseInt(blankNumber) - 1) : 0;
+                        
+                        // Update button text with furigana
+                        button.innerHTML = selectedText;
+                        button.setAttribute('data-value', selectedValue);
+                        
+                        // Close dropdown
+                        this.parentNode.classList.remove('show', 'balanced');
+                        this.parentNode.parentNode.classList.remove('open');
+                        this.parentNode.style.top = '';
+                        this.parentNode.style.height = '';
+                        
+                        // Update selected answers
+                        selectedAnswers[index] = selectedValue;
+                        
+                        if (state.showAnswer) {
+                            var result = calculateResults();
+                            updateDisplay(result);
+                        }
+                    });
+                }
+            }
         }
 
-        // Add event listeners to each custom dropdown
-        document.querySelectorAll('.custom-dropdown').forEach((dropdown, index) => {
-            const button = dropdown.querySelector('.dropdown-button');
-            const options = dropdown.querySelectorAll('.dropdown-option');
-            
-            // Toggle dropdown
-            button.addEventListener('click', function() {
-                const isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show');
-                // Close all other dropdowns
-                document.querySelectorAll('.dropdown-options').forEach(opt => {
-                    opt.classList.remove('show', 'dropup', 'balanced');
-                    opt.style.top = '';
-                    opt.style.height = '';
-                });
-                document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
-                    dropdown.classList.remove('open');
-                });
-                // Toggle current dropdown
-                if (!isOpen) {
-                    const dropdownOptions = this.parentNode.querySelector('.dropdown-options');
-                    
-                    // First show dropdown to get accurate measurements
-                    dropdownOptions.classList.add('show');
-                    this.parentNode.classList.add('open');
-                    
-                    // Check if we have more than 4 options - if so, balance the dropdown
-                    const optionCount = dropdownOptions.querySelectorAll('.dropdown-option').length;
-                    
-                    if (optionCount > 4) {
-                        // For more than 4 options, use balanced mode
-                        dropdownOptions.classList.add('balanced');
-                    } else {
-                        // For 4 or fewer options, use normal dropdown behavior
-                        dropdownOptions.classList.remove('balanced');
-                    }
-                }
-            });
-            
-            // Handle option selection
-            options.forEach(option => {
-                option.addEventListener('click', function() {
-                    const selectedValue = this.getAttribute('data-value');
-                    const selectedText = this.innerHTML;
-                    const dropdown = this.parentNode.parentNode;
-                    const button = dropdown.querySelector('.dropdown-button');
-                    
-                    // Update button text with furigana
-                    button.innerHTML = selectedText;
-                    button.setAttribute('data-value', selectedValue);
-                    
-                    // Close dropdown
-                    this.parentNode.classList.remove('show', 'balanced');
-                    this.parentNode.parentNode.classList.remove('open');
-                    this.parentNode.style.top = '';
-                    this.parentNode.style.height = '';
-                    
-                    // Update selected answers
-                    selectedAnswers[index] = selectedValue;
-                    
-                    if (state.showAnswer) {
-                        const result = calculateResults();
-                        updateDisplay(result);
-                    }
-                });
-            });
-        });
+        // Initialize dropdowns on page load
+        initializeDropdowns();
         
         // Close dropdowns when clicking outside
         document.addEventListener('click', function(e) {
@@ -931,26 +958,21 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             }
         });
 
+        // Reset quiz function - restore entire answers-list HTML (like template 311)
         function resetQuiz() {
             console.log('🔄 Starting reset process...');
             
-            // Restore original dropdowns
-            const replacements = document.querySelectorAll('.answer-replacement');
-            for (let i = 0; i < replacements.length; i++) {
-                const replacement = replacements[i];
-                if (originalDropdowns[i]) {
-                    const restoredDropdown = originalDropdowns[i].cloneNode(true);
-                    const button = restoredDropdown.querySelector('.dropdown-button');
-                    if (button) {
-                        button.setAttribute('data-value', '');
-                        button.innerHTML = '';
-                        // Reset width to min-width
-                        button.style.width = '100px';
-                        // Also reset the dropdown container width
-                        restoredDropdown.style.width = '100px';
-                    }
-                    replacement.parentNode.replaceChild(restoredDropdown, replacement);
-                }
+            // Simply restore the entire answers-list container HTML (like template 311)
+            var answersListContainer = document.querySelector('.answers-list');
+            if (answersListContainer && originalAnswersListHTML) {
+                answersListContainer.innerHTML = originalAnswersListHTML;
+                console.log('✅ Restored answers-list HTML');
+                
+                // Re-initialize dropdowns after restoring HTML (use setTimeout to ensure DOM is updated)
+                setTimeout(function() {
+                    initializeDropdowns();
+                    console.log('✅ Re-initialized dropdowns after reset');
+                }, 50);
             }
             
             // Clear selected answers
@@ -969,77 +991,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 audioPlayer.startWithDelay();
             }
             
-            // Re-attach event listeners for custom dropdowns
-            const newDropdowns = document.querySelectorAll('.custom-dropdown');
-            for (let k = 0; k < newDropdowns.length; k++) {
-                const dropdown = newDropdowns[k];
-                const button = dropdown.querySelector('.dropdown-button');
-                const options = dropdown.querySelectorAll('.dropdown-option');
-                
-                // Toggle dropdown
-                button.addEventListener('click', function() {
-                    const isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show');
-                    // Close all other dropdowns
-                    document.querySelectorAll('.dropdown-options').forEach(opt => {
-                        opt.classList.remove('show', 'dropup', 'balanced');
-                        opt.style.top = '';
-                        opt.style.height = '';
-                    });
-                    document.querySelectorAll('.custom-dropdown').forEach(dropdown => {
-                        dropdown.classList.remove('open');
-                    });
-                    // Toggle current dropdown
-                    if (!isOpen) {
-                        const dropdownOptions = this.parentNode.querySelector('.dropdown-options');
-                        
-                        // First show dropdown to get accurate measurements
-                        dropdownOptions.classList.add('show');
-                        this.parentNode.classList.add('open');
-                        
-                        // Check if we have more than 4 options - if so, balance the dropdown
-                        const optionCount = dropdownOptions.querySelectorAll('.dropdown-option').length;
-                        
-                        if (optionCount > 4) {
-                            // For more than 4 options, use balanced mode
-                            dropdownOptions.classList.add('balanced');
-                        } else {
-                            // For 4 or fewer options, use normal dropdown behavior
-                            dropdownOptions.classList.remove('balanced');
-                        }
-                    }
-                });
-                
-                // Handle option selection
-                options.forEach(option => {
-                    option.addEventListener('click', function() {
-                        const selectedValue = this.getAttribute('data-value');
-                        const selectedText = this.innerHTML;
-                        const dropdown = this.parentNode.parentNode;
-                        const button = dropdown.querySelector('.dropdown-button');
-                        
-                        // Update button text with furigana
-                        button.innerHTML = selectedText;
-                        button.setAttribute('data-value', selectedValue);
-                        
-                        // Close dropdown
-                        this.parentNode.classList.remove('show', 'balanced');
-                        this.parentNode.parentNode.classList.remove('open');
-                        this.parentNode.style.top = '';
-                        this.parentNode.style.height = '';
-                        
-                        // Update selected answers
-                        const blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
-                        selectedAnswers[blankNumber] = selectedValue;
-                        
-                        if (state.showAnswer) {
-                            const result = calculateResults();
-                            updateDisplay(result);
-                        }
-                    });
-                });
-            }
-            
-            console.log('🔄 Quiz reset completed via problem.check message');
+            console.log('🔄 Quiz reset completed');
         }
 
         function getGrade() {
@@ -1309,6 +1261,19 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             function initializePlayer() {
                 if (timeSegments.length === 0) {
                     playerStatus.textContent = 'Current Status: Ready';
+                    // If no audio segments, send timer.start message immediately so timer can start
+                    try {
+                        if (window.parent) {
+                            window.parent.postMessage({
+                                type: 'timer.start',
+                                templateId: 63,
+                                unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                            }, '*');
+                            console.log('✅ No audio segments - sent timer.start message immediately');
+                        }
+                    } catch (error) {
+                        console.error('Error sending timer.start message:', error);
+                    }
                     return;
                 }
                 
@@ -1418,6 +1383,20 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                             playerStatus.textContent = 'Current Status: Completed';
                             currentSegmentIndex = 0; // Reset for next play
                             isTransitioning = false; // Reset flag
+                            
+                            // Send timer.start message to parent after audio completed (template 63)
+                            try {
+                                if (window.parent) {
+                                    window.parent.postMessage({
+                                        type: 'timer.start',
+                                        templateId: 63,
+                                        unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                                    }, '*');
+                                    console.log('✅ Sent timer.start message to parent (after audio completed)');
+                                }
+                            } catch (error) {
+                                console.error('Error sending timer.start message:', error);
+                            }
                             
                             // Force update status to ensure it's set correctly
                             setTimeout(() => {

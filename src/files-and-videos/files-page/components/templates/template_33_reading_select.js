@@ -670,6 +670,35 @@ export const readingSelectTemplate = `<!DOCTYPE html>
                 channel.bind('getState', getState);
                 channel.bind('setState', setState);
             }
+            
+            // Send timer.start message after template loads (template 33 - no audio, start immediately)
+            function sendTimerStart() {
+                try {
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'timer.start',
+                            templateId: 33,
+                            unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                        }, '*');
+                        console.log('✅ Sent timer.start message to parent (template 33 - after load)');
+                    }
+                } catch (error) {
+                    console.error('Error sending timer.start message:', error);
+                }
+            }
+            
+            // Send timer.start message when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', sendTimerStart);
+            } else {
+                // DOM already loaded, send immediately
+                sendTimerStart();
+            }
+            
+            // Also send on window load as fallback
+            window.addEventListener('load', function() {
+                setTimeout(sendTimerStart, 100);
+            });
         })();
     </script>
 </body>

@@ -641,6 +641,35 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
             channel.bind('reset', resetQuiz);
         }
         
+        // Send timer.start message after template loads (template 2 - no audio, start immediately)
+        function sendTimerStart() {
+            try {
+                if (window.parent) {
+                    window.parent.postMessage({
+                        type: 'timer.start',
+                        templateId: 2,
+                        unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                    }, '*');
+                    console.log('✅ Sent timer.start message to parent (template 2 - after load)');
+                }
+            } catch (error) {
+                console.error('Error sending timer.start message:', error);
+            }
+        }
+        
+        // Send timer.start message when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', sendTimerStart);
+        } else {
+            // DOM already loaded, send immediately
+            sendTimerStart();
+        }
+        
+        // Also send on window load as fallback
+        window.addEventListener('load', function() {
+            setTimeout(sendTimerStart, 100);
+        });
+        
         // Listen for messages from parent (Check button)
         window.addEventListener('message', function(event) {
             console.log('🔄 Received message:', event.data);

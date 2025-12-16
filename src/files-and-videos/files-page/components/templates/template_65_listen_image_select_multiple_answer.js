@@ -1434,6 +1434,19 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             function initializePlayer() {
                 if (timeSegments.length === 0) {
                     playerStatus.textContent = 'Current Status: Ready';
+                    // If no audio segments, send timer.start message immediately so timer can start
+                    try {
+                        if (window.parent) {
+                            window.parent.postMessage({
+                                type: 'timer.start',
+                                templateId: 65,
+                                unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                            }, '*');
+                            console.log('✅ No audio segments - sent timer.start message immediately');
+                        }
+                    } catch (error) {
+                        console.error('Error sending timer.start message:', error);
+                    }
                     return;
                 }
                 
@@ -1544,6 +1557,20 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
                             currentSegmentIndex = 0; // Reset for next play
                             isTransitioning = false; // Reset flag
                             
+                            // Send timer.start message to parent after audio completed (template 65)
+                            try {
+                                if (window.parent) {
+                                    window.parent.postMessage({
+                                        type: 'timer.start',
+                                        templateId: 65,
+                                        unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                                    }, '*');
+                                    console.log('✅ Sent timer.start message to parent (after audio completed)');
+                                }
+                            } catch (error) {
+                                console.error('Error sending timer.start message:', error);
+                            }
+                            
                             // Force update status to ensure it's set correctly
                             setTimeout(() => {
                                 if (playerStatus.textContent !== 'Current Status: Completed') {
@@ -1628,6 +1655,19 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             function startWithDelay() {
                 if (timeSegments.length === 0) {
                     playerStatus.textContent = 'Current Status: Ready';
+                    // If no audio segments, send timer.start message immediately so timer can start
+                    try {
+                        if (window.parent) {
+                            window.parent.postMessage({
+                                type: 'timer.start',
+                                templateId: 65,
+                                unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                            }, '*');
+                            console.log('✅ No audio segments - sent timer.start message immediately');
+                        }
+                    } catch (error) {
+                        console.error('Error sending timer.start message:', error);
+                    }
                     return;
                 }
                 

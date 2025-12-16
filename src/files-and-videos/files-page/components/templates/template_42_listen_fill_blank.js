@@ -634,6 +634,20 @@ export const listenFillInBlankTemplate = `<!DOCTYPE html>
                         audioElement.currentTime = startTime;
                         isPlaying = false;
                         playerStatus.textContent = 'Current Status: Paused';
+                        
+                        // Send timer.start message to parent after audio completed (template 42)
+                        try {
+                            if (window.parent) {
+                                window.parent.postMessage({
+                                    type: 'timer.start',
+                                    templateId: 42,
+                                    unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                                }, '*');
+                                console.log('✅ Sent timer.start message to parent (after audio completed)');
+                            }
+                        } catch (error) {
+                            console.error('Error sending timer.start message:', error);
+                        }
                     }
                 }
                 

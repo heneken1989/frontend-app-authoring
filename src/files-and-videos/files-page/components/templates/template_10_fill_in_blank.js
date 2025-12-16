@@ -554,6 +554,35 @@ export const fillInBlankTemplate = `<!DOCTYPE html>
                     console.log('Saving state before navigation:', result);
                 }
             });
+            
+            // Send timer.start message after template loads (template 10 - no audio, start immediately)
+            function sendTimerStart() {
+                try {
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'timer.start',
+                            templateId: 10,
+                            unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                        }, '*');
+                        console.log('✅ Sent timer.start message to parent (template 10 - after load)');
+                    }
+                } catch (error) {
+                    console.error('Error sending timer.start message:', error);
+                }
+            }
+            
+            // Send timer.start message when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', sendTimerStart);
+            } else {
+                // DOM already loaded, send immediately
+                sendTimerStart();
+            }
+            
+            // Also send on window load as fallback
+            window.addEventListener('load', function() {
+                setTimeout(sendTimerStart, 100);
+            });
         })();
     </script>
 </body>

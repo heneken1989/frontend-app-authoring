@@ -20,20 +20,44 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
         blankOptions
     });
     
-    // Parse the blank options for dropdowns - these are the options for all dropdowns
-    let optionsArray = [];
+    // Parse the blank options for dropdowns
+    // Support two formats:
+    // 1. Shared list: "c,e,h,f,a,b,d,g,i" - all dropdowns use the same list
+    // 2. Per-dropdown list: "郵便局（ゆうびんきょく）,銀行（ぎんこう）;b,a" - each dropdown has its own list (separated by ;)
+    let optionsArray = []; // Shared options (fallback)
+    let perDropdownOptions = []; // Per-dropdown options (if format has ;)
+    let hasPerDropdownOptions = false;
+    
     if (blankOptions && blankOptions.trim()) {
-        // Preserve original order from input, do not sort/dedupe to keep per-index mapping
-        optionsArray = blankOptions.split(',')
-            .map(option => option.trim())
-            .filter(option => option);
+        // Check if blankOptions contains semicolon (;) - indicates per-dropdown format
+        if (blankOptions.includes(';')) {
+            hasPerDropdownOptions = true;
+            // Split by semicolon to get options for each dropdown
+            const parts = blankOptions.split(';');
+            perDropdownOptions = parts.map(part => {
+                // Each part is a comma-separated list of options for one dropdown
+                return part.split(',')
+                    .map(option => option.trim())
+                    .filter(option => option);
+            }).filter(options => options.length > 0); // Remove empty arrays
+            
+            console.log('🔍 Per-dropdown options detected:', perDropdownOptions);
+        } else {
+            // Shared list format - all dropdowns use the same options
+            optionsArray = blankOptions.split(',')
+                .map(option => option.trim())
+                .filter(option => option);
+            console.log('🔍 Shared options detected:', optionsArray);
+        }
     } else {
         // Default options if none provided
         optionsArray = ['O', 'X'];
     }
     
-    // Parse the correct answers - each position corresponds to a day of the week
-    // If correctAnswers is a string like "O,O,X,O,X,X,X", parse it into an array
+    // Parse the correct answers
+    // Support two formats:
+    // 1. Shared format: "O,O,X,O,X,X,X" - comma-separated list
+    // 2. Per-dropdown format: "b,a" (after semicolon in blankOptions) - comma-separated list for each dropdown
     let correctAnswersArray = [];
     if (correctAnswers && typeof correctAnswers === 'string') {
         correctAnswersArray = correctAnswers.split(',').map(answer => answer.trim());
@@ -65,11 +89,28 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
                 const matchIndex = processedLine.indexOf(placeholderToken, searchIndex);
                 if (matchIndex === -1) break;
 
-                // Determine correct answer purely from options order by index (cycle)
-                const correctAnswer = optionsArray[(answerDropdownIndex) % Math.max(1, optionsArray.length)] || '';
+                // Get options for this specific dropdown
+                let dropdownOptions = [];
+                if (hasPerDropdownOptions && perDropdownOptions.length > 0) {
+                    // Use per-dropdown options if available
+                    dropdownOptions = perDropdownOptions[answerDropdownIndex % perDropdownOptions.length] || [];
+                } else {
+                    // Use shared options
+                    dropdownOptions = optionsArray;
+                }
                 
-                // Create dropdown options from the options array - remove duplicates and sort alphabetically
-                const uniqueOptions = [...new Set(optionsArray)].sort((a, b) => {
+                // Determine correct answer
+                let correctAnswer = '';
+                if (correctAnswersArray.length > answerDropdownIndex) {
+                    // Use correct answer from array if available
+                    correctAnswer = correctAnswersArray[answerDropdownIndex];
+                } else if (dropdownOptions.length > 0) {
+                    // Fallback: use first option as default
+                    correctAnswer = dropdownOptions[0];
+                }
+                
+                // Create dropdown options - remove duplicates and sort alphabetically
+                const uniqueOptions = [...new Set(dropdownOptions)].sort((a, b) => {
                     try {
                         return a.localeCompare(b, 'ja');
                     } catch (e) {

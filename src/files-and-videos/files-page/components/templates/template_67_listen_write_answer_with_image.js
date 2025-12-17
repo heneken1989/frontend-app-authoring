@@ -1,13 +1,32 @@
 // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
 function convertFurigana(text) {
+    // Chỉ Kanji (và vài ký tự đặc biệt)
+    const kanjiWord = "[\u4E00-\u9FFF々〆〤ヶ]+";
+    // Số (half-width và full-width)
+    const numberPattern = "[\d０-９]*";
+    
     // First convert Japanese parentheses: 毎日（まいにち） -> <ruby>毎日<rt>まいにち</rt></ruby>
-    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)（([^）]+)）/g, function(match, p1, p2) {
-        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    // Tách số ra khỏi kanji: 12月（がつ） -> 12<ruby>月<rt>がつ</rt></ruby>
+    // Match pattern: (số*)(kanji)（furigana） - tách số ra khỏi kanji
+    text = text.replace(new RegExp("(" + numberPattern + ")(" + kanjiWord + ")（([^）]+)）", "g"), function(match, p1, p2, p3) {
+        // Ngoại lệ: nếu furigana là "ー" (placeholder dropdown), giữ nguyên để không phá "（ー）"
+        // Ví dụ: "（ー）時（ー）分" phải sinh 2 dropdown
+        if (p3.trim() === "ー") {
+            return match;
+        }
+        // Trả về: số + <ruby>kanji<rt>furigana</rt></ruby>
+        // Điều này đảm bảo furigana chỉ nằm trên kanji, không nằm trên số
+        return p1 + '<ruby>' + p2 + '<rt>' + p3 + '</rt></ruby>';
     });
+    
     // Then convert regular parentheses: 車(くるま) -> <ruby>車<rt>くるま</rt></ruby>
-    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)\(([^)]+)\)/g, function(match, p1, p2) {
-        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    // Tách số ra khỏi kanji: 12月(がつ) -> 12<ruby>月<rt>がつ</rt></ruby>
+    // Match pattern: (số*)(kanji)(furigana) - tách số ra khỏi kanji
+    text = text.replace(new RegExp("(" + numberPattern + ")(" + kanjiWord + ")\\(([^)]+)\\)", "g"), function(match, p1, p2, p3) {
+        // Trả về: số + <ruby>kanji<rt>furigana</rt></ruby>
+        return p1 + '<ruby>' + p2 + '<rt>' + p3 + '</rt></ruby>';
     });
+    
     return text;
 }
 

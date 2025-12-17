@@ -87,7 +87,7 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
                     <div class="custom-dropdown" data-blank-number="${answerDropdownIndex + 1}" data-correct="${correctAnswer}">
                         <div class="dropdown-button" data-value=""></div>
                         <div class="dropdown-options">${optionsHtml}</div>
-                    </div>
+                    </div><span class="dropdown-text-spacer"></span>
                 `;
                 
                 // Replace the placeholder with the dropdown
@@ -346,8 +346,9 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             margin: 0 !important;
             outline: none !important;
             letter-spacing: 0.4px !important;
-            white-space: normal !important;
-            word-wrap: break-word !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
         .dropdown-button:hover {
             background-color: #0075b4;
@@ -430,6 +431,21 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
         }
         .dropdown-button rt {
             vertical-align: baseline;
+        }
+        .dropdown-text-spacer {
+            display: inline-block;
+            min-width: 0.7em;
+            width: 0.7em;
+            height: 0;
+            vertical-align: baseline;
+            flex-shrink: 0;
+            white-space: pre;
+        }
+        /* Ensure text after dropdown has space and can wrap */
+        .custom-dropdown + .dropdown-text-spacer + *,
+        .custom-dropdown + .dropdown-text-spacer {
+            word-break: keep-all;
+            overflow-wrap: break-word;
         }
         
         /* Furigana styling - Simple approach like template 18 */
@@ -830,6 +846,10 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     continue;
                 }
                 
+                // Store original width of dropdown button for later calculation (like template 311)
+                var originalButtonWidth = button.offsetWidth || 120;
+                dropdown.setAttribute('data-original-width', originalButtonWidth);
+                
                 // Remove existing event listeners by cloning and replacing
                 var newButton = button.cloneNode(true);
                 button.parentNode.replaceChild(newButton, button);
@@ -842,7 +862,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     // Close all other dropdowns
                     document.querySelectorAll('.dropdown-options').forEach(function(opt) {
                         opt.classList.remove('show', 'dropup', 'balanced');
-                        opt.style.top = '';
+                        opt.style.top = '';                           
                         opt.style.height = '';
                     });
                     document.querySelectorAll('.custom-dropdown').forEach(function(dropdown) {
@@ -854,7 +874,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         
                         // First show dropdown to get accurate measurements
                         dropdownOptions.classList.add('show');
-                        this.parentNode.classList.add('open');
+                        this.parentNode.classList.add('open');             
                         
                         // Check if we have more than 4 options - if so, balance the dropdown
                         var optionCount = dropdownOptions.querySelectorAll('.dropdown-option').length;
@@ -882,6 +902,51 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         // Update button text with furigana
                         button.innerHTML = selectedText;
                         button.setAttribute('data-value', selectedValue);
+                        
+                        // Auto-adjust width to fit content (like template 311)
+                        var tempSpan = document.createElement('span');
+                        tempSpan.style.visibility = 'hidden';
+                        tempSpan.style.position = 'absolute';
+                        tempSpan.style.fontSize = '1.2rem';
+                        tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                        tempSpan.style.fontWeight = 'normal';
+                        tempSpan.style.letterSpacing = '0.4px';
+                        tempSpan.style.padding = '0';
+                        tempSpan.style.margin = '0';
+                        tempSpan.style.border = 'none';
+                        tempSpan.style.whiteSpace = 'nowrap';
+                        tempSpan.innerHTML = selectedText;
+                        document.body.appendChild(tempSpan);
+                        
+                        var textWidth = tempSpan.offsetWidth;
+                        document.body.removeChild(tempSpan);
+                        
+                        // Set width to fit content (add padding: 16px left + 50px right = 66px total)
+                        // No max width limit - let dropdown expand as needed
+                        var newWidth = Math.max(120, textWidth + 66);
+                        button.style.width = newWidth + 'px';
+                        button.style.maxWidth = 'none';
+                        // Also update the dropdown container width
+                        dropdown.style.width = newWidth + 'px';
+                        dropdown.style.maxWidth = 'none';
+                        
+                        // Ensure spacer after dropdown has enough space (like template 311)
+                        var spacer = dropdown.nextElementSibling;
+                        if (spacer && spacer.classList.contains('dropdown-text-spacer')) {
+                            // Get original width from data attribute, fallback to 120 if not set
+                            var originalWidth = parseInt(dropdown.getAttribute('data-original-width')) || 120;
+                            var expansion = newWidth - originalWidth;
+                            
+                            // Calculate spacer width: base 0.7em + proportional expansion with buffer
+                            // Convert pixel expansion to em (assuming 1em ≈ 16px for 1.2rem font)
+                            var expansionEm = expansion / 16;
+                            // Base spacer is 0.7em, add expansion with small buffer to ensure no text is covered
+                            var calculatedSpacer = 0.7 + Math.min(expansionEm + 0.1, 1.1); // Add 0.1em buffer, max additional 1.1em
+                            var spacerWidth = calculatedSpacer + 'em';
+                            
+                            spacer.style.minWidth = spacerWidth;
+                            spacer.style.width = spacerWidth;
+                        }
                         
                         // Close dropdown
                         this.parentNode.classList.remove('show', 'balanced');
@@ -1104,6 +1169,12 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                                 const button = dropdown.querySelector('.dropdown-button');
                                 const options = dropdown.querySelectorAll('.dropdown-option');
                                 
+                                // Ensure original width is stored if not already set (like template 311)
+                                if (!dropdown.getAttribute('data-original-width') && button) {
+                                    const originalButtonWidth = button.offsetWidth || 120;
+                                    dropdown.setAttribute('data-original-width', originalButtonWidth);
+                                }
+                                
                                 // Find the option text for this value
                                 let selectedText = '';
                                 for (let i = 0; i < options.length; i++) {
@@ -1116,6 +1187,47 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                                 if (selectedText && button) {
                                     button.innerHTML = selectedText;
                                     button.setAttribute('data-value', value);
+                                    
+                                    // Auto-adjust width to fit content (like template 311)
+                                    const tempSpan = document.createElement('span');
+                                    tempSpan.style.visibility = 'hidden';
+                                    tempSpan.style.position = 'absolute';
+                                    tempSpan.style.fontSize = button.style.fontSize || '1.2rem';
+                                    tempSpan.style.fontFamily = button.style.fontFamily || 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
+                                    tempSpan.style.fontWeight = button.style.fontWeight || 'normal';
+                                    tempSpan.style.letterSpacing = button.style.letterSpacing || '0.4px';
+                                    tempSpan.innerHTML = selectedText;
+                                    document.body.appendChild(tempSpan);
+                                    
+                                    const textWidth = tempSpan.offsetWidth;
+                                    document.body.removeChild(tempSpan);
+                                    
+                                    // Set width to fit content (add padding for dropdown arrow)
+                                    // No max width limit - let dropdown expand as needed
+                                    const newWidth = Math.max(120, textWidth + 66); // 66px for padding and arrow
+                                    button.style.width = newWidth + 'px';
+                                    button.style.maxWidth = 'none';
+                                    // Also update the dropdown container width
+                                    dropdown.style.width = newWidth + 'px';
+                                    dropdown.style.maxWidth = 'none';
+                                    
+                                    // Ensure spacer after dropdown has enough space (like template 311)
+                                    const spacer = dropdown.nextElementSibling;
+                                    if (spacer && spacer.classList.contains('dropdown-text-spacer')) {
+                                        // Get original width from data attribute, fallback to 120 if not set
+                                        const originalWidth = parseInt(dropdown.getAttribute('data-original-width')) || 120;
+                                        const expansion = newWidth - originalWidth;
+                                        
+                                        // Calculate spacer width: base 0.7em + proportional expansion with buffer
+                                        // Convert pixel expansion to em (assuming 1em ≈ 16px for 1.2rem font)
+                                        const expansionEm = expansion / 16;
+                                        // Base spacer is 0.7em, add expansion with small buffer to ensure no text is covered
+                                        const calculatedSpacer = 0.7 + Math.min(expansionEm + 0.1, 1.1); // Add 0.1em buffer, max additional 1.1em
+                                        const spacerWidth = calculatedSpacer + 'em';
+                                        
+                                        spacer.style.minWidth = spacerWidth;
+                                        spacer.style.width = spacerWidth;
+                                    }
                                 }
                             }
                         });

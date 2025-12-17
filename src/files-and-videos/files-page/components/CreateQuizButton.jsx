@@ -46,22 +46,29 @@ const convertFurigana = (text) => {
 
   // Chỉ Kanji (và vài ký tự đặc biệt)
   const kanjiWord = "[\u4E00-\u9FFF々〆〤ヶ]+";
+  // Số (half-width và full-width)
+  const numberPattern = "[\d０-９]*";
 
   // Dấu ngoặc Nhật (全角)
-  const reJaParens = new RegExp("(" + kanjiWord + ")（([^）]+)）", "g");
-  text = text.replace(reJaParens, (match, p1, p2) => {
+  // Match pattern: (số*)(kanji)（furigana） - tách số ra khỏi kanji
+  const reJaParens = new RegExp("(" + numberPattern + ")(" + kanjiWord + ")（([^）]+)）", "g");
+  text = text.replace(reJaParens, (match, p1, p2, p3) => {
     // Ngoại lệ: nếu furigana là "ー" (placeholder dropdown), giữ nguyên để không phá "（ー）"
     // Ví dụ: "（ー）時（ー）分" phải sinh 2 dropdown cho template 67
-    if (p2.trim() === "ー") {
+    if (p3.trim() === "ー") {
       return match;
     }
-    return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
+    // Trả về: số + <ruby>kanji<rt>furigana</rt></ruby>
+    // Điều này đảm bảo furigana chỉ nằm trên kanji, không nằm trên số
+    return p1 + `<ruby>${p2}<rt>${p3}</rt></ruby>`;
   });
 
   // Dấu ngoặc ASCII (半角)
-  const reAsciiParens = new RegExp("(" + kanjiWord + ")\\(([^)]+)\\)", "g");
-  text = text.replace(reAsciiParens, (match, p1, p2) => {
-    return `<ruby>${p1}<rt>${p2}</rt></ruby>`;
+  // Match pattern: (số*)(kanji)(furigana) - tách số ra khỏi kanji
+  const reAsciiParens = new RegExp("(" + numberPattern + ")(" + kanjiWord + ")\\(([^)]+)\\)", "g");
+  text = text.replace(reAsciiParens, (match, p1, p2, p3) => {
+    // Trả về: số + <ruby>kanji<rt>furigana</rt></ruby>
+    return p1 + `<ruby>${p2}<rt>${p3}</rt></ruby>`;
   });
 
   return text;

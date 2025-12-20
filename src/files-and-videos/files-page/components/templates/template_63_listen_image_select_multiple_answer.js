@@ -104,6 +104,10 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
                 if (correctAnswersArray.length > answerDropdownIndex) {
                     // Use correct answer from array if available
                     correctAnswer = correctAnswersArray[answerDropdownIndex];
+                } else if (!hasPerDropdownOptions && optionsArray.length > answerDropdownIndex) {
+                    // For shared options format: use option at same index as dropdown
+                    // e.g., blankOptions "a,b,c,d" means dropdown 1 = "a", dropdown 2 = "b", etc.
+                    correctAnswer = optionsArray[answerDropdownIndex];
                 } else if (dropdownOptions.length > 0) {
                     // Fallback: use first option as default
                     correctAnswer = dropdownOptions[0];

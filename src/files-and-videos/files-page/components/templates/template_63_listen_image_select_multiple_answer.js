@@ -308,6 +308,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             margin: 0;
             position: relative;
             padding-left: 5px;
+            padding-bottom: 10px;
             letter-spacing: 0.4px;
         }
         .question-text:before {

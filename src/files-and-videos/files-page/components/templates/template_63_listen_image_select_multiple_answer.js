@@ -104,10 +104,6 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
                 if (correctAnswersArray.length > answerDropdownIndex) {
                     // Use correct answer from array if available
                     correctAnswer = correctAnswersArray[answerDropdownIndex];
-                } else if (!hasPerDropdownOptions && optionsArray.length > answerDropdownIndex) {
-                    // For shared options format: use option at same index as dropdown
-                    // e.g., blankOptions "a,b,c,d" means dropdown 1 = "a", dropdown 2 = "b", etc.
-                    correctAnswer = optionsArray[answerDropdownIndex];
                 } else if (dropdownOptions.length > 0) {
                     // Fallback: use first option as default
                     correctAnswer = dropdownOptions[0];
@@ -176,11 +172,14 @@ export const getListenImageSelectMultipleAnswerTemplate = (questionText, correct
     
     console.log('🔍 Final scriptText with furigana:', finalScriptText);
     
-    // Extract the first line as the question text and apply furigana
-    const firstLine = convertFurigana(processedLines[0] || questionText);
+    // Process all lines of question text and apply furigana
+    // Join all lines with <br> tags to preserve line breaks in HTML
+    const fullQuestionText = processedLines.length > 0 
+        ? processedLines.map(line => convertFurigana(line)).join('<br>')
+        : convertFurigana(questionText);
     
     let template = listenImageSelectMultipleAnswerTemplate
-        .replace('{{QUESTION_TEXT}}', firstLine)
+        .replace('{{QUESTION_TEXT}}', fullQuestionText)
         .replace(/{{ANSWERS_LIST}}/g, answersList) // Replace all occurrences
         .replace('{{AUDIO_FILE}}', audioFile || '')
         .replace('{{TIME_SEGMENTS}}', timeSegmentsString || '0-0')
@@ -741,7 +740,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                         </audio>
                         <div class="custom-audio-player">
                             <div class="controls-row" style="justify-content: center; align-items: center;">
-                                <div id="player-status" class="player-status" style="margin: 0;">Current Status: Starting in 10s...</div>
+                                <div id="player-status" class="player-status" style="margin: 0;">Current Status: Starting in 5s...</div>
                             </div>
                             <div class="controls-row">
                                 <div id="progress-container" class="progress-container">
@@ -1326,7 +1325,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
             const playerStatus = document.getElementById('player-status');
             
             // Set initial status to Starting countdown
-            playerStatus.textContent = 'Current Status: Starting in 10s...';
+            playerStatus.textContent = 'Current Status: Starting in 5s...';
             
             // Parse time segments from input (format: "0.04-0.09;0.21-0.30")
             function parseTimeSegments(timeString) {
@@ -1446,10 +1445,10 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 audioElement.currentTime = timeSegments[0].start;
                 
                 // Update status to show countdown
-                playerStatus.textContent = 'Current Status: Starting in 10s...';
+                playerStatus.textContent = 'Current Status: Starting in 5s...';
                 
                 // Countdown timer
-                let countdown = 10;
+                let countdown = 5;
                 countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
@@ -1655,10 +1654,10 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                 audioElement.currentTime = timeSegments[0].start;
                 
                 // Update status with countdown
-                playerStatus.textContent = 'Current Status: Starting in 10s...';
+                playerStatus.textContent = 'Current Status: Starting in 5s...';
                 
                 // Countdown timer
-                let countdown = 10;
+                let countdown = 5;
                 countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
@@ -1700,7 +1699,7 @@ export const listenImageSelectMultipleAnswerTemplate = `<!DOCTYPE html>
                     if (timeSegments.length > 0) {
                         currentSegmentIndex = 0;
                         audioElement.currentTime = timeSegments[0].start;
-                        playerStatus.textContent = 'Current Status: Starting in 10s...';
+                        playerStatus.textContent = 'Current Status: Starting in 5s...';
                         // Restart countdown after reset
                         setTimeout(() => {
                             initializePlayer();

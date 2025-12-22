@@ -32,15 +32,21 @@ export const listenFillInBlankTemplate = `<!DOCTYPE html>
             z-index: 1;
         }
         .instructions {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
+            font-style: italic;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
             background-color: #f5f9fc;
             padding: 1rem;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            line-height: 1.5;
             border-left: 4px solid #0075b4;
-            color: #333;
-            font-weight: bold;
-            font-style: italic;
+        }
+        .instructions:before {
+            display: none;
         }
         .media-container {
             display: flex;

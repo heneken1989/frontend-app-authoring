@@ -140,14 +140,22 @@ export const grammarSentenceRearrangementTemplate = `<!DOCTYPE html>
             background-color: #f9ecec;
         }
         .instructions {
-            font-style: italic;
-            font-size: 1.1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
             color: #333;
-            margin-bottom: 1rem;
+            font-style: italic;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
             padding: 0.8rem;
             background-color: #f8f9fa;
             border-left: 4px solid #0075b4;
             border-radius: 4px;
+        }
+        .instructions:before {
+            display: none;
         }
     </style>
 </head>

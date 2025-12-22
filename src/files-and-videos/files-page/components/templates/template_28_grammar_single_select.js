@@ -50,6 +50,9 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
             margin: 0 0 20px 0;
             letter-spacing: 0.3px;
         }
+        .instructions:before {
+            display: none;
+        }
         .question-text {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;

@@ -190,8 +190,8 @@ export const readingDroplistTemplate = `<!DOCTYPE html>
             gap: 0;
         }
         .instructions {
-            font-family: 'Kyokashotai', 'Kosugi Maru', 'Noto Sans JP', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 1.1rem;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
             font-weight: bold;
             line-height: 1.5;
             text-align: left;

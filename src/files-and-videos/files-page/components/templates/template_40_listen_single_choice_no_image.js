@@ -70,10 +70,12 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             gap: 10px;
         }
         .instructions {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
-            line-height: 1.5;
-            color: #333;
             font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
             letter-spacing: 0.3px;
@@ -83,6 +85,9 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
             word-break: break-word;
             overflow-x: hidden;
             box-sizing: border-box;
+        }
+        .instructions:before {
+            display: none;
         }
         .question-text {
             font-size: 1.2rem;

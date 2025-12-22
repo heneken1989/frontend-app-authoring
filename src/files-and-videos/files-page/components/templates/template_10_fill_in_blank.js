@@ -68,12 +68,16 @@ export const fillInBlankTemplate = `<!DOCTYPE html>
         .instructions {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
-            line-height: 1.5;
-            color: #333;
             font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
             letter-spacing: 0.3px;
+        }
+        .instructions:before {
+            display: none;
         }
         
         /* Furigana styling */

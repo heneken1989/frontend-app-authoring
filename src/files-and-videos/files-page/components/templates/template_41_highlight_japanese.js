@@ -44,15 +44,20 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             position: relative;
         }
         .instructions {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
+            font-style: italic;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
             background-color: #f5f9fc;
             padding: 1rem;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            line-height: 1.5;
-            color: #333;
-            font-weight: bold;
-            font-style: italic;
-            text-align: center;
+        }
+        .instructions:before {
+            display: none;
         }
         .audio-container {
             margin-bottom: 10px;

@@ -55,13 +55,16 @@ export const readingSelectTemplate = `<!DOCTYPE html>
             gap: 0;
         }
         .instructions {
-            padding: 10px;
-            font-size: 0.8rem;
-            line-height: 1.5;
-            color: #333;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
             font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
             font-style: italic;
-            margin: 0 0 10px 0;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
+            padding: 10px;
             position: relative;
             padding-left: 19px;
         }

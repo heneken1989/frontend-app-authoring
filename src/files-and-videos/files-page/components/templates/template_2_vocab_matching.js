@@ -35,13 +35,18 @@ export const getVocabMatchingTemplate = (imageFile, dropZones, words, instructio
             margin: 0 auto;
         }
         .instructions {
-            font-size: 1.1rem;
-            line-height: 1.5;
-            color: #333;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
             font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
             letter-spacing: 0.3px;
+        }
+        .instructions:before {
+            display: none;
         }
         .quiz-area {
             position: relative;

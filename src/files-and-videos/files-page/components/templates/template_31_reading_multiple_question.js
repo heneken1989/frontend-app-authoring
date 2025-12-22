@@ -75,12 +75,14 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             visibility: visible !important;
         }
         .instructions {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
-            line-height: 1.5;
-            color: #333;
             font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
             font-style: italic;
-            margin: 0;
+            margin: 0 0 20px 0;
             padding: 5px 10px;
             background-color: #fff;
             word-wrap: break-word;
@@ -88,6 +90,10 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             word-break: keep-all;
             flex-shrink: 0;
             box-sizing: border-box;
+            letter-spacing: 0.3px;
+        }
+        .instructions:before {
+            display: none;
         }
         .content-container {
             display: flex;

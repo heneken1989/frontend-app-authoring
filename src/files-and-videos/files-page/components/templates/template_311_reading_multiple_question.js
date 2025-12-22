@@ -96,18 +96,24 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             display: none;
         }
         .instructions {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: #333;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
             font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
             font-style: italic;
-            margin: 0;
+            margin: 0 0 20px 0;
             padding: 5px 10px;
             background-color: #fff;
             word-wrap: break-word;
             overflow-wrap: break-word;
             word-break: keep-all;
+            letter-spacing: 0.3px;
             flex-shrink: 0;
+        }
+        .instructions:before {
+            display: none;
         }
         .content-container {
             display: flex;

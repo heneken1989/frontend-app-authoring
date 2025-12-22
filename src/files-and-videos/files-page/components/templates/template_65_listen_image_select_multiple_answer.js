@@ -225,17 +225,29 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             flex-direction: column;
             gap: 15px;
             width: calc(100% - 60px);
+            max-width: 100%;
             margin: 0 auto;
             box-sizing: border-box;
+            overflow-x: hidden;
         }
         .top-section {
             display: flex;
             flex-direction: row;
             gap: 150px;
             align-items: flex-start;
-            justify-content: center;
+            justify-content: flex-start;
             flex-shrink: 0;
             max-height: 200px;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .bottom-section {
+            width: 100%;
+        }
+        .bottom-section .left-content {
+            flex: 0 0 auto;
         }
         .left-content {
             flex: 0 0 auto;
@@ -245,7 +257,40 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             align-items: flex-start;
             justify-content: flex-start;
             width: auto;
+            min-width: 0;
             max-width: none;
+            padding: 0;
+            margin: 0;
+        }
+        .top-section .left-content,
+        .bottom-section .left-content {
+            flex: 0 0 auto;
+            width: auto;
+            min-width: 0;
+            max-width: none;
+            box-sizing: border-box;
+        }
+        .top-section .left-content {
+            padding-left: 205px;
+        }
+        .bottom-section .left-content {
+            padding-left: 215px;
+        }
+        /* Ensure both left-content elements align by matching their calculated positions */
+        .top-section,
+        .bottom-section {
+            position: relative;
+        }
+        .top-section .left-content,
+        .bottom-section .left-content {
+            position: relative;
+        }
+        .right-content-spacer {
+            flex: 0 0 300px;
+            width: 300px;
+            min-width: 300px;
+            max-width: 300px;
+            flex-shrink: 0;
         }
         .right-content {
             flex: 0 0 300px;
@@ -253,7 +298,10 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             flex-direction: column;
             gap: 10px;
             width: 300px;
+            min-width: 300px;
+            max-width: 300px;
             align-items: center;
+            flex-shrink: 0;
         }
         .content-wrapper {
             display: flex;
@@ -261,25 +309,37 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             gap: 10px;
             align-items: flex-start;
             width: auto;
+            padding: 0;
+            margin: 0;
+            padding-left: 0;
+            margin-left: 0;
         }
         .instructions {
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
-            line-height: 1.5;
-            color: #333;
             font-weight: bold;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
             letter-spacing: 0.3px;
-            text-align: left;
             width: auto;
             white-space: nowrap;
+        }
+        .instructions:before {
+            display: none;
         }
         .question-text {
             font-size: 1.2rem;
             padding: 5px 0;
+            padding-left: 0;
+            padding-right: 0;
             color: #333;
             font-weight: normal;
             margin: 0;
+            margin-left: 0;
+            margin-right: 0;
             line-height: 1.6;
             letter-spacing: 0.4px;
             text-align: left;
@@ -307,16 +367,25 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             height: auto;
             min-height: 80px;
         }
+        #quizForm {
+            margin: 0;
+            padding: 0;
+            width: auto;
+        }
         .select-container {
-            margin: 0 auto;
+            margin: 0;
+            margin-left: 0;
+            margin-right: 0;
             display: flex;
             flex-direction: column;
             gap: 8px;
             padding: 0;
+            padding-left: 0;
+            padding-right: 0;
             background: transparent;
             width: auto;
             overflow: visible;
-            align-items: center;
+            align-items: flex-start;
             flex: 1;
             min-height: 0;
         }
@@ -647,17 +716,21 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             white-space: nowrap;
             width: 100%;
             position: relative;
-            padding: 0px 0;
+            padding: 0;
         }
         .answer-item .custom-dropdown {
             vertical-align: middle;
             display: inline-block;
         }
         .answers-list {
-            padding: 0px;
+            padding: 0;
+            padding-left: 0;
+            padding-right: 0;
             background: white;
             border-radius: 2px;
-            margin: 5px auto;
+            margin: 0;
+            margin-left: 0;
+            margin-right: 0;
             display: flex;
             flex-direction: column;
             gap: 1px;
@@ -710,7 +783,7 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
 <body>
     <div class="container">
         <div class="top-section">
-            <div class="left-content">
+            <div class="left-content" id="top-left-content">
                 <div class="content-wrapper">
                     <div class="instructions" id="quiz-instructions">
                         {{INSTRUCTIONS}}
@@ -749,12 +822,19 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
                 </div>
             </div>
         </div>
-        <form id="quizForm" onsubmit="return false;">
-            <div class="select-container">
-                <div class="answers-list">{{ANSWERS_LIST}}</div>
+        <div class="bottom-section">
+            <div class="left-content" id="bottom-left-content">
+                <div class="content-wrapper">
+                    <form id="quizForm" onsubmit="return false;">
+                        <div class="select-container">
+                            <div class="answers-list">{{ANSWERS_LIST}}</div>
+                        </div>
+                        <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
+                    </form>
+                </div>
             </div>
-            <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
-        </form>
+            <div class="right-content-spacer"></div>
+        </div>
     </div>
 
     <script>
@@ -1864,6 +1944,42 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
                 templateId: 65,
                 hasAudio: true
             }, '*');
+        }
+
+        // Align bottom-left-content with top-left-content
+        function alignLeftContents() {
+            const topLeftContent = document.getElementById('top-left-content');
+            const bottomLeftContent = document.getElementById('bottom-left-content');
+            
+            if (topLeftContent && bottomLeftContent) {
+                // Get the left position of top-left-content relative to its section
+                const topSection = topLeftContent.closest('.top-section');
+                const bottomSection = bottomLeftContent.closest('.bottom-section');
+                
+                if (topSection && bottomSection) {
+                    // Calculate left position relative to section
+                    const topRect = topLeftContent.getBoundingClientRect();
+                    const topSectionRect = topSection.getBoundingClientRect();
+                    const leftOffset = topRect.left - topSectionRect.left;
+                    
+                    // Apply the same left offset to bottom-left-content
+                    bottomLeftContent.style.marginLeft = leftOffset + 'px';
+                }
+            }
+        }
+        
+        // Align on load and after a short delay to ensure layout is complete
+        window.addEventListener('load', function() {
+            setTimeout(alignLeftContents, 100);
+        });
+        
+        // Also align after DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(alignLeftContents, 100);
+            });
+        } else {
+            setTimeout(alignLeftContents, 100);
         }
 
     })();

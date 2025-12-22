@@ -27,12 +27,20 @@ export const imageFlipPracticeTemplate = `<!DOCTYPE html>
             margin: 0 auto;
         }
         .instructions {
-            font-size: 1.1rem;
-            line-height: 1.6;
+            font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 1.2rem;
             font-weight: bold;
-            margin-bottom: 16px;
+            line-height: 1.5;
+            text-align: left;
+            color: #333;
+            font-style: italic;
+            margin: 0 0 20px 0;
+            letter-spacing: 0.3px;
             word-break: break-word;
             white-space: pre-wrap;
+        }
+        .instructions:before {
+            display: none;
         }
         .question-text {
             font-size: 1.2rem;

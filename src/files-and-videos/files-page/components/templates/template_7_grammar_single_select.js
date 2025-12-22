@@ -42,6 +42,13 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
+            padding: 5px 50px;
+            background-color: #fff;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: keep-all;
+            flex-shrink: 0;
+            box-sizing: border-box;
             letter-spacing: 0.3px;
         }
         .instructions:before {
@@ -50,7 +57,6 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
         .question-text {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
-            padding: 15px 0;
             color: #333;
             font-weight: normal;
             margin: 0;
@@ -61,7 +67,6 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             background: transparent;
             border: none;
             border-radius: 8px;
-            padding: 15px 0;
             margin: 5px 0;
             box-shadow: none;
         }
@@ -121,8 +126,8 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             color: #333;
         }
         .option-button.selected::before {
-            background: #f44336;
-            border-color: #f44336;
+            background: #000;
+            border-color: #000;
             content: '✓';
             color: white;
             display: flex;

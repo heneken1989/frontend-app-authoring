@@ -396,6 +396,12 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
             color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
+            padding: 5px 10px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: keep-all;
+            flex-shrink: 0;
+            box-sizing: border-box;
             letter-spacing: 0.3px;
         }
         .instructions:before {

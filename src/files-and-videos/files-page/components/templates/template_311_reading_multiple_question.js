@@ -109,8 +109,9 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             word-wrap: break-word;
             overflow-wrap: break-word;
             word-break: keep-all;
-            letter-spacing: 0.3px;
             flex-shrink: 0;
+            box-sizing: border-box;
+            letter-spacing: 0.3px;
         }
         .instructions:before {
             display: none;

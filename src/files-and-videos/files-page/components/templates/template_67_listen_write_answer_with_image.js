@@ -203,10 +203,17 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             font-size: 1.2rem;
             font-weight: bold;
             line-height: 1.5;
-            text-align: center;
+            text-align: left;
             color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
+            padding: 5px 10px;
+            background-color: #fff;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: keep-all;
+            flex-shrink: 0;
+            box-sizing: border-box;
             letter-spacing: 0.3px;
         }
         .instructions:before {

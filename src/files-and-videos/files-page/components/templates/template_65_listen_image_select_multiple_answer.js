@@ -323,9 +323,14 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
             color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
+            padding: 5px 10px;
+            background-color: #fff;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: keep-all;
+            flex-shrink: 0;
+            box-sizing: border-box;
             letter-spacing: 0.3px;
-            width: auto;
-            white-space: nowrap;
         }
         .instructions:before {
             display: none;
@@ -825,12 +830,12 @@ export const listenImageSelectMultipleAnswerTemplate65 = `<!DOCTYPE html>
         <div class="bottom-section">
             <div class="left-content" id="bottom-left-content">
                 <div class="content-wrapper">
-                    <form id="quizForm" onsubmit="return false;">
-                        <div class="select-container">
-                            <div class="answers-list">{{ANSWERS_LIST}}</div>
-                        </div>
-                        <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
-                    </form>
+        <form id="quizForm" onsubmit="return false;">
+            <div class="select-container">
+                <div class="answers-list">{{ANSWERS_LIST}}</div>
+            </div>
+            <input type="hidden" id="showAnswerFlag" name="showAnswerFlag" value="false">
+        </form>
                 </div>
             </div>
             <div class="right-content-spacer"></div>

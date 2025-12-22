@@ -312,7 +312,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         body { font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 1.2rem; font-weight: 400; line-height: 1.6; text-align: left; margin: 0; padding: 0; color: #414141; height: auto; position: relative; background-color: white; }
         .container { position: relative; height: auto; display: flex; flex-direction: column; gap: 20px; background-color: white; padding: 1.5rem; max-width: 900px; margin: 0 auto; }
         .content-wrapper { background: white; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-        .instructions { font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 1.2rem; font-weight: bold; line-height: 1.5; text-align: left; background-color: white; color: #333; font-style: italic; margin: 0 0 20px 0; letter-spacing: 0.3px; }
+        .instructions { font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 1.2rem; font-weight: bold; line-height: 1.5; text-align: left; background-color: white; color: #333; font-style: italic; margin: 0 0 20px 0; padding: 5px 10px; word-wrap: break-word; overflow-wrap: break-word; word-break: keep-all; flex-shrink: 0; box-sizing: border-box; letter-spacing: 0.3px; }
         .instructions:before { display: none; }
         .select-container { margin: 0; display: flex; flex-direction: column; gap: 8px; padding: 0; background: white; }
         .select-answer-header { 

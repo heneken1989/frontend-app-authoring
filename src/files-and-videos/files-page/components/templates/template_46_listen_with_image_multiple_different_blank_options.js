@@ -83,7 +83,7 @@ export const listenWithImageMultipleDifferentBlankOptionsTemplate = `<!DOCTYPE h
         .content-wrapper { background: white; padding: 0; display: flex; gap: 20px; }
         .left-container { flex: 0 0 40%; display: flex; flex-direction: column; gap: 20px; }
         .right-container { flex: 0 0 60%; display: flex; flex-direction: column; gap: 20px; }
-        .instructions { font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 1.2rem; font-weight: bold; line-height: 1.5; text-align: left; background-color: white; color: #333; font-style: italic; margin: 0 0 20px 0; letter-spacing: 0.3px; }
+        .instructions { font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: 1.2rem; font-weight: bold; line-height: 1.5; text-align: left; background-color: white; color: #333; font-style: italic; margin: 0 0 20px 0; padding: 5px 10px; word-wrap: break-word; overflow-wrap: break-word; word-break: keep-all; flex-shrink: 0; box-sizing: border-box; letter-spacing: 0.3px; }
         .instructions:before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #0075b4; }
         .image-container { width: 100%; display: flex; justify-content: center; align-items: flex-start; background: white; position: sticky; top: 0; }
         .quiz-image { max-width: 100%; height: auto; object-fit: contain; }

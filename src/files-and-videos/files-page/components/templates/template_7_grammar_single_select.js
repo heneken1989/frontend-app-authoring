@@ -26,12 +26,14 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             gap: 20px;
             padding: 1.5rem;
             max-width: 800px;
-            margin: 0 auto;
+            margin: 0;
+            margin-left: 100px;
         }
         .content-wrapper {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            margin-left: 100px;
         }
         .instructions {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;

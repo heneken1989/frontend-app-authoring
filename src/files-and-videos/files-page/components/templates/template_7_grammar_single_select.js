@@ -41,7 +41,7 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             text-align: left;
             color: #333;
             font-style: italic;
-            margin: 0 0 20px 0;
+            margin: 0 0 40px 0;
             padding: 5px 50px;
             background-color: #fff;
             word-wrap: break-word;
@@ -60,6 +60,7 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             color: #333;
             font-weight: normal;
             margin: 0;
+            padding-left: 50px;
             line-height: 1.6;
             letter-spacing: 0.4px;
         }
@@ -76,6 +77,7 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             flex-direction: column;
             gap: 8px;
             padding: 0;
+            padding-left: 100px;
             background: transparent;
             max-width: 600px;
         }
@@ -103,6 +105,12 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             border-radius: 4px;
             transition: all 0.3s ease;
             gap: 12px;
+        }
+        .option-number {
+            font-weight: bold;
+            margin-right: 8px;
+            color: #333;
+            flex-shrink: 0;
         }
         .option-button::before {
             content: '';
@@ -767,12 +775,13 @@ export const getGrammarSingleSelectTemplate7 = (questionText, optionsString, ins
   // Create HTML for options
   const optionsHtml = options
     .sort((a, b) => a.localeCompare(b)) // Sort alphabetically
-    .map(option => {
+    .map((option, index) => {
       // Process each option to underline text in quotes and convert furigana
       const processedOption = option
         .replace(/"([^"]+)"/g, '<span style="text-decoration: underline;">$1</span>');
       const finalOption = convertFurigana(processedOption);
-      return `<button type="button" class="option-button" data-value="${option}">${finalOption}</button>`;
+      const optionNumber = index + 1; // 1, 2, 3, 4
+      return `<button type="button" class="option-button" data-value="${option}"><span class="option-number">${optionNumber}</span>${finalOption}</button>`;
     })
     .join('');
 

@@ -174,6 +174,10 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             display: block;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            image-rendering: auto;
+            -ms-interpolation-mode: nearest-neighbor;
         }
         .images-container-right .image-item img {
             max-width: 100% !important;
@@ -183,6 +187,10 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
             object-fit: contain !important;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            image-rendering: -webkit-optimize-contrast !important;
+            image-rendering: crisp-edges !important;
+            image-rendering: auto !important;
+            -ms-interpolation-mode: nearest-neighbor !important;
         }
         .paragraph-text {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
@@ -961,6 +969,25 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                     var availableHeight = containerHeight - totalGapHeight;
                     var scaleFactor = availableHeight / totalImageHeight;
                     
+                    // Prevent scaling too small (minimum 70% of original size to maintain quality)
+                    var minScaleFactor = 0.7;
+                    if (scaleFactor < minScaleFactor) {
+                        // If scale factor is too small, enable scroll instead to maintain image quality
+                        imagesContainer.style.overflowY = 'auto';
+                        imagesContainer.style.height = '100%';
+                        // Reset image sizes to natural size
+                        imageItemElements.forEach(function(imageItem) {
+                            var img = imageItem.querySelector('img');
+                            if (img) {
+                                img.style.maxHeight = '';
+                                img.style.height = '';
+                                img.style.width = '';
+                                img.style.objectFit = 'contain';
+                            }
+                        });
+                        return;
+                    }
+                    
                     imageItemElements.forEach(function(imageItem) {
                         var img = imageItem.querySelector('img');
                         if (img && img.complete && img.naturalHeight > 0) {
@@ -975,6 +1002,9 @@ export const readingMultipleQuestionTemplate311 = `<!DOCTYPE html>
                             img.style.height = 'auto';
                             img.style.width = 'auto';
                             img.style.objectFit = 'contain';
+                            // Ensure high quality rendering
+                            img.style.imageRendering = 'auto';
+                            img.style.imageRendering = '-webkit-optimize-contrast';
                         }
                     });
                 }

@@ -27,7 +27,7 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
             padding: 1.5rem;
             max-width: 800px;
             margin: 0;
-            margin-left: 100px;
+            margin-left: 40px;
         }
         .content-wrapper {
             display: flex;

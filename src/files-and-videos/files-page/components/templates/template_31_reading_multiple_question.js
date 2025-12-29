@@ -69,7 +69,6 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             padding: 0;
             background-color: #fff;
             max-height: 45vh;
-            height: 45vh;
             flex-shrink: 0;
             min-height: 0;
             visibility: visible !important;
@@ -145,11 +144,15 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             display: block !important;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            image-rendering: auto;
+            -ms-interpolation-mode: nearest-neighbor;
         }
         
         /* Styles for image items in RIGHT container - completely separate */
         .images-container-right .image-item {
-            flex: 1 1 0;
+            flex: 0 0 auto;
             width: 100%;
             max-width: 100%;
             display: flex;
@@ -159,14 +162,13 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             min-height: 0;
             padding: 0;
             margin: 0;
-            max-height: 100%;
             box-sizing: border-box;
         }
         .images-container-right .image-item img {
             width: 100% !important;
-            height: 100% !important;
+            height: auto !important;
             max-width: 100% !important;
-            max-height: 100% !important;
+            max-height: 45vh !important;
             object-fit: contain !important;
             object-position: left top !important;
             border-radius: 4px;
@@ -174,6 +176,10 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
+            image-rendering: -webkit-optimize-contrast !important;
+            image-rendering: crisp-edges !important;
+            image-rendering: auto !important;
+            -ms-interpolation-mode: nearest-neighbor !important;
         }
         .reading-text {
             font-size: 1.2rem;
@@ -900,6 +906,108 @@ export const readingMultipleQuestionTemplate = `<!DOCTYPE html>
                 channel.bind('getState', getState);
                 channel.bind('setState', setState);
             }
+            
+            // Function to adjust right images container - scale down if content exceeds 45vh
+            function adjustRightImagesContainer() {
+                var imagesContainer = document.querySelector('.images-container-right');
+                if (!imagesContainer) return;
+                
+                var maxContainerHeight = window.innerHeight * 0.45; // 45vh
+                var imageItems = imagesContainer.querySelectorAll('.image-item');
+                
+                if (imageItems.length === 0) return;
+                
+                // Wait for all images to load
+                var allImagesLoaded = true;
+                var imageHeights = [];
+                
+                imageItems.forEach(function(imageItem) {
+                    var img = imageItem.querySelector('img');
+                    if (!img) return;
+                    
+                    if (img.complete && img.naturalHeight > 0) {
+                        // Reset any previous scaling to get natural size
+                        img.style.maxHeight = '';
+                        img.style.height = '';
+                        img.style.width = '';
+                        
+                        // Force reflow to get natural height
+                        void imageItem.offsetHeight;
+                        
+                        // Store natural height of image item (includes image + any padding)
+                        imageHeights.push(imageItem.offsetHeight);
+                    } else {
+                        allImagesLoaded = false;
+                        img.addEventListener('load', function() {
+                            setTimeout(function() {
+                                adjustRightImagesContainer();
+                            }, 50);
+                        }, { once: true });
+                    }
+                });
+                
+                if (!allImagesLoaded) return;
+                
+                // Calculate total height including gaps
+                var gapCount = imageItems.length > 0 ? imageItems.length - 1 : 0;
+                var totalGapHeight = gapCount * 3;
+                var totalContentHeight = imageHeights.reduce(function(sum, height) { return sum + height; }, 0);
+                
+                // If content exceeds max height, scale down
+                if (totalContentHeight > maxContainerHeight) {
+                    // Disable scroll
+                    imagesContainer.style.overflowY = 'hidden';
+                    
+                    // Calculate scale factor
+                    var availableHeight = maxContainerHeight - totalGapHeight;
+                    var contentHeightWithoutGaps = totalContentHeight - totalGapHeight;
+                    var scaleFactor = availableHeight / contentHeightWithoutGaps;
+                    
+                    // Prevent scaling too small (minimum 50% to maintain quality)
+                    if (scaleFactor < 0.5) {
+                        scaleFactor = 0.5;
+                    }
+                    
+                    // Apply scaling to each image
+                    imageItems.forEach(function(imageItem, index) {
+                        var img = imageItem.querySelector('img');
+                        if (img && img.complete && img.naturalHeight > 0) {
+                            var originalItemHeight = imageHeights[index];
+                            var newItemHeight = originalItemHeight * scaleFactor;
+                            
+                            // Set max-height on image to fit within scaled item height
+                            img.style.maxHeight = newItemHeight + 'px';
+                            img.style.height = 'auto';
+                            img.style.width = 'auto';
+                            img.style.objectFit = 'contain';
+                        }
+                    });
+                } else {
+                    // Content fits, reset to natural size
+                    imagesContainer.style.overflowY = 'hidden';
+                    imageItems.forEach(function(imageItem) {
+                        var img = imageItem.querySelector('img');
+                        if (img) {
+                            img.style.maxHeight = '';
+                            img.style.height = '';
+                            img.style.width = '';
+                            img.style.objectFit = 'contain';
+                        }
+                    });
+                }
+            }
+            
+            // Adjust right images container on page load and when images load
+            setTimeout(function() {
+                adjustRightImagesContainer();
+            }, 100);
+            
+            // Also adjust when window is resized
+            window.addEventListener('resize', function() {
+                setTimeout(function() {
+                    adjustRightImagesContainer();
+                }, 100);
+            });
             
             // Send timer.start message after template loads (template 31 - no audio, start immediately)
             function sendTimerStart() {

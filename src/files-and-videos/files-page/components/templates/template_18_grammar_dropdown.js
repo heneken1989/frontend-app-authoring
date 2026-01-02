@@ -553,7 +553,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         for (var i = 0; i < correctAnswers.length; i++) {
             selectedAnswers.push('');
         }
-        var originalDropdowns = []; // Store original dropdowns for restoration
+        var originalHTML = ''; // Store original HTML for restoration
         
         // Configuration for this template
         var templateConfig = {
@@ -626,19 +626,21 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                 }
             }
         }
-        // Store original dropdowns immediately when page loads
-        var initialDropdowns = document.querySelectorAll('.custom-dropdown');
-        for (var i = 0; i < initialDropdowns.length; i++) {
-            originalDropdowns.push(initialDropdowns[i].cloneNode(true));
+        
+        // Store original HTML of answers-list container when page loads
+        var answersListContainer = document.querySelector('.answers-list');
+        if (answersListContainer) {
+            originalHTML = answersListContainer.innerHTML;
         }
         
-        // Handle custom dropdowns
-        var dropdowns = document.querySelectorAll('.custom-dropdown');
-        for (var j = 0; j < dropdowns.length; j++) {
-            var dropdown = dropdowns[j];
-            var button = dropdown.querySelector('.dropdown-button');
-            var options = dropdown.querySelectorAll('.dropdown-option');
-            var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
+        // Function to initialize dropdowns (extracted for reuse)
+        function initializeDropdowns() {
+            var dropdowns = document.querySelectorAll('.custom-dropdown');
+            for (var j = 0; j < dropdowns.length; j++) {
+                var dropdown = dropdowns[j];
+                var button = dropdown.querySelector('.dropdown-button');
+                var options = dropdown.querySelectorAll('.dropdown-option');
+                var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
             
             // Toggle dropdown
             button.addEventListener('click', function() {
@@ -743,6 +745,10 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                 });
             }
         }
+        }
+        
+        // Initialize dropdowns on page load
+        initializeDropdowns();
         
         // Close dropdowns when clicking outside
         document.addEventListener('click', function(e) {
@@ -830,23 +836,11 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         function resetQuiz() {
             console.log('🔄 Starting reset process...');
             
-            // Restore original dropdowns
-            var replacements = document.querySelectorAll('.answer-replacement');
-            for (var i = 0; i < replacements.length; i++) {
-                var replacement = replacements[i];
-                if (originalDropdowns[i]) {
-                    var restoredDropdown = originalDropdowns[i].cloneNode(true);
-                    var button = restoredDropdown.querySelector('.dropdown-button');
-                    if (button) {
-                        button.setAttribute('data-value', '');
-                        button.innerHTML = '';
-                        // Reset width to min-width
-                        button.style.width = '100px';
-                        // Also reset the dropdown container width
-                        restoredDropdown.style.width = '100px';
-                    }
-                    replacement.parentNode.replaceChild(restoredDropdown, replacement);
-                }
+            // Restore original HTML of answers-list container
+            var answersListContainer = document.querySelector('.answers-list');
+            if (answersListContainer && originalHTML) {
+                answersListContainer.innerHTML = originalHTML;
+                console.log('✅ Restored answers-list HTML');
             }
             
             // Clear selected answers
@@ -860,119 +854,13 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             state.score = 0;
             state.showAnswer = false;
             
-            // Re-attach event listeners for custom dropdowns
-            var newDropdowns = document.querySelectorAll('.custom-dropdown');
-            for (var k = 0; k < newDropdowns.length; k++) {
-                var dropdown = newDropdowns[k];
-                var button = dropdown.querySelector('.dropdown-button');
-                var options = dropdown.querySelectorAll('.dropdown-option');
-                var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
-                
-                // Toggle dropdown
-                button.addEventListener('click', function() {
-                    var isOpen = this.parentNode.querySelector('.dropdown-options').classList.contains('show');
-                    // Close all other dropdowns
-                    document.querySelectorAll('.dropdown-options').forEach(function(opt) {
-                        opt.classList.remove('show');
-                    });
-                    document.querySelectorAll('.custom-dropdown').forEach(function(dropdown) {
-                        dropdown.classList.remove('open');
-                    });
-                    // Toggle current dropdown
-                    if (!isOpen) {
-                        var dropdownOptions = this.parentNode.querySelector('.dropdown-options');
-                        dropdownOptions.classList.add('show');
-                        this.parentNode.classList.add('open');
-                        
-                        // Auto-adjust dropdown width based on content
-                        var maxWidth = 0;
-                        var options = dropdownOptions.querySelectorAll('.dropdown-option');
-                        for (var i = 0; i < options.length; i++) {
-                            var tempSpan = document.createElement('span');
-                            tempSpan.style.visibility = 'hidden';
-                            tempSpan.style.position = 'absolute';
-                            tempSpan.style.fontSize = '1.2rem';
-                            tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
-                            tempSpan.style.fontWeight = 'normal';
-                            tempSpan.style.letterSpacing = '0.4px';
-                            tempSpan.style.padding = '0';
-                            tempSpan.style.margin = '0';
-                            tempSpan.style.border = 'none';
-                            tempSpan.style.whiteSpace = 'nowrap';
-                            tempSpan.innerHTML = options[i].innerHTML;
-                            document.body.appendChild(tempSpan);
-                            
-                            var textWidth = tempSpan.offsetWidth;
-                            document.body.removeChild(tempSpan);
-                            
-                            // Add padding for option (12px left + 16px right = 28px total)
-                            var optionWidth = textWidth + 28;
-                            
-                            if (optionWidth > maxWidth) {
-                                maxWidth = optionWidth;
-                            }
-                        }
-                        
-                        // Set dropdown width to fit content (minimum button width)
-                        var buttonWidth = this.offsetWidth;
-                        var finalWidth = Math.max(buttonWidth, maxWidth);
-                        dropdownOptions.style.width = finalWidth + 'px';
-                    }
-                });
-                
-                // Handle option selection
-                for (var l = 0; l < options.length; l++) {
-                    options[l].addEventListener('click', function() {
-                        var selectedValue = this.getAttribute('data-value');
-                        var selectedText = this.innerHTML;
-                        var dropdown = this.parentNode.parentNode;
-                        var button = dropdown.querySelector('.dropdown-button');
-                        
-                        // Update button text
-                        button.innerHTML = selectedText;
-                        button.setAttribute('data-value', selectedValue);
-                        
-                        // Auto-adjust width to fit content
-                        var tempSpan = document.createElement('span');
-                        tempSpan.style.visibility = 'hidden';
-                        tempSpan.style.position = 'absolute';
-                        tempSpan.style.fontSize = '1.2rem';
-                        tempSpan.style.fontFamily = 'Noto Serif JP, Noto Sans JP, Kosugi Maru, Open Sans, Helvetica Neue, Helvetica, Arial, sans-serif';
-                        tempSpan.style.fontWeight = 'normal';
-                        tempSpan.style.letterSpacing = '0.4px';
-                        tempSpan.style.padding = '0';
-                        tempSpan.style.margin = '0';
-                        tempSpan.style.border = 'none';
-                        tempSpan.style.whiteSpace = 'nowrap';
-                        tempSpan.innerHTML = selectedText;
-                        document.body.appendChild(tempSpan);
-                        
-                        var textWidth = tempSpan.offsetWidth;
-                        document.body.removeChild(tempSpan);
-                        
-                        // Set width to fit content (add padding: 16px left + 50px right = 66px total)
-                        var newWidth = Math.max(120, textWidth + 66);
-                        button.style.width = newWidth + 'px';
-                        // Also update the dropdown container width
-                        dropdown.style.width = newWidth + 'px';
-                        
-                        // Close dropdown
-                        this.parentNode.classList.remove('show');
-                        this.parentNode.parentNode.classList.remove('open');
-                        
-                        // Update selected answers
-                        var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
-                        selectedAnswers[blankNumber] = selectedValue;
-                        
-                        if (state.showAnswer) {
-                            var result = calculateResults();
-                            updateDisplay(result);
-                        }
-                    });
-                }
-            }
+            // Re-initialize dropdowns after restoring HTML
+            setTimeout(function() {
+                initializeDropdowns();
+                console.log('✅ Re-initialized dropdowns after reset');
+            }, 50);
             
-            console.log('🔄 Quiz reset completed via problem.check message');
+            console.log('🔄 Quiz reset completed');
         }
         function getGrade() {
             console.log('🎯 getGrade() called - Processing quiz submission');

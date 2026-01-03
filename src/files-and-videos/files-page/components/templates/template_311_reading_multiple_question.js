@@ -1472,11 +1472,23 @@ export const getReadingMultipleQuestionTemplate311 = (readingText, questionText,
     // imageFile: single image file URL (fallback if images is empty)
     
     // Parse the options for each blank from blankOptions (similar to template 18)
+    // Supports both English and Japanese punctuation (comma: , and ，, semicolon: ; and ；)
     let blanksOptionsArray = [];
     if (blankOptions && blankOptions.trim()) {
+        // Normalize Japanese punctuation to English equivalents
+        // Replace Japanese comma (，) with English comma (,)
+        // Replace Japanese semicolon (；) with English semicolon (;)
+        // Remove newlines and extra whitespace
+        const normalizedOptions = blankOptions
+            .replace(/，/g, ',')
+            .replace(/；/g, ';')
+            .replace(/\n/g, '')
+            .replace(/\r/g, '')
+            .trim();
+        
         // If there's no semicolon, use first N words as correct answers in order, rest as wrong options
-        if (blankOptions.indexOf(';') === -1) {
-            let allOptions = blankOptions.split(',').map(opt => opt.trim()).filter(opt => opt);
+        if (normalizedOptions.indexOf(';') === -1) {
+            let allOptions = normalizedOptions.split(',').map(opt => opt.trim()).filter(opt => opt);
             
             // Count number of blanks in questionText (placeholder （ー）)
             const blankMatches = questionText.match(/（ー）/g);
@@ -1497,7 +1509,8 @@ export const getReadingMultipleQuestionTemplate311 = (readingText, questionText,
             }
         } else {
             // Original behavior: split by semicolon for different options per blank
-            const semicolonSplit = blankOptions.split(';');
+            // Also supports Japanese semicolon: "黒（くろ）くて,黒（くろ）い；すてきな,すてき"
+            const semicolonSplit = normalizedOptions.split(';');
             blanksOptionsArray = [];
             for (let m = 0; m < semicolonSplit.length; m++) {
                 const commaSplit = semicolonSplit[m].split(',').map(opt => opt.trim()).filter(opt => opt);

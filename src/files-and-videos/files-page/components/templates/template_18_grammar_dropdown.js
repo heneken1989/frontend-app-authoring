@@ -114,8 +114,20 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
     // Parse the options for each blank from optionsForBlanks (parameter 2)
     // This parameter receives quizData.answerContent from CreateQuizButton (contains dropdown options like "は,が,で,に,を")
     // Supports both English comma (,) and Japanese comma (，) as separators
+    // Supports both English semicolon (;) and Japanese semicolon (；) as separators
     var blanksOptionsArray = [];
     if (optionsForBlanks && optionsForBlanks.trim()) {
+        // Normalize Japanese punctuation to English equivalents
+        // Replace Japanese comma (，) with English comma (,)
+        // Replace Japanese semicolon (；) with English semicolon (;)
+        // Remove newlines and extra whitespace
+        var normalizedOptions = optionsForBlanks
+            .replace(/，/g, ',')
+            .replace(/；/g, ';')
+            .replace(/\n/g, '')
+            .replace(/\r/g, '')
+            .trim();
+        
         // Helper function to split by both English and Japanese commas
         function splitByComma(text) {
             // Replace Japanese comma with English comma for consistent splitting
@@ -124,8 +136,8 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
         }
         
         // If there's no semicolon, use first N words as correct answers in order, rest as wrong options
-        if (optionsForBlanks.indexOf(';') === -1) {
-            var allOptions = splitByComma(optionsForBlanks);
+        if (normalizedOptions.indexOf(';') === -1) {
+            var allOptions = splitByComma(normalizedOptions);
             for (var i = 0; i < allOptions.length; i++) {
                 allOptions[i] = allOptions[i].trim();
             }
@@ -160,7 +172,8 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
         } else {
             // Original behavior: split by semicolon for different options per blank
             // Supports format: "は，か，と，の;あります，います，読（よ）みます，します;だから，では，それから，でも"
-            var semicolonSplit = optionsForBlanks.split(';');
+            // Also supports Japanese semicolon: "黒（くろ）くて,黒（くろ）い；すてきな,すてき"
+            var semicolonSplit = normalizedOptions.split(';');
             blanksOptionsArray = [];
             for (var m = 0; m < semicolonSplit.length; m++) {
                 var commaSplit = splitByComma(semicolonSplit[m]);

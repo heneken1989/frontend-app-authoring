@@ -333,6 +333,74 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
                 updateGlobalVariables();
             });
             
+            // Function to restore saved answers
+            function restoreAnswers(savedAnswers, retryCount = 0) {
+                console.log('🔍 [Template 7] restoreAnswers called with:', savedAnswers, 'retryCount:', retryCount);
+                
+                if (!savedAnswers || !Array.isArray(savedAnswers) || savedAnswers.length === 0) {
+                    console.warn('⚠️ [Template 7] No saved answers to restore');
+                    return;
+                }
+                
+                // Get the first answer (template 7 has single select)
+                const savedAnswer = savedAnswers[0];
+                console.log('🔍 [Template 7] First saved answer:', savedAnswer);
+                
+                const userAnswer = typeof savedAnswer === 'object' ? savedAnswer.userAnswer : savedAnswer;
+                console.log('🔍 [Template 7] Extracted userAnswer:', userAnswer);
+                
+                if (!userAnswer || userAnswer.toString().trim() === '') {
+                    console.warn('⚠️ [Template 7] Empty user answer');
+                    return;
+                }
+                
+                console.log('🔄 [Template 7] Restoring saved answer:', userAnswer);
+                console.log('🔍 [Template 7] Looking for button with data-value="' + userAnswer + '"');
+                
+                // Find the button with matching data-value
+                const button = document.querySelector('.option-button[data-value="' + userAnswer + '"]');
+                console.log('🔍 [Template 7] Found button:', button);
+                
+                // Log all available buttons for debugging
+                const allButtons = document.querySelectorAll('.option-button');
+                console.log('🔍 [Template 7] All buttons count:', allButtons.length);
+                allButtons.forEach((btn, idx) => {
+                    console.log('🔍 [Template 7] Button ' + idx + ':', {
+                        dataValue: btn.dataset.value,
+                        text: btn.textContent.trim(),
+                        matches: btn.dataset.value === userAnswer
+                    });
+                });
+                
+                if (button) {
+                    // Remove selected from all buttons
+                    document.querySelectorAll('.option-button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    
+                    // Select the saved answer
+                    button.classList.add('selected');
+                    selectedOption = userAnswer;
+                    
+                    // Update state
+                    state.answer = JSON.stringify({ answer: userAnswer });
+                    
+                    console.log('✅ [Template 7] Successfully restored answer:', userAnswer);
+                    console.log('✅ [Template 7] Button selected, selectedOption:', selectedOption);
+                } else {
+                    // Retry if buttons not ready yet (max 5 retries, 200ms apart)
+                    if (retryCount < 5) {
+                        console.log('⚠️ [Template 7] Buttons not ready, retrying in 200ms... (attempt ' + (retryCount + 1) + '/5)');
+                        setTimeout(() => {
+                            restoreAnswers(savedAnswers, retryCount + 1);
+                        }, 200);
+                    } else {
+                        console.warn('⚠️ [Template 7] Could not find button for saved answer after 5 retries:', userAnswer);
+                        console.warn('⚠️ [Template 7] Available buttons:', Array.from(document.querySelectorAll('.option-button')).map(btn => btn.dataset.value));
+                    }
+                }
+            }
+            
             // Function to save quiz results (like template 67)
             function saveQuizResults() {
                 // Get the selected answer
@@ -356,7 +424,27 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
 
             // Listen for messages from parent (Check button and quiz.get_answers)
             window.addEventListener('message', function(event) {
-                console.log('🔄 Received message:', event.data);
+                // Log all messages for debugging
+                console.log('🔄 [Template 7] Message received:', event.data);
+                console.log('🔄 [Template 7] Message type:', event.data?.type);
+                console.log('🔄 [Template 7] Event source:', event.source);
+                
+                // Handle restore answers request FIRST - accept from any source (parent, problem.html, etc.)
+                if (event.data && event.data.type === 'quiz.restore_answers') {
+                    console.log('✅ [Template 7] Matched quiz.restore_answers condition!');
+                    console.log('🔄 [Template 7] Received restore_answers request:', event.data.answers);
+                    console.log('🔄 [Template 7] Answers array:', event.data.answers);
+                    console.log('🔄 [Template 7] Calling restoreAnswers function...');
+                    try {
+                        restoreAnswers(event.data.answers);
+                        console.log('🔄 [Template 7] restoreAnswers function called successfully');
+                    } catch (error) {
+                        console.error('❌ [Template 7] Error in restoreAnswers:', error);
+                    }
+                    return; // Don't process further
+                } else {
+                    console.log('⚠️ [Template 7] Message type does not match quiz.restore_answers');
+                }
                 
                 // Handle JSChannel messages (from EdX)
                 if (event.data && event.data.method === 'JSInput::getGrade') {
@@ -718,7 +806,7 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
                 });
             }
             
-            // Send timer.start message after template loads (template 7 - no audio, start immediately)
+            // Send timer.start and quiz.ready message after template loads (template 7 - no audio, start immediately)
             function sendTimerStart() {
                 try {
                     if (window.parent) {
@@ -728,9 +816,17 @@ export const grammarSingleSelectTemplate7 = `<!DOCTYPE html>
                             unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
                         }, '*');
                         console.log('✅ Sent timer.start message to parent (template 7 - after load)');
+                        
+                        // Also send a ready message
+                        window.parent.postMessage({
+                            type: 'quiz.ready',
+                            templateId: 7,
+                            unitId: window.location.href.match(/unit[\/=]([^\/\?&]+)/)?.[1] || ''
+                        }, '*');
+                        console.log('✅ Sent quiz.ready message to parent (template 7 - after load)');
                     }
                 } catch (error) {
-                    console.error('Error sending timer.start message:', error);
+                    console.error('Error sending timer.start/quiz.ready message:', error);
                 }
             }
             

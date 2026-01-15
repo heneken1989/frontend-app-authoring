@@ -1,12 +1,15 @@
 // Function to convert furigana format from 車(くるま) to <ruby>車<rt>くるま</rt></ruby>
+// Also supports spaces: 何時 (なんじ) -> <ruby>何時<rt>なんじ</rt></ruby>
 function convertFurigana(text) {
     // First convert Japanese parentheses: 毎日（まいにち） -> <ruby>毎日<rt>まいにち</rt></ruby>
-    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)（([^）]+)）/g, function(match, p1, p2) {
-        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    // Also supports spaces: 何時 （なんじ） -> <ruby>何時<rt>なんじ</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)\s*（([^）]+)）/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2.trim() + '</rt></ruby>';
     });
     // Then convert regular parentheses: 車(くるま) -> <ruby>車<rt>くるま</rt></ruby>
-    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)\(([^)]+)\)/g, function(match, p1, p2) {
-        return '<ruby>' + p1 + '<rt>' + p2 + '</rt></ruby>';
+    // Also supports spaces: 何時 (なんじ) -> <ruby>何時<rt>なんじ</rt></ruby>
+    text = text.replace(/([一-龯ひらがなカタカナ0-9]+)\s*\(([^)]+)\)/g, function(match, p1, p2) {
+        return '<ruby>' + p1 + '<rt>' + p2.trim() + '</rt></ruby>';
     });
     return text;
 }
@@ -128,6 +131,10 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
             .replace(/\r/g, '')
             .trim();
         
+        // DEBUG: Log normalized result
+        console.log('🔍 Template 18 - Normalized options:', normalizedOptions);
+        console.log('🔍 Template 18 - Normalized contains semicolon (;)?', normalizedOptions.indexOf(';') !== -1);
+        
         // Helper function to split by both English and Japanese commas
         function splitByComma(text) {
             // Replace Japanese comma with English comma for consistent splitting
@@ -135,8 +142,11 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
             return normalized.split(',');
         }
         
+        // Check for semicolon (both English and Japanese) before normalization
+        var hasSemicolon = optionsForBlanks.indexOf(';') !== -1 || optionsForBlanks.indexOf('；') !== -1;
+        
         // If there's no semicolon, use first N words as correct answers in order, rest as wrong options
-        if (normalizedOptions.indexOf(';') === -1) {
+        if (!hasSemicolon) {
             var allOptions = splitByComma(normalizedOptions);
             for (var i = 0; i < allOptions.length; i++) {
                 allOptions[i] = allOptions[i].trim();
@@ -174,9 +184,15 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
             // Supports format: "は，か，と，の;あります，います，読（よ）みます，します;だから，では，それから，でも"
             // Also supports Japanese semicolon: "黒（くろ）くて,黒（くろ）い；すてきな,すてき"
             var semicolonSplit = normalizedOptions.split(';');
+            console.log('🔍 Template 18 - Semicolon split result:', semicolonSplit);
+            console.log('🔍 Template 18 - Number of groups:', semicolonSplit.length);
+            
             blanksOptionsArray = [];
             for (var m = 0; m < semicolonSplit.length; m++) {
-                var commaSplit = splitByComma(semicolonSplit[m]);
+                var group = semicolonSplit[m].trim();
+                if (!group) continue; // Skip empty groups
+                
+                var commaSplit = splitByComma(group);
                 var trimmedOptions = [];
                 for (var n = 0; n < commaSplit.length; n++) {
                     var trimmed = commaSplit[n].trim();
@@ -186,8 +202,10 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
                 }
                 if (trimmedOptions.length > 0) {
                     blanksOptionsArray.push(trimmedOptions);
+                    console.log('🔍 Template 18 - Group ' + (m + 1) + ' options:', trimmedOptions);
                 }
             }
+            console.log('🔍 Template 18 - Final blanksOptionsArray:', blanksOptionsArray);
         }
     }
 
@@ -648,12 +666,12 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         
         // Function to initialize dropdowns (extracted for reuse)
         function initializeDropdowns() {
-            var dropdowns = document.querySelectorAll('.custom-dropdown');
-            for (var j = 0; j < dropdowns.length; j++) {
-                var dropdown = dropdowns[j];
-                var button = dropdown.querySelector('.dropdown-button');
-                var options = dropdown.querySelectorAll('.dropdown-option');
-                var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
+        var dropdowns = document.querySelectorAll('.custom-dropdown');
+        for (var j = 0; j < dropdowns.length; j++) {
+            var dropdown = dropdowns[j];
+            var button = dropdown.querySelector('.dropdown-button');
+            var options = dropdown.querySelectorAll('.dropdown-option');
+            var blankNumber = parseInt(dropdown.getAttribute('data-blank-number')) - 1;
             
             // Toggle dropdown
             button.addEventListener('click', function() {
@@ -757,7 +775,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
                     }
                 });
             }
-        }
+            }
         }
         
         // Initialize dropdowns on page load

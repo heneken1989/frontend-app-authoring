@@ -336,9 +336,97 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
                 }
             }
 
+            // Function to restore saved answers
+            function restoreAnswers(savedAnswers, retryCount = 0) {
+                console.log('🔍 [Template 28] restoreAnswers called with:', savedAnswers, 'retryCount:', retryCount);
+                
+                if (!savedAnswers || !Array.isArray(savedAnswers) || savedAnswers.length === 0) {
+                    console.warn('⚠️ [Template 28] No saved answers to restore');
+                    return;
+                }
+                
+                // Get the first answer (template 28 has single select)
+                const savedAnswer = savedAnswers[0];
+                console.log('🔍 [Template 28] First saved answer:', savedAnswer);
+                
+                const userAnswer = typeof savedAnswer === 'object' ? savedAnswer.userAnswer : savedAnswer;
+                console.log('🔍 [Template 28] Extracted userAnswer:', userAnswer);
+                
+                if (!userAnswer || userAnswer.toString().trim() === '') {
+                    console.warn('⚠️ [Template 28] Empty user answer');
+                    return;
+                }
+                
+                console.log('🔄 [Template 28] Restoring saved answer:', userAnswer);
+                console.log('🔍 [Template 28] Looking for button with data-value="' + userAnswer + '"');
+                
+                // Find the button with matching data-value
+                const button = document.querySelector('.option-button[data-value="' + userAnswer + '"]');
+                console.log('🔍 [Template 28] Found button:', button);
+                
+                // Log all available buttons for debugging
+                const allButtons = document.querySelectorAll('.option-button');
+                console.log('🔍 [Template 28] All buttons count:', allButtons.length);
+                allButtons.forEach((btn, idx) => {
+                    console.log('🔍 [Template 28] Button ' + idx + ':', {
+                        dataValue: btn.dataset.value,
+                        text: btn.textContent.trim(),
+                        matches: btn.dataset.value === userAnswer
+                    });
+                });
+                
+                if (button) {
+                    // Remove selected from all buttons
+                    document.querySelectorAll('.option-button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    
+                    // Select the saved answer
+                    button.classList.add('selected');
+                    selectedOption = userAnswer;
+                    
+                    // Update state
+                    state.answer = JSON.stringify({ answer: userAnswer });
+                    
+                    console.log('✅ [Template 28] Successfully restored answer:', userAnswer);
+                    console.log('✅ [Template 28] Button selected, selectedOption:', selectedOption);
+                } else {
+                    // Retry if buttons not ready yet (max 5 retries, 200ms apart)
+                    if (retryCount < 5) {
+                        console.log('⚠️ [Template 28] Buttons not ready, retrying in 200ms... (attempt ' + (retryCount + 1) + '/5)');
+                        setTimeout(() => {
+                            restoreAnswers(savedAnswers, retryCount + 1);
+                        }, 200);
+                    } else {
+                        console.warn('⚠️ [Template 28] Could not find button for saved answer after 5 retries:', userAnswer);
+                        console.warn('⚠️ [Template 28] Available buttons:', Array.from(document.querySelectorAll('.option-button')).map(btn => btn.dataset.value));
+                    }
+                }
+            }
+
             // Listen for messages from parent (Check button and quiz.get_answers)
             window.addEventListener('message', function(event) {
-                console.log('🔄 Received message:', event.data);
+                // Log all messages for debugging
+                console.log('🔄 [Template 28] Message received:', event.data);
+                console.log('🔄 [Template 28] Message type:', event.data?.type);
+                console.log('🔄 [Template 28] Event source:', event.source);
+                
+                // Handle restore answers request FIRST - accept from any source (parent, problem.html, etc.)
+                if (event.data && event.data.type === 'quiz.restore_answers') {
+                    console.log('✅ [Template 28] Matched quiz.restore_answers condition!');
+                    console.log('🔄 [Template 28] Received restore_answers request:', event.data.answers);
+                    console.log('🔄 [Template 28] Answers array:', event.data.answers);
+                    console.log('🔄 [Template 28] Calling restoreAnswers function...');
+                    try {
+                        restoreAnswers(event.data.answers);
+                        console.log('🔄 [Template 28] restoreAnswers function called successfully');
+                    } catch (error) {
+                        console.error('❌ [Template 28] Error in restoreAnswers:', error);
+                    }
+                    return; // Don't process further
+                } else {
+                    console.log('⚠️ [Template 28] Message type does not match quiz.restore_answers');
+                }
                 
                 // Handle JSChannel messages (from EdX)
                 if (event.data && event.data.method === 'JSInput::getGrade') {
@@ -745,6 +833,12 @@ export const grammarSingleSelectTemplate = `<!DOCTYPE html>
                     selectedOption = this.dataset.value;
                 });
             });
+            
+            // Function to restore answers when DOM is ready (after a short delay to ensure buttons are rendered)
+            function attemptRestoreAnswers() {
+                // This will be called when restore message is received
+                // The restoreAnswers function will handle the actual restoration
+            }
 
 
             // Set up EdX bindings

@@ -1876,8 +1876,55 @@ def check_fun(e, ans):
 const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, onDownloadTemplate, onCreateUnit }) => {
   const [excelFile, setExcelFile] = useState(null);
   const [previewData, setPreviewData] = useState([]);
+  const [parsedQuizzes, setParsedQuizzes] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  // Max speed mode: run multiple creates in parallel.
+  // If Studio starts returning 429/5xx, lower this number.
+  const [bulkConcurrency] = useState(6);
+  const [bulkErrors, setBulkErrors] = useState([]);
+
+  // Run async tasks with limited concurrency (avoid overwhelming Studio/LMS)
+  const asyncPool = async (poolLimit, array, iteratorFn) => {
+    const ret = [];
+    const executing = [];
+    for (const item of array) {
+      const p = Promise.resolve().then(() => iteratorFn(item));
+      ret.push(p);
+      if (poolLimit <= array.length) {
+        const e = p.then(() => executing.splice(executing.indexOf(e), 1));
+        executing.push(e);
+        if (executing.length >= poolLimit) {
+          await Promise.race(executing);
+        }
+      }
+    }
+    return Promise.all(ret);
+  };
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const shouldRetry = (error) => {
+    const status = error?.response?.status;
+    return status === 429 || (status >= 500 && status <= 599);
+  };
+
+  const withRetry = async (fn, { maxAttempts = 3, baseDelayMs = 750 } = {}) => {
+    let attempt = 0;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      try {
+        return await fn();
+      } catch (err) {
+        attempt += 1;
+        if (attempt >= maxAttempts || !shouldRetry(err)) {
+          throw err;
+        }
+        const delay = baseDelayMs * Math.pow(2, attempt - 1);
+        await sleep(delay);
+      }
+    }
+  };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -1886,7 +1933,8 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
       try {
         const quizzes = await parseExcelFile(file);
         setPreviewData(quizzes.slice(0, 5)); // Show first 5 rows as preview
-        console.log('Parsed Excel data:', quizzes);
+        setParsedQuizzes(quizzes);
+        setBulkErrors([]);
       } catch (error) {
         console.error('Error parsing Excel file:', error);
         alert(`Error parsing Excel file: ${error.message}`);
@@ -1902,12 +1950,29 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
 
     setIsProcessing(true);
     try {
-      const quizzes = await parseExcelFile(excelFile);
+      const quizzes = parsedQuizzes && parsedQuizzes.length ? parsedQuizzes : await parseExcelFile(excelFile);
+      if (!parsedQuizzes || parsedQuizzes.length === 0) {
+        setParsedQuizzes(quizzes);
+      }
       setProgress({ current: 0, total: quizzes.length });
+      setBulkErrors([]);
+
+      // IMPORTANT: Preserve Excel order by creating units sequentially.
+      // Parallel creation causes Studio to interleave unit insertion.
+      let completed = 0;
+      const client = getAuthenticatedHttpClient();
+      const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
+      const formattedCourseId = courseIdMatch ? `course-v1:${courseIdMatch[1]}` : null;
+
+      // Pipeline: create units sequentially (order), but create problems/uploads concurrently (speed).
+      const problemTasks = [];
+      const problemConcurrency = 6;
+      const runProblemTasks = async () => {
+        await asyncPool(problemConcurrency, problemTasks, (fn) => fn());
+      };
 
       for (let i = 0; i < quizzes.length; i++) {
         const quiz = quizzes[i];
-        setProgress({ current: i + 1, total: quizzes.length });
 
         // Convert Excel data to quiz format
         // For template 18 and related IDs (grammar dropdown): Excel columns map as:
@@ -1978,7 +2043,11 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           endTime: parseFloat(quiz.endTime) || 0,
           timeSegmentsString: String(quiz.timeSegmentsString || quiz.timeSegments || quiz['startTime/endTime'] || ''), // Add timeSegmentsString with fallback
           timeLimit: parseInt(quiz.timeLimit) || 60, // Default to 60 seconds
-          published: quiz.published !== 'false',
+          // IMPORTANT: default to NOT publishing during bulk import.
+          // Publishing per quiz triggers a costly course publish call and can cause 500s.
+          // Bulk import speed mode: never publish during creation.
+          // Publishing is expensive and can trigger server errors when done repeatedly.
+          published: false,
           correctAnswers: String(quiz.correctAnswers || ''),
           wordBank: String(quiz.wordBank || ''),
           fixedWordsExplanation: String(quiz.fixedWordsExplanation || ''),
@@ -1997,105 +2066,178 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           }
         }
 
-        // Debug: Log the quiz data to check startTime and endTime
-        console.log(`Creating quiz ${i + 1}:`, {
-          unitTitle: quizData.unitTitle,
-          startTime: quizData.startTime,
-          endTime: quizData.endTime,
-          timeSegmentsString: quizData.timeSegmentsString,
-          audioFile: quizData.audioFile,
-          imageFile: quizData.imageFile,
-          images: quizData.images, // Add images to debug log
-          imagesFromExcel: quiz.images, // Original value from Excel
-          imagesType: typeof quizData.images,
-          problemTypeId: quizData.problemTypeId,
-          originalStartTime: quiz.startTime,
-          originalEndTime: quiz.endTime,
-          hasStartTimeEndTime: !!quiz['startTime/endTime'],
-          startTimeEndTimeValue: quiz['startTime/endTime'],
-          hasTimeSegments: !!quiz.timeSegments,
-          timeSegmentsValue: quiz.timeSegments,
-          // Special handling for template 63, 65, and 67
-          isTemplate63: quizData.problemTypeId === 63,
-          isTemplate65: quizData.problemTypeId === 65,
-          isTemplate67: quizData.problemTypeId === 67,
-          template63TimeSegments: quizData.problemTypeId === 63 ? quizData.timeSegmentsString : 'N/A',
-          template65TimeSegments: quizData.problemTypeId === 65 ? quizData.timeSegmentsString : 'N/A',
-          template67TimeSegments: quizData.problemTypeId === 67 ? quizData.timeSegmentsString : 'N/A',
-          // Special handling for template 311
-          isTemplate311: quizData.problemTypeId === 311,
-          template311Images: quizData.problemTypeId === 311 ? quizData.images : 'N/A',
-          template311QuestionText: quizData.problemTypeId === 311 ? quizData.questionText : 'N/A',
-          template311ParagraphText: quizData.problemTypeId === 311 ? quizData.paragraphText : 'N/A',
-          template311ParagraphTextLength: quizData.problemTypeId === 311 ? (quizData.paragraphText ? quizData.paragraphText.length : 0) : 'N/A'
-        });
+        // 1) Create unit sequentially to preserve Excel order
+        let unitId;
+        try {
+          unitId = await withRetry(async () => {
+            if (onCreateUnit) {
+              const created = await onCreateUnit(quizData.unitTitle);
+              if (!created) throw new Error('Failed to create unit');
+              return created;
+            }
+            const response = await client.post(
+              `${getConfig().STUDIO_BASE_URL}/xblock/`,
+              {
+                metadata: {
+                  display_name: quizData.unitTitle,
+                  category: 'vertical'
+                },
+                category: 'vertical',
+                parent_locator: courseId
+              },
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                }
+              }
+            );
+            return response.data.locator;
+          });
+        } catch (err) {
+          const status = err?.response?.status;
+          const detail =
+            err?.response?.data?.error ||
+            err?.response?.data?.message ||
+            err?.response?.data?.detail ||
+            (typeof err?.response?.data === 'string' ? err.response.data : '') ||
+            err?.message ||
+            'Unknown error';
+          setBulkErrors(prev => ([
+            ...prev,
+            { row: i + 2, unitTitle: String(quizData.unitTitle || ''), status, detail }
+          ]));
+          completed += 1;
+          setProgress({ current: completed, total: quizzes.length });
+          continue;
+        }
 
-        // Create quiz using existing createQuiz function
-        await createQuiz({
-          courseId,
-          subsectionId: courseId,
-          quizData,
-          onFileCreated: async (files) => {
-            try {
-              const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
-              if (!courseIdMatch) {
+        // 2) Create/upload problem concurrently (pipeline)
+        problemTasks.push(async () => {
+          try {
+            await withRetry(async () => {
+              const problemTypeId = parseInt(quizData?.problemTypeId, 10) || TEMPLATE_IDS.FILL_IN_BLANK;
+              const htmlContent = generateQuizTemplate(problemTypeId, quizData);
+              const htmlFileName = `quiz_${Date.now()}_${i}.html`;
+
+              const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
+              const htmlFile = new File([htmlBlob], htmlFileName, { type: 'text/html' });
+
+              // Upload the HTML asset (best-effort but required for JSInput)
+              if (!formattedCourseId) {
                 throw new Error('Invalid course ID format');
               }
-              const formattedCourseId = `course-v1:${courseIdMatch[1]}`;
-              
-              for (const file of files) {
-                await dispatch(addAssetFile(formattedCourseId, file, false));
-                await new Promise(resolve => setTimeout(resolve, 500));
-              }
-              return true;
-            } catch (error) {
-              console.error('Error uploading files:', error);
-              throw error;
-            }
-          },
-          onCreateUnit: async (title) => {
-            try {
-              if (onCreateUnit) {
-                // Use the parent component's onCreateUnit function
-                const unitId = await onCreateUnit(title);
-                if (!unitId) {
-                  throw new Error('Failed to create unit');
-                }
-                return unitId;
-              } else {
-                // Fallback to direct API call if onCreateUnit is not provided
-                const client = getAuthenticatedHttpClient();
-                const response = await client.post(
-                  `${getConfig().STUDIO_BASE_URL}/xblock/`,
-                  {
-                    metadata: {
-                      display_name: title,
-                      category: 'vertical'
-                    },
-                    category: 'vertical',
-                    parent_locator: courseId
+              await dispatch(addAssetFile(formattedCourseId, htmlFile, false));
+
+              const problemContent = `<problem>
+  <script type="loncapa/python">
+import json
+def check_fun(e, ans):
+    try:
+        response = json.loads(ans)
+        state_data = json.loads(response.get("state", "{}"))
+        answer_data = json.loads(response["answer"]) 
+        answer = answer_data["edxResult"]
+        edx_grade = answer_data["edxScore"]
+        edx_message = answer_data["edxMessage"]
+        state_data['showAnswer'] = True
+        return {
+            'input_list': [
+                { 'ok': answer, 'msg': edx_message, 'grade_decimal': edx_grade}
+            ],
+            'state': json.dumps(state_data)
+        }
+    except Exception as err:
+        return {'input_list': [{'ok': False, 'msg': f"Error: {str(err)}", 'grade_decimal': 0}]}
+  </script>
+  <!-- paragraph_text: ${quizData.paragraphText} -->
+  <customresponse cfn="check_fun" rerandomize="never" show_answer_after_attempts="1" max_attempts="unlimited">
+    <jsinput 
+      gradefn="getGrade" 
+      get_statefn="getState" 
+      set_statefn="setState" 
+      initial_state='{"showAnswer": false}' 
+      width="100%" 
+      height="620px" 
+      html_file="/static/${htmlFileName}" 
+      sop="false" 
+      id="paragraph_quiz_input" 
+      title="${quizData.unitTitle}"
+    />
+  </customresponse>
+</problem>`;
+
+              const problemResponse = await client.post(
+                `${getConfig().STUDIO_BASE_URL}/xblock/`,
+                {
+                  metadata: {
+                    display_name: String(quizData.unitTitle),
+                    visible_to_staff_only: !quizData.published
                   },
-                  {
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Accept': 'application/json'
-                    }
+                  data: problemContent,
+                  category: 'problem',
+                  parent_locator: unitId
+                },
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                   }
-                );
-                return response.data.locator;
+                }
+              );
+
+              const problemId = problemResponse?.data?.locator;
+              if (problemResponse.status !== 200 || !problemId) {
+                throw new Error('Failed to create problem');
               }
-            } catch (error) {
-              console.error('Error creating unit:', error);
-              throw error;
-            }
+
+              // Best-effort: update time_limit
+              await client.put(
+                `${getConfig().STUDIO_BASE_URL}/xblock/${problemId}`,
+                {
+                  metadata: {
+                    display_name: String(quizData.unitTitle),
+                    visible_to_staff_only: !quizData.published,
+                    time_limit: parseInt(quizData.timeLimit)
+                  },
+                  data: problemContent
+                },
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  }
+                }
+              );
+            });
+          } catch (err) {
+            const status = err?.response?.status;
+            const detail =
+              err?.response?.data?.error ||
+              err?.response?.data?.message ||
+              err?.response?.data?.detail ||
+              (typeof err?.response?.data === 'string' ? err.response.data : '') ||
+              err?.message ||
+              'Unknown error';
+            setBulkErrors(prev => ([
+              ...prev,
+              { row: i + 2, unitTitle: String(quizData.unitTitle || ''), status, detail }
+            ]));
+          } finally {
+            completed += 1;
+            setProgress({ current: completed, total: quizzes.length });
           }
         });
-
-        // Add delay between quizzes to avoid overwhelming the server
-        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      alert(`Successfully created ${quizzes.length} quizzes!`);
+      // Wait for all problems/uploads to finish
+      await runProblemTasks();
+
+      if (bulkErrors.length > 0) {
+        alert(`Bulk import completed with errors. Success: ${quizzes.length - bulkErrors.length}, Failed: ${bulkErrors.length}.`);
+      } else {
+        alert(`Successfully created ${quizzes.length} quizzes!`);
+      }
       onClose();
     } catch (error) {
       console.error('Error during bulk import:', error);

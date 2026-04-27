@@ -1966,7 +1966,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
 
       // Pipeline: create units sequentially (order), but create problems/uploads concurrently (speed).
       const problemTasks = [];
-      const problemConcurrency = 6;
+      const problemConcurrency = 10;
       const runProblemTasks = async () => {
         await asyncPool(problemConcurrency, problemTasks, (fn) => fn());
       };

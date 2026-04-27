@@ -389,7 +389,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
         .instructions {
             font-family: 'Noto Serif JP', 'Noto Sans JP', 'Kosugi Maru', 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
             font-size: 1.2rem;
-            font-weight: bold;
+            font-weight: bold !important;
             line-height: 1.5;
             text-align: left;
             background-color: white;

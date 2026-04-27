@@ -44,6 +44,7 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
             margin: 0 0 20px 0;
             padding: 5px 10px;
             background-color: #fff;
+            transform: translateX(-80px);
             word-wrap: break-word;
             overflow-wrap: break-word;
             word-break: keep-all;
@@ -236,6 +237,9 @@ export const grammarSingleSelectTemplate29 = `<!DOCTYPE html>
             .container {
                 padding: 1rem;
                 gap: 10px;
+            }
+            .instructions {
+                transform: none;
             }
             .content-wrapper {
                 gap: 8px;

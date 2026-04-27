@@ -48,12 +48,16 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
             font-size: 1.2rem;
             font-weight: bold;
             line-height: 1.5;
-            text-align: left;
+            text-align: center;
             color: #333;
             font-style: italic;
             margin: 0 0 20px 0;
             padding: 5px 10px;
             background-color: #fff;
+            display: block;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
             word-wrap: break-word;
             overflow-wrap: break-word;
             word-break: keep-all;

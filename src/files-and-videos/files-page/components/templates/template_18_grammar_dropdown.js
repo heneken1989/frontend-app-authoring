@@ -226,11 +226,9 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
     
     if (paragraphText && paragraphText.trim()) {
         // paragraphText contains content with ー placeholders
+        // Preserve original structure: newlines, indentation, and intentional spacing.
+        // Do NOT trim or filter out empty lines.
         var answerLines = paragraphText.split('\n');
-        for (var i = 0; i < answerLines.length; i++) {
-            answerLines[i] = answerLines[i].trim();
-        }
-        answerLines = answerLines.filter(function(line) { return line; });
         
         var processedAnswerLines = [];
         for (var j = 0; j < answerLines.length; j++) {
@@ -275,7 +273,12 @@ export const getGrammarDropdownTemplate = function(questionText, optionsForBlank
         
         var answerItems = [];
         for (var m = 0; m < processedAnswerLines.length; m++) {
-            answerItems.push('<div class="answer-item">' + processedAnswerLines[m] + '</div>');
+            // Keep empty lines visible so paragraph formatting matches input.
+            if (processedAnswerLines[m] === '') {
+                answerItems.push('<div class="answer-item">&nbsp;</div>');
+            } else {
+                answerItems.push('<div class="answer-item">' + processedAnswerLines[m] + '</div>');
+            }
         }
         answersList = answerItems.join('\n');
     }
@@ -539,6 +542,14 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
             color: #333; 
             display: block;
             letter-spacing: 0.4px;
+            /* Keep paragraph structure; prefer wrapping at spaces (like instructions). */
+            white-space: pre-wrap;
+            white-space: break-spaces;
+            tab-size: 4;
+            overflow-wrap: normal;
+            /* Do not break inside Japanese “words”; only break at whitespace */
+            word-break: keep-all;
+            line-break: strict;
         }
         .answer-item .custom-dropdown {
             vertical-align: middle;
@@ -550,7 +561,7 @@ export const grammarDropdownTemplate = `<!DOCTYPE html>
         .dropdown-button rt {
             vertical-align: baseline;
         }
-        .answers-list { padding: 5px; background: white; border-radius: 2px; margin: 5px 0; }
+        .answers-list { padding: 5px; background: white; border-radius: 2px; margin: 5px 0; white-space: pre-wrap; white-space: break-spaces; tab-size: 4; overflow-wrap: normal; word-break: keep-all; line-break: strict; }
         /* Furigana (Ruby) styling - Simple approach like template_28 */
         ruby {
             font-size: 1em;

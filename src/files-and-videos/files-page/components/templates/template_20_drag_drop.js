@@ -530,6 +530,20 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
 
             const correctAnswers = {{CORRECT_ANSWERS}};
 
+            /** Visible text for grading: answers are stored as innerHTML (furigana) but correctAnswers are often plain. */
+            function getAnswerComparableText(value) {
+                if (value == null || value === '') {
+                    return '';
+                }
+                var div = document.createElement('div');
+                div.innerHTML = String(value);
+                return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+            }
+
+            function answersMatch(stored, correct) {
+                return getAnswerComparableText(stored) === getAnswerComparableText(correct);
+            }
+
             // Initialize EdX integration
             var channel;
             if (window.parent !== window) {
@@ -696,7 +710,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                     const correctAnswer = correctAnswers[blankId];
                     const blank = document.getElementById(blankId);
                     
-                    if (userAnswer === correctAnswer) {
+                    if (answersMatch(userAnswer, correctAnswer)) {
                         correctCount++;
                     }
                 }
@@ -741,7 +755,7 @@ const dragDropQuizTemplateString = `<!DOCTYPE html>
                         answerContainer.className = 'answer-container';
                         
                         if (userAnswer) {
-                            if (userAnswer === correctAnswer) {
+                            if (answersMatch(userAnswer, correctAnswer)) {
                                 // User answered correctly - only show user answer (green)
                                 answerContainer.innerHTML = '<span class="quiz-word correct">' + userAnswer + '</span>';
                             } else {

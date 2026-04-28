@@ -1968,9 +1968,41 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
 
       // Pipeline: create units sequentially (order), but create problems/uploads concurrently (speed).
       const problemTasks = [];
-      const problemConcurrency = 10;
+      // Reliability mode: keep this modest to avoid rate limits / overload.
+      const problemConcurrency = 4;
       const runProblemTasks = async () => {
         await asyncPool(problemConcurrency, problemTasks, (fn) => fn());
+      };
+
+      const getUniqueSuffix = () => {
+        try {
+          // Modern browsers
+          // eslint-disable-next-line no-undef
+          if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+        } catch (e) {
+          // ignore
+        }
+        return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      };
+
+      const waitForStaticFile = async (staticPath, { attempts = 6, baseDelayMs = 250 } = {}) => {
+        // Some deployments are eventually consistent for newly-uploaded assets.
+        for (let attempt = 1; attempt <= attempts; attempt++) {
+          try {
+            const res = await fetch(`${staticPath}?cb=${Date.now()}_${attempt}`, { method: 'HEAD' });
+            if (res.ok) return true;
+            // Some servers don't allow HEAD; try GET quickly.
+            if (res.status === 405) {
+              const resGet = await fetch(`${staticPath}?cb=${Date.now()}_${attempt}`, { method: 'GET' });
+              if (resGet.ok) return true;
+            }
+          } catch (e) {
+            // ignore and retry
+          }
+          // eslint-disable-next-line no-await-in-loop
+          await sleep(baseDelayMs * Math.pow(2, attempt - 1));
+        }
+        throw new Error(`Static asset not available yet: ${staticPath}`);
       };
 
       for (let i = 0; i < quizzes.length; i++) {
@@ -2120,7 +2152,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
             await withRetry(async () => {
               const problemTypeId = parseInt(quizData?.problemTypeId, 10) || TEMPLATE_IDS.FILL_IN_BLANK;
               const htmlContent = generateQuizTemplate(problemTypeId, quizData);
-              const htmlFileName = `quiz_${Date.now()}_${i}.html`;
+              const htmlFileName = `quiz_${i}_${getUniqueSuffix()}.html`;
 
               const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
               const htmlFile = new File([htmlBlob], htmlFileName, { type: 'text/html' });
@@ -2131,7 +2163,12 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               }
               // IMPORTANT: addAssetFile thunk swallows errors (doesn't throw).
               // Use addAsset directly so failures don't create "blank" quizzes (html_file missing).
-              await addAsset(formattedCourseId, htmlFile);
+              const uploadResult = await addAsset(formattedCourseId, htmlFile);
+              const uploadedName = uploadResult?.asset?.displayName || htmlFileName;
+
+              // Wait until the asset is actually readable via /static/ before creating the problem.
+              // This prevents intermittent blank quizzes when the asset isn't yet available.
+              await waitForStaticFile(`/static/${uploadedName}`);
 
               const problemContent = `<problem>
   <script type="loncapa/python">
@@ -2163,7 +2200,7 @@ def check_fun(e, ans):
       initial_state='{"showAnswer": false}' 
       width="100%" 
       height="620px" 
-      html_file="/static/${htmlFileName}" 
+      html_file="/static/${uploadedName}" 
       sop="false" 
       id="paragraph_quiz_input" 
       title="${quizData.unitTitle}"

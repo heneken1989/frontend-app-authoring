@@ -28,6 +28,7 @@ import { getConfig } from '@edx/frontend-platform';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import { useDispatch } from 'react-redux';
 import { addAssetFile } from '../data/thunks';
+import { addAsset } from '../data/api';
 import { highlightFillStyleTemplate } from './templates/template_41_highlight_japanese';
 import { getListenSingleChoiceTemplate } from './templates/template_39_listen_single_choice';
 import { getListenSingleChoiceNoImageTemplate } from './templates/template_40_listen_single_choice_no_image';
@@ -1883,6 +1884,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
   // If Studio starts returning 429/5xx, lower this number.
   const [bulkConcurrency] = useState(6);
   const [bulkErrors, setBulkErrors] = useState([]);
+  const [failFast] = useState(true);
 
   // Run async tasks with limited concurrency (avoid overwhelming Studio/LMS)
   const asyncPool = async (poolLimit, array, iteratorFn) => {
@@ -1909,7 +1911,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
     return status === 429 || (status >= 500 && status <= 599);
   };
 
-  const withRetry = async (fn, { maxAttempts = 3, baseDelayMs = 750 } = {}) => {
+  const withRetry = async (fn, { maxAttempts = 6, baseDelayMs = 500 } = {}) => {
     let attempt = 0;
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -2127,7 +2129,9 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
               if (!formattedCourseId) {
                 throw new Error('Invalid course ID format');
               }
-              await dispatch(addAssetFile(formattedCourseId, htmlFile, false));
+              // IMPORTANT: addAssetFile thunk swallows errors (doesn't throw).
+              // Use addAsset directly so failures don't create "blank" quizzes (html_file missing).
+              await addAsset(formattedCourseId, htmlFile);
 
               const problemContent = `<problem>
   <script type="loncapa/python">
@@ -2223,6 +2227,9 @@ def check_fun(e, ans):
               ...prev,
               { row: i + 2, unitTitle: String(quizData.unitTitle || ''), status, detail }
             ]));
+            if (failFast) {
+              throw err;
+            }
           } finally {
             completed += 1;
             setProgress({ current: completed, total: quizzes.length });
@@ -2231,7 +2238,12 @@ def check_fun(e, ans):
       }
 
       // Wait for all problems/uploads to finish
-      await runProblemTasks();
+      try {
+        await runProblemTasks();
+      } catch (err) {
+        // Stop immediately so the import doesn't produce missing/blank quizzes.
+        throw err;
+      }
 
       if (bulkErrors.length > 0) {
         alert(`Bulk import completed with errors. Success: ${quizzes.length - bulkErrors.length}, Failed: ${bulkErrors.length}.`);

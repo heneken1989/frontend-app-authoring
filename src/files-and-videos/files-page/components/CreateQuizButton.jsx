@@ -1966,13 +1966,8 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
       const courseIdMatch = courseId.match(/block-v1:([^+]+\+[^+]+\+[^+]+)/);
       const formattedCourseId = courseIdMatch ? `course-v1:${courseIdMatch[1]}` : null;
 
-      // Pipeline: create units sequentially (order), but create problems/uploads concurrently (speed).
-      const problemTasks = [];
-      // Reliability mode: keep this modest to avoid rate limits / overload.
-      const problemConcurrency = 4;
-      const runProblemTasks = async () => {
-        await asyncPool(problemConcurrency, problemTasks, (fn) => fn());
-      };
+      // Reliability mode (no missing quizzes):
+      // Create each row end-to-end (upload asset -> create problem -> update) before moving on.
 
       const getUniqueSuffix = () => {
         try {
@@ -2146,31 +2141,25 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           continue;
         }
 
-        // 2) Create/upload problem concurrently (pipeline)
-        problemTasks.push(async () => {
-          try {
-            await withRetry(async () => {
-              const problemTypeId = parseInt(quizData?.problemTypeId, 10) || TEMPLATE_IDS.FILL_IN_BLANK;
-              const htmlContent = generateQuizTemplate(problemTypeId, quizData);
-              const htmlFileName = `quiz_${i}_${getUniqueSuffix()}.html`;
+        // 2) Create/upload problem synchronously to guarantee completeness per row
+        try {
+          await withRetry(async () => {
+            const problemTypeId = parseInt(quizData?.problemTypeId, 10) || TEMPLATE_IDS.FILL_IN_BLANK;
+            const htmlContent = generateQuizTemplate(problemTypeId, quizData);
+            const htmlFileName = `quiz_${i}_${getUniqueSuffix()}.html`;
 
-              const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
-              const htmlFile = new File([htmlBlob], htmlFileName, { type: 'text/html' });
+            const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
+            const htmlFile = new File([htmlBlob], htmlFileName, { type: 'text/html' });
 
-              // Upload the HTML asset (best-effort but required for JSInput)
-              if (!formattedCourseId) {
-                throw new Error('Invalid course ID format');
-              }
-              // IMPORTANT: addAssetFile thunk swallows errors (doesn't throw).
-              // Use addAsset directly so failures don't create "blank" quizzes (html_file missing).
-              const uploadResult = await addAsset(formattedCourseId, htmlFile);
-              const uploadedName = uploadResult?.asset?.displayName || htmlFileName;
+            if (!formattedCourseId) {
+              throw new Error('Invalid course ID format');
+            }
 
-              // Wait until the asset is actually readable via /static/ before creating the problem.
-              // This prevents intermittent blank quizzes when the asset isn't yet available.
-              await waitForStaticFile(`/static/${uploadedName}`);
+            const uploadResult = await addAsset(formattedCourseId, htmlFile);
+            const uploadedName = uploadResult?.asset?.displayName || htmlFileName;
+            await waitForStaticFile(`/static/${uploadedName}`);
 
-              const problemContent = `<problem>
+            const problemContent = `<problem>
   <script type="loncapa/python">
 import json
 def check_fun(e, ans):
@@ -2208,78 +2197,68 @@ def check_fun(e, ans):
   </customresponse>
 </problem>`;
 
-              const problemResponse = await client.post(
-                `${getConfig().STUDIO_BASE_URL}/xblock/`,
-                {
-                  metadata: {
-                    display_name: String(quizData.unitTitle),
-                    visible_to_staff_only: !quizData.published
-                  },
-                  data: problemContent,
-                  category: 'problem',
-                  parent_locator: unitId
+            const problemResponse = await client.post(
+              `${getConfig().STUDIO_BASE_URL}/xblock/`,
+              {
+                metadata: {
+                  display_name: String(quizData.unitTitle),
+                  visible_to_staff_only: !quizData.published
                 },
-                {
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                  }
+                data: problemContent,
+                category: 'problem',
+                parent_locator: unitId
+              },
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
                 }
-              );
-
-              const problemId = problemResponse?.data?.locator;
-              if (problemResponse.status !== 200 || !problemId) {
-                throw new Error('Failed to create problem');
               }
+            );
 
-              // Best-effort: update time_limit
-              await client.put(
-                `${getConfig().STUDIO_BASE_URL}/xblock/${problemId}`,
-                {
-                  metadata: {
-                    display_name: String(quizData.unitTitle),
-                    visible_to_staff_only: !quizData.published,
-                    time_limit: parseInt(quizData.timeLimit)
-                  },
-                  data: problemContent
-                },
-                {
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                  }
-                }
-              );
-            });
-          } catch (err) {
-            const status = err?.response?.status;
-            const detail =
-              err?.response?.data?.error ||
-              err?.response?.data?.message ||
-              err?.response?.data?.detail ||
-              (typeof err?.response?.data === 'string' ? err.response.data : '') ||
-              err?.message ||
-              'Unknown error';
-            setBulkErrors(prev => ([
-              ...prev,
-              { row: i + 2, unitTitle: String(quizData.unitTitle || ''), status, detail }
-            ]));
-            if (failFast) {
-              throw err;
+            const problemId = problemResponse?.data?.locator;
+            if (problemResponse.status !== 200 || !problemId) {
+              throw new Error('Failed to create problem');
             }
-          } finally {
-            completed += 1;
-            setProgress({ current: completed, total: quizzes.length });
-          }
-        });
-      }
 
-      // Wait for all problems/uploads to finish
-      try {
-        await runProblemTasks();
-      } catch (err) {
-        // Stop immediately so the import doesn't produce missing/blank quizzes.
-        throw err;
+            await client.put(
+              `${getConfig().STUDIO_BASE_URL}/xblock/${problemId}`,
+              {
+                metadata: {
+                  display_name: String(quizData.unitTitle),
+                  visible_to_staff_only: !quizData.published,
+                  time_limit: parseInt(quizData.timeLimit)
+                },
+                data: problemContent
+              },
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                }
+              }
+            );
+          });
+        } catch (err) {
+          const status = err?.response?.status;
+          const detail =
+            err?.response?.data?.error ||
+            err?.response?.data?.message ||
+            err?.response?.data?.detail ||
+            (typeof err?.response?.data === 'string' ? err.response.data : '') ||
+            err?.message ||
+            'Unknown error';
+          setBulkErrors(prev => ([
+            ...prev,
+            { row: i + 2, unitTitle: String(quizData.unitTitle || ''), status, detail }
+          ]));
+          if (failFast) {
+            throw err;
+          }
+        } finally {
+          completed += 1;
+          setProgress({ current: completed, total: quizzes.length });
+        }
       }
 
       if (bulkErrors.length > 0) {

@@ -6,6 +6,24 @@ const ListenSingleChoiceForm = ({ quizData, setQuizData }) => {
   return (
     <>
       <Form.Group>
+        <Form.Label>Title (optional)</Form.Label>
+        <Form.Control
+          as="textarea"
+          rows={2}
+          value={quizData.title || ''}
+          onChange={(e) => {
+            setQuizData(prev => ({
+              ...prev,
+              title: e.target.value
+            }));
+          }}
+          placeholder="Optional title shown above the question text in bold."
+        />
+        <Form.Text>
+          If provided, displays above the question text with the same style but bold.
+        </Form.Text>
+      </Form.Group>
+      <Form.Group>
         <Form.Label>Question Text</Form.Label>
         <Form.Control
           as="textarea"
@@ -57,6 +75,25 @@ const ListenSingleChoiceForm = ({ quizData, setQuizData }) => {
         <Form.Text>
           This text will be shown as the script (スクリプト) after the user submits their answer.
           Text in quotes ("...") will be shown in red.
+        </Form.Text>
+      </Form.Group>
+      <Form.Group>
+        <Form.Label>Countdown Time (seconds)</Form.Label>
+        <Form.Control
+          type="number"
+          min="0"
+          value={quizData.countdownTime === '' || quizData.countdownTime === undefined ? 10 : quizData.countdownTime}
+          onChange={(e) => {
+            const n = parseInt(e.target.value, 10);
+            setQuizData(prev => ({
+              ...prev,
+              countdownTime: Number.isNaN(n) || n < 0 ? 10 : n,
+            }));
+          }}
+          placeholder="10"
+        />
+        <Form.Text>
+          Seconds to wait before audio starts playing. Default is 10 seconds. Set to 0 to start immediately.
         </Form.Text>
       </Form.Group>
       <Form.Group>

@@ -49,6 +49,25 @@ const HighlightJapaneseForm = ({ quizData, setQuizData }) => {
         </Form.Text>
       </Form.Group>
       <Form.Group>
+        <Form.Label>Countdown Time (seconds)</Form.Label>
+        <Form.Control
+          type="number"
+          min="0"
+          value={quizData.countdownTime === '' || quizData.countdownTime === undefined ? 5 : quizData.countdownTime}
+          onChange={(e) => {
+            const n = parseInt(e.target.value, 10);
+            setQuizData(prev => ({
+              ...prev,
+              countdownTime: Number.isNaN(n) || n < 0 ? 5 : n,
+            }));
+          }}
+          placeholder="5"
+        />
+        <Form.Text>
+          Seconds to wait before audio starts playing. Default is 5 seconds. Set to 0 to start immediately.
+        </Form.Text>
+      </Form.Group>
+      <Form.Group>
         <Form.Label>Instructions</Form.Label>
         <Form.Control
           as="textarea"

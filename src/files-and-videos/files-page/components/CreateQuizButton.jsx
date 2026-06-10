@@ -108,6 +108,12 @@ const addSpacesAfterSpecialChars = (text) => {
 
 
 // Excel parsing function
+const normalizeCountdownSeconds = (value, defaultValue = 10) => {
+  const n = parseInt(value, 10);
+  if (Number.isNaN(n) || n < 0) return defaultValue;
+  return n;
+};
+
 const parseExcelFile = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -139,6 +145,14 @@ const parseExcelFile = (file) => {
               let finalHeader = normalizedHeader;
               if (normalizedLower === 'images' || normalizedLower === 'image' || normalizedLower === 'imageurls') {
                 finalHeader = 'images';
+              } else if (
+                normalizedLower === 'countdown time'
+                || normalizedLower === 'countdowntime'
+                || normalizedLower === 'countdown'
+                || normalizedLower === 'cowndown time'
+                || normalizedLower === 'cowndowntime'
+              ) {
+                finalHeader = 'countdownTime';
               }
               
               quiz[finalHeader] = row[colIndex];
@@ -931,7 +945,8 @@ const generateQuizTemplate = (templateId, quizData) => {
             .replace('{{AUDIO_FILE}}', quizData.audioFile || '')
             .replace('{{START_TIME}}', quizData.startTime || 0)
             .replace('{{END_TIME}}', quizData.endTime || 0)
-            .replace('{{TIME_SEGMENTS}}', quizData.timeSegmentsString || '');
+            .replace('{{TIME_SEGMENTS}}', quizData.timeSegmentsString || '')
+            .replace(/\{\{COUNTDOWN_SECONDS\}\}/g, String(normalizeCountdownSeconds(quizData.countdownTime, 5)));
 
       case TEMPLATE_IDS.ID45_LISTEN_HIGHTLIGHT: // Highlight Word Quiz (Japanese) - ID 45
         const correctWords45 = quizData.fixedWordsExplanation.split(',')
@@ -970,7 +985,8 @@ const generateQuizTemplate = (templateId, quizData) => {
             .replace('{{AUDIO_FILE}}', quizData.audioFile || '')
             .replace('{{START_TIME}}', quizData.startTime || 0)
             .replace('{{END_TIME}}', quizData.endTime || 0)
-            .replace('{{TIME_SEGMENTS}}', quizData.timeSegmentsString || '');
+            .replace('{{TIME_SEGMENTS}}', quizData.timeSegmentsString || '')
+            .replace(/\{\{COUNTDOWN_SECONDS\}\}/g, '5');
 
       case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE: // Listen and Choose Quiz
       // Use timeSegmentsString if available, otherwise convert startTime and endTime
@@ -992,7 +1008,9 @@ const generateQuizTemplate = (templateId, quizData) => {
         timeSegments39,
         processedInstructions39,
         processedScriptText39,
-        quizData.imageFile || ''
+        quizData.imageFile || '',
+        normalizeCountdownSeconds(quizData.countdownTime, 10),
+        quizData.title || ''
       );
 
       case TEMPLATE_IDS.ID47_LISTEN_SINGLE_CHOICE: // Listen and Choose Quiz
@@ -1015,7 +1033,9 @@ const generateQuizTemplate = (templateId, quizData) => {
           timeSegments47,
           processedInstructions47,
           processedScriptText47,
-          quizData.imageFile || ''
+          quizData.imageFile || '',
+          10,
+          quizData.title || ''
         );
 
       case TEMPLATE_IDS.ID43_LISTEN_FILL_BLANK_2: // Listen and Choose Quiz
@@ -1038,7 +1058,9 @@ const generateQuizTemplate = (templateId, quizData) => {
           timeSegments43,
           processedInstructions43,
           processedScriptText43,
-          quizData.imageFile || ''
+          quizData.imageFile || '',
+          10,
+          quizData.title || ''
         );
 
     case TEMPLATE_IDS.LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
@@ -1059,7 +1081,9 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.audioFile || '',
         timeSegments,
         processedInstructions40,
-        quizData.scriptText || '' // Pass original scriptText without furigana processing
+        quizData.scriptText || '', // Pass original scriptText without furigana processing
+        normalizeCountdownSeconds(quizData.countdownTime, 5),
+        quizData.title || ''
       );
     
     case TEMPLATE_IDS.ID44_LISTEN_SINGLE_CHOICE_NO_IMAGE: // Listen and Choose Quiz (No Image)
@@ -1080,7 +1104,9 @@ const generateQuizTemplate = (templateId, quizData) => {
         quizData.audioFile || '',
         timeSegments44,
         processedInstructions44,
-        quizData.scriptText || '' // Pass original scriptText without furigana processing
+        quizData.scriptText || '', // Pass original scriptText without furigana processing
+        5,
+        quizData.title || ''
       );
 
     case TEMPLATE_IDS.LISTEN_WITH_IMAGE_MULTIPLE_DIFFERENT_BLANK_OPTIONS:
@@ -2021,6 +2047,7 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
         const quizData = {
           problemTypeId: parseInt(quiz.problemTypeId) || 39, // Default to ID 39
           unitTitle: String(quiz.unitTitle || `Quiz ${i + 1}`),
+          title: String(quiz.title || ''),
           // For grammar dropdown templates (18, 19, 6, 21, 23, 24, 26, 30, 62, 5, 10):
           // - questionText from Excel → paragraphText (content with ー placeholders)
           // - blankOptions from Excel → answerContent (dropdown options)
@@ -2084,7 +2111,10 @@ const BulkImportModal = ({ isOpen, onClose, onImport, intl, courseId, dispatch, 
           // questionText contains the questions, paragraphText contains the reading passage
           // Note: questionText is already mapped above based on template type
           words: String(quiz.words || ''),
-          dropZones: String(quiz.dropZones || '[]')
+          dropZones: String(quiz.dropZones || '[]'),
+          countdownTime: quiz.countdownTime !== undefined && quiz.countdownTime !== null && String(quiz.countdownTime).trim() !== ''
+            ? String(quiz.countdownTime).trim()
+            : '',
         };
         
         // For template 1, 31, and 311: use imageFile as fallback if images is empty
@@ -2449,6 +2479,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
   const [quizData, setQuizData] = useState({
     problemTypeId: TEMPLATE_IDS.FILL_IN_BLANK,
     unitTitle: 'Quick Test Quiz',
+    title: '',
     paragraphText: '',
     answerContent: '',
     blankOptions: '',
@@ -2457,6 +2488,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
     correctAnswers: '',
     wordBank: '',
     timeLimit: 60, // Default to 60 seconds
+    countdownTime: 10,
     published: true,
     fixedWordsExplanation: '',
     instructions: '',
@@ -2486,6 +2518,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
     setQuizData({ 
       problemTypeId: TEMPLATE_IDS.FILL_IN_BLANK,
       unitTitle: 'Quick Test Quiz',
+      title: '',
       paragraphText: '',
       answerContent: '',
       blankOptions: '',
@@ -2494,6 +2527,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
       correctAnswers: '',
       wordBank: '',
       timeLimit: 60, // Default to 60 seconds
+      countdownTime: 10,
       published: true,
       instructions: '正しい順番に並び替えてください。',
       audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/1.mp3',
@@ -2559,6 +2593,7 @@ const CreateQuizButton = ({ onFileCreated, className, courseId, intl, onCreateUn
         'startTime/endTime': '0.34-0.50',
         timeSegments: '0.04-0.09;0.21-0.30',
         timeSegmentsString: '0.04-0.09;0.21-0.30',
+        countdownTime: '10',
         timeLimit: '60', // 60 seconds
         published: 'true'
       },
@@ -2630,6 +2665,7 @@ A:そうですか。`,
         audioFile: '/asset-v1:Manabi+N51+2026+type@asset+block/2.mp3',
         imageFile: '/asset-v1:Manabi+N51+2026+type@asset+block/2.png',
         'startTime/endTime': '1.20-2.15',
+        countdownTime: '10',
         timeLimit: '60', // 60 seconds
         published: 'true'
       },

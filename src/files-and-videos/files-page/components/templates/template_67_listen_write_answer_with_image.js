@@ -751,7 +751,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                     </audio>
                     <div class="custom-audio-player">
                         <div class="controls-row" style="justify-content: center; align-items: center;">
-                            <div id="player-status" class="player-status" style="margin: 0;">Current Status: Starting in 10s...</div>
+                            <div id="player-status" class="player-status" style="margin: 0;">Current Status: Starting in 5s...</div>
                         </div>
                         <div class="controls-row">
                             <div id="progress-container" class="progress-container">
@@ -1374,7 +1374,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
             const playerStatus = document.getElementById('player-status');
             
             // Set initial status to Starting countdown
-            playerStatus.textContent = 'Current Status: Starting in 10s...';
+            playerStatus.textContent = 'Current Status: Starting in 5s...';
             
             // Parse time segments from input (format: "0.04-0.09;0.21-0.30")
             function parseTimeSegments(timeString) {
@@ -1494,10 +1494,10 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 audioElement.currentTime = timeSegments[0].start;
                 
                 // Update status to show countdown
-                playerStatus.textContent = 'Current Status: Starting in 10s...';
+                playerStatus.textContent = 'Current Status: Starting in 5s...';
                 
                 // Countdown timer
-                let countdown = 10;
+                let countdown = 5;
                 countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
@@ -1703,10 +1703,10 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                 audioElement.currentTime = timeSegments[0].start;
                 
                 // Update status with countdown
-                playerStatus.textContent = 'Current Status: Starting in 10s...';
+                playerStatus.textContent = 'Current Status: Starting in 5s...';
                 
                 // Countdown timer
-                let countdown = 10;
+                let countdown = 5;
                 countdownInterval = setInterval(function() {
                     countdown--;
                     if (countdown > 0) {
@@ -1748,7 +1748,7 @@ export const listenWriteAnswerWithImageTemplate = `<!DOCTYPE html>
                     if (timeSegments.length > 0) {
                         currentSegmentIndex = 0;
                         audioElement.currentTime = timeSegments[0].start;
-                        playerStatus.textContent = 'Current Status: Starting in 10s...';
+                        playerStatus.textContent = 'Current Status: Starting in 5s...';
                         // Restart countdown after reset
                         setTimeout(() => {
                             initializePlayer();

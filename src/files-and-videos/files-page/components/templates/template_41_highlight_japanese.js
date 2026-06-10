@@ -948,6 +948,7 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
 
             // Audio player functionality
             function setupAudioPlayer() {
+                const AUDIO_COUNTDOWN_SECONDS = {{COUNTDOWN_SECONDS}};
                 const audioElement = document.getElementById('audio-player');
                 const progressContainer = document.getElementById('progress-container');
                 const progressBar = document.getElementById('progress-bar');
@@ -963,7 +964,7 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                 console.log('🎵 Audio currentSrc:', audioElement ? audioElement.currentSrc : 'null');
                 
                 // Set initial status to Starting countdown
-                playerStatus.textContent = 'Current Status: Starting in 3s...';
+                playerStatus.textContent = 'Current Status: Starting in ' + AUDIO_COUNTDOWN_SECONDS + 's...';
                 
                 // Parse time segments from input (format: "0.04-0.09;0.21-0.30")
                 function parseTimeSegments(timeString) {
@@ -1095,11 +1096,16 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                     audioElement.currentTime = timeSegments[0].start;
                     console.log('🎵 Set currentTime to first segment start:', timeSegments[0].start);
                     
+                    if (AUDIO_COUNTDOWN_SECONDS <= 0) {
+                        playNextSegment();
+                        return;
+                    }
+
                     // Update status to show countdown
-                    playerStatus.textContent = 'Current Status: Starting in 3s...';
+                    playerStatus.textContent = 'Current Status: Starting in ' + AUDIO_COUNTDOWN_SECONDS + 's...';
                     
                     // Countdown timer
-                    let countdown = 3;
+                    let countdown = AUDIO_COUNTDOWN_SECONDS;
                     countdownInterval = setInterval(function() {
                         countdown--;
                         console.log('🎵 Countdown:', countdown);
@@ -1299,11 +1305,16 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                     isTransitioning = false; // Reset transition flag
                     audioElement.currentTime = timeSegments[0].start;
                     
+                    if (AUDIO_COUNTDOWN_SECONDS <= 0) {
+                        playNextSegment();
+                        return;
+                    }
+
                     // Update status with countdown
-                    playerStatus.textContent = 'Current Status: Starting in 3s...';
+                    playerStatus.textContent = 'Current Status: Starting in ' + AUDIO_COUNTDOWN_SECONDS + 's...';
                     
                     // Countdown timer
-                    let countdown = 3;
+                    let countdown = AUDIO_COUNTDOWN_SECONDS;
                     countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
@@ -1343,7 +1354,7 @@ export const highlightFillStyleTemplate = `<!DOCTYPE html>
                         if (timeSegments.length > 0) {
                             currentSegmentIndex = 0;
                             audioElement.currentTime = timeSegments[0].start;
-                            playerStatus.textContent = 'Current Status: Starting in 3s...';
+                            playerStatus.textContent = 'Current Status: Starting in ' + AUDIO_COUNTDOWN_SECONDS + 's...';
                             // Restart countdown after reset
                             setTimeout(() => {
                                 initializePlayer();

@@ -90,14 +90,21 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
         .instructions:before {
             display: none;
         }
+        .question-title,
         .question-text {
             font-size: 1.2rem;
             padding: 15px 0;
             color: #333;
-            font-weight: normal;
             margin: 0;
             line-height: 1.6;
             letter-spacing: 0.4px;
+        }
+        .question-title {
+            font-weight: bold;
+            padding-bottom: 0;
+        }
+        .question-text {
+            font-weight: normal;
         }
         .audio-container {
             margin-bottom: 10px;
@@ -463,6 +470,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     <div class="instructions" id="quiz-instructions">
                         {{INSTRUCTIONS}}
                     </div>
+                    {{QUESTION_TITLE_BLOCK}}
                     <div class="question-text">{{QUESTION_TEXT}}</div>
                 </div>
             </div>
@@ -473,7 +481,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                         Your browser does not support the audio element.
                     </audio>
                     <div class="custom-audio-player">
-                        <div id="player-status" class="player-status">Current Status: Starting in 10s...</div>
+                        <div id="player-status" class="player-status">Current Status: Starting in {{COUNTDOWN_SECONDS}}s...</div>
                         <div class="controls-row">
                             <div id="progress-container" class="progress-container">
                                 <div id="progress-bar" class="progress-bar"></div>
@@ -603,6 +611,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
 
             // Audio player functionality
             function setupAudioPlayer() {
+                const AUDIO_COUNTDOWN_SECONDS = {{COUNTDOWN_SECONDS}};
                 const audioElement = document.getElementById('audio-player');
                 const progressContainer = document.getElementById('progress-container');
                 const progressBar = document.getElementById('progress-bar');
@@ -726,11 +735,16 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     currentSegmentIndex = 0;
                     audioElement.currentTime = timeSegments[0].start;
                     
+                    if (AUDIO_COUNTDOWN_SECONDS <= 0) {
+                        playNextSegment();
+                        return;
+                    }
+
                     // Update status to show countdown
-                    playerStatus.textContent = 'Current Status: Starting in 10s...';
+                    playerStatus.textContent = 'Current Status: Starting in ' + AUDIO_COUNTDOWN_SECONDS + 's...';
                     
                     // Countdown timer
-                    let countdown = 5;
+                    let countdown = AUDIO_COUNTDOWN_SECONDS;
                     countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
@@ -893,7 +907,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     
                     // Ensure audio is paused before initializing (like template 63)
                     audioElement.pause();
-                    playerStatus.textContent = 'Current Status: Starting in 5s...';
+                    playerStatus.textContent = 'Current Status: Starting in ' + AUDIO_COUNTDOWN_SECONDS + 's...';
                     
                     // Initialize player with delay
                     initializePlayer();
@@ -926,7 +940,7 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                 
                 // Ensure audio is paused on load (like template 63)
                 audioElement.pause();
-                playerStatus.textContent = 'Current Status: Starting in 5s...';
+                playerStatus.textContent = 'Current Status: Starting in ' + AUDIO_COUNTDOWN_SECONDS + 's...';
                 
                 // Function to update player status with countdown
                 function startWithDelay() {
@@ -959,11 +973,16 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
                     isTransitioning = false; // Reset transition flag
                     audioElement.currentTime = timeSegments[0].start;
                     
+                    if (AUDIO_COUNTDOWN_SECONDS <= 0) {
+                        playNextSegment();
+                        return;
+                    }
+
                     // Update status with countdown
-                    playerStatus.textContent = 'Current Status: Starting in 10s...';
+                    playerStatus.textContent = 'Current Status: Starting in ' + AUDIO_COUNTDOWN_SECONDS + 's...';
                     
                     // Countdown timer
-                    let countdown = 10;
+                    let countdown = AUDIO_COUNTDOWN_SECONDS;
                     countdownInterval = setInterval(function() {
                         countdown--;
                         if (countdown > 0) {
@@ -1377,7 +1396,13 @@ export const listenSingleChoiceNoImageTemplate = `<!DOCTYPE html>
 </body>
 </html>`;
 
-export const getListenSingleChoiceNoImageTemplate = (questionText, optionsString, audioFile, timeSegments = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '') => {
+export const getListenSingleChoiceNoImageTemplate = (questionText, optionsString, audioFile, timeSegments = '0-0', instructions = '音声を聞いて、正しい答えを選んでください。', scriptText = '', countdownSeconds = 5, titleText = '') => {
+    const normalizedCountdown = (() => {
+        const n = parseInt(countdownSeconds, 10);
+        if (Number.isNaN(n) || n < 0) return 5;
+        return n;
+    })();
+
     // Split the options string and trim each option
     const options = optionsString.split(',').map(opt => opt.trim());
     
@@ -1429,7 +1454,12 @@ export const getListenSingleChoiceNoImageTemplate = (questionText, optionsString
     
     
     
+    const questionTitleBlock = titleText && String(titleText).trim()
+        ? '<div class="question-title">' + convertFurigana(String(titleText).trim()) + '</div>'
+        : '';
+
     return listenSingleChoiceNoImageTemplate
+        .replace('{{QUESTION_TITLE_BLOCK}}', questionTitleBlock)
         .replace('{{QUESTION_TEXT}}', convertFurigana(questionText))
         .replace('{{OPTIONS}}', optionsHtml)
         .replace('{{CORRECT_ANSWER}}', correctAnswer)
@@ -1437,5 +1467,6 @@ export const getListenSingleChoiceNoImageTemplate = (questionText, optionsString
         .replace('{{START_TIME}}', timeSegments || '0-0')
         .replace('{{END_TIME}}', '') // Not used anymore
         .replace('{{INSTRUCTIONS}}', convertFurigana(instructions))
-        .replace('{{SCRIPT_TEXT}}', processedScriptText || '');
+        .replace('{{SCRIPT_TEXT}}', processedScriptText || '')
+        .replace(/\{\{COUNTDOWN_SECONDS\}\}/g, String(normalizedCountdown));
 }; 

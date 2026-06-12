@@ -4,7 +4,7 @@ import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 
 const getApiBaseUrl = () => getConfig().STUDIO_BASE_URL;
 
-export const getCourseOutlineIndexApiUrl = (courseId) => `${getApiBaseUrl()}/api/contentstore/v1/course_index/${courseId}?format=fast`;
+export const getCourseOutlineIndexApiUrl = (courseId) => `${getApiBaseUrl()}/api/contentstore/v1/course_index/${courseId}`;
 
 export const getCourseBestPracticesApiUrl = ({
   courseId,

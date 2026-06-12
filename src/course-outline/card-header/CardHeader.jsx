@@ -68,7 +68,7 @@ const CardHeader = ({
   );
 
   const isDisabledPublish = (status === ITEM_BADGE_STATUS.live
-    || status === ITEM_BADGE_STATUS.publishedNotLive) && !hasChanges;
+    || status === ITEM_BADGE_STATUS.publishedNotLive) && hasChanges === false;
 
   const { data: contentTagCount } = useContentTagsCount(cardId);
 

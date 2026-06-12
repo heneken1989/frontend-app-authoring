@@ -27,9 +27,12 @@ const getItemStatus = ({
       return ITEM_BADGE_STATUS.live;
     case visibilityState === VisibilityTypes.UNSCHEDULED:
       return ITEM_BADGE_STATUS.unscheduled;
-    case published && !hasChanges:
+    case published && hasChanges === false:
       return ITEM_BADGE_STATUS.publishedNotLive;
     case published && hasChanges:
+      return ITEM_BADGE_STATUS.unpublishedChanges;
+    case published && (hasChanges === null || hasChanges === undefined):
+      // outline API may omit hasChanges; allow publish instead of locking as "published"
       return ITEM_BADGE_STATUS.unpublishedChanges;
     default:
       return ITEM_BADGE_STATUS.draft;

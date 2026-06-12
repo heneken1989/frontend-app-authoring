@@ -41,9 +41,9 @@ const PublishModal = ({
         <p className="small">
           {intl.formatMessage(messages.description, { category: categoryName })}
         </p>
-        {children.filter(child => child.hasChanges).map((child) => {
+        {children.filter(child => child.hasChanges !== false).map((child) => {
           let grandChildren = child.childInfo?.children || [];
-          grandChildren = grandChildren.filter(grandChild => grandChild.hasChanges);
+          grandChildren = grandChildren.filter(grandChild => grandChild.hasChanges !== false);
 
           return grandChildren.length ? (
             <React.Fragment key={child.id}>

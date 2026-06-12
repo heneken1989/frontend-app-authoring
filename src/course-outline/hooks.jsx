@@ -38,8 +38,6 @@ import {
   duplicateSubsectionQuery,
   duplicateUnitQuery,
   enableCourseHighlightsEmailsQuery,
-  fetchCourseBestPracticesQuery,
-  fetchCourseLaunchQuery,
   fetchCourseOutlineIndexQuery,
   fetchCourseReindexQuery,
   publishCourseItemQuery,
@@ -283,8 +281,6 @@ const useCourseOutline = ({ courseId }) => {
 
   useEffect(() => {
     dispatch(fetchCourseOutlineIndexQuery(courseId));
-    dispatch(fetchCourseBestPracticesQuery({ courseId }));
-    dispatch(fetchCourseLaunchQuery({ courseId }));
   }, [courseId]);
 
   useEffect(() => {
